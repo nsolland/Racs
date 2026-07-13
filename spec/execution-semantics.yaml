@@ -1,0 +1,143 @@
+# RACS Execution Semantics Specification
+# Version: Draft 0.1
+#
+# Defines how an action is executed, logged, and reversed if needed.
+# Execution must always be preceded by a valid governance decision.
+
+racs_spec_version: "0.1"
+
+execution_semantics:
+  type: object
+  properties:
+    execution_id:
+      type: string
+      description: Unique identifier for this execution
+
+    action_envelope_ref:
+      type: string
+      description: Reference to the action envelope being executed
+
+    decision_ref:
+      type: string
+      description: Reference to the governance decision authorizing execution
+
+    execution_state:
+      type: string
+      enum:
+        - PENDING
+        - APPROVED
+        - IN_PROGRESS
+        - SUCCEEDED
+        - FAILED
+        - REJECTED
+        - HALTED
+        - REVERSED
+      description: Current state of execution
+
+    protocol_flow:
+      type: array
+      items:
+        type: string
+        enum:
+          - PROPOSE
+          - PACKAGE
+          - EVALUATE
+          - DECIDE
+          - COMMIT
+          - EXECUTE
+          - OBSERVE
+          - RECEIPT
+      description: Ordered steps in the execution protocol
+
+    execution_parameters:
+      type: object
+      properties:
+        max_duration_seconds:
+          type: number
+          description: Maximum allowed execution duration
+        retry_policy:
+          type: object
+          description: Rules for retry on failure
+        rollback_strategy:
+          type: string
+          enum:
+            - automatic
+            - manual_review
+            - none
+          description: Strategy for reversing the action
+        isolation_level:
+          type: string
+          description: Execution isolation guarantees
+      description: Parameters governing execution behavior
+
+    receipt:
+      type: object
+      properties:
+        receipt_id:
+          type: string
+          description: Unique receipt identifier
+        outcome:
+          type: string
+          enum:
+            - SUCCEEDED
+            - FAILED
+            - REJECTED
+            - HALTED
+            - REVERSED
+          description: Terminal outcome of execution
+        executed_at:
+          type: string
+          format: date-time
+          description: When execution completed
+        observed_effect:
+          type: object
+          description: What actually happened
+        error:
+          type: object
+          description: Error details if execution failed
+        signed_receipt:
+          type: string
+          description: Cryptographic signature over the receipt
+      required: [receipt_id, outcome, executed_at]
+      description: Execution receipt recording what happened
+
+    continuous_integrity_events:
+      type: array
+      items:
+        type: object
+        properties:
+          event_id:
+            type: string
+            description: Unique event identifier
+          event_type:
+            type: string
+            enum:
+              - authority_change
+              - policy_change
+              - evidence_change
+              - target_change
+              - environment_change
+              - risk_change
+              - manual_intervention
+            description: Type of integrity event
+          timestamp:
+            type: string
+            format: date-time
+            description: When the event occurred
+          details:
+            type: object
+            description: Event-specific data
+        required: [event_id, event_type, timestamp]
+      description: Record of material changes during pending or active execution
+
+  required:
+    - execution_id
+    - action_envelope_ref
+    - decision_ref
+    - execution_state
+
+# Invariants:
+# 1. No execution without a valid governance decision.
+# 2. Every terminal outcome produces a receipt.
+# 3. Material state change during execution triggers re-evaluation.
+# 4. HALT and REFUSAL are first-class outcomes.

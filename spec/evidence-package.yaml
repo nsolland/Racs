@@ -1,0 +1,137 @@
+# RACS Evidence Package Specification
+# Version: Draft 0.1
+#
+# Contains evidence references, provenance, freshness, confidence,
+# and integrity metadata supporting an action decision.
+# Evidence packages are immutable in transmission and must be signed.
+
+racs_spec_version: "0.1"
+
+evidence_package:
+  type: object
+  properties:
+    evidence_id:
+      type: string
+      description: Unique identifier for this evidence package
+
+    package_type:
+      type: string
+      enum:
+        - observation
+        - inference
+        - measurement
+        - report
+        - composite
+      description: Category of evidence package
+
+    producer:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier of the evidence-producing component
+        system:
+          type: string
+          description: Origin system (e.g., BARO, Speider, VAIG)
+        version:
+          type: string
+          description: Version of the producing component
+      required: [id, system]
+      description: The component that produced this evidence
+
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          item_id:
+            type: string
+            description: Identifier for this evidence item
+          fact_type:
+            type: string
+            description: Category of fact (e.g., observation, derivation)
+          value:
+            type: object
+            description: The evidence value or payload
+          confidence:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: Confidence score (0.0 to 1.0)
+          source_ref:
+            type: string
+            description: Reference to the original source
+          timestamp:
+            type: string
+            format: date-time
+            description: When this evidence item was captured
+          freshness:
+            type: object
+            properties:
+              max_age_seconds:
+                type: number
+                description: Maximum acceptable age in seconds
+              captured_at:
+                type: string
+                format: date-time
+                description: When the evidence was captured
+            description: Freshness constraints for this evidence item
+        required: [item_id, fact_type, value]
+      description: The list of evidence items in this package
+      minItems: 1
+
+    provenance:
+      type: array
+      items:
+        type: object
+        properties:
+          step:
+            type: string
+            description: Processing step or transformation
+          component:
+            type: string
+            description: Component that performed this step
+          timestamp:
+            type: string
+            format: date-time
+            description: When this step occurred
+        required: [step, component]
+      description: Traceability trail for how evidence was produced
+
+    integrity:
+      type: object
+      properties:
+        signed_digest:
+          type: string
+          description: Cryptographic digest of the evidence payload
+        signature:
+          type: string
+          description: Digital signature over the digest
+        signing_key_ref:
+          type: string
+          description: Reference to the key used for signing
+        algorithm:
+          type: string
+          description: Cryptographic algorithm used
+      required: [signed_digest, algorithm]
+      description: Integrity and non-repudiation metadata
+
+    created_at:
+      type: string
+      format: date-time
+      description: When this evidence package was created
+
+    expires_at:
+      type:
+        - string
+        - "null"
+      format: date-time
+      description: When this evidence package expires (null for permanent)
+
+  required:
+    - evidence_id
+    - package_type
+    - producer
+    - items
+    - integrity
+    - created_at

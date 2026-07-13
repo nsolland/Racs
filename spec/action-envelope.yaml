@@ -1,0 +1,138 @@
+# RACS Action Envelope Specification
+# Version: Draft 0.1
+#
+# The Action Envelope is the core message format in RACS.
+# It represents a single proposed AI-mediated action with
+# full authority, policy, evidence, and risk context.
+
+racs_version: "0.1"
+
+# -- Required fields -------------------------------------------------------
+
+# Protocol version identifier (semver string).
+# Must match the RACS version this envelope conforms to.
+racs_version_example: "0.1"
+
+# Unique identifier for this action, assigned by the producer.
+# SHOULD be globally unique (UUID v4 or equivalent).
+action_id:
+  type: string
+  minLength: 1
+  description: Globally unique action identifier
+
+# The category or class of action (e.g. "grid_balancing", "trade", "diagnosis").
+action_type:
+  type: string
+  minLength: 1
+  description: Action class identifier for policy routing
+
+# The entity proposing or performing the action.
+# Contains identity, role, and optional delegation info.
+actor:
+  type: object
+  properties:
+    id:
+      type: string
+      description: Actor identifier
+    role:
+      type: string
+      description: Actor role within the authority structure
+    delegation_chain:
+      type: array
+      items:
+        type: object
+      description: Optional chain of delegation references
+  required: [id, role]
+  description: The entity performing the action
+
+# The system, resource, or scope the action targets.
+target:
+  type: object
+  properties:
+    id:
+      type: string
+      description: Target identifier
+    type:
+      type: string
+      description: Target type category
+  required: [id, type]
+  description: The target of the action
+
+# The intended outcome of the action, expressed declaratively.
+requested_effect:
+  type: object
+  properties:
+    description:
+      type: string
+      description: Human-readable effect description
+    parameters:
+      type: object
+      description: Structured parameters for the requested effect
+  required: [description]
+  description: What the action intends to achieve
+
+# Authority context — who authorized this action and under which delegation.
+authority_context:
+  $ref: authority-context.yaml
+  description: Authorization and delegation context
+
+# Policy context — which policy set governs this action.
+policy_context:
+  $ref: policy-context.yaml
+  description: Policy constraints and rules
+
+# Evidence package — supporting facts, observations, and reasoning.
+evidence_package:
+  $ref: evidence-package.yaml
+  description: Evidence supporting the action
+
+# Current state of the environment relevant to the action.
+environment_state:
+  type: object
+  properties:
+    snapshot_id:
+      type: string
+      description: Reference to the environment snapshot
+    relevant_facts:
+      type: array
+      items:
+        type: object
+      description: Key facts about current environment state
+  required: [snapshot_id]
+  description: Relevant environment state at action proposal time
+
+# Risk context — risk assessment associated with the action.
+# Not always required at proposal time; may be populated during evaluation.
+risk_context:
+  type: object
+  properties:
+    level:
+      type: string
+      enum: [low, medium, high, critical]
+      description: Assessed risk level
+    assessment:
+      type: object
+      description: Structured risk assessment
+  description: Risk evaluation context
+
+# ISO 8601 timestamp of when the envelope was created.
+created_at:
+  type: string
+  format: date-time
+  description: Envelope creation timestamp
+
+# ISO 8601 timestamp after which the envelope is no longer valid.
+# Null means no expiry (use with care).
+expires_at:
+  type:
+    - string
+    - "null"
+  format: date-time
+  description: Envelope expiration timestamp
+
+# -- Additional constraints ------------------------------------------------
+#
+# - All required fields above MUST be present and non-empty.
+# - No additional properties are permitted at the top level.
+# - Envelope is immutable in transmission: once signed, fields must not change.
+# - signed_digest (optional) provides integrity verification.

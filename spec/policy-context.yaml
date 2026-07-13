@@ -1,0 +1,102 @@
+# RACS Policy Context Specification
+# Version: Draft 0.1
+#
+# Identifies the policy set and exact version used for evaluation.
+# Policy is data, not code — never bake policy into validators.
+
+racs_spec_version: "0.1"
+
+policy_context:
+  type: object
+  properties:
+    policy_id:
+      type: string
+      description: Unique identifier for this policy context instance
+
+    policy_set_ref:
+      type: string
+      description: Reference to the governing policy set
+
+    policy_set_version:
+      type: string
+      description: Exact version of the policy set used
+
+    rules:
+      type: array
+      items:
+        type: object
+        properties:
+          rule_id:
+            type: string
+            description: Identifier for this rule
+          description:
+            type: string
+            description: Human-readable rule description
+          effect:
+            type: string
+            enum:
+              - ALLOW
+              - DENY
+              - REQUIRE_ELEVATION
+              - REQUIRE_REVIEW
+              - LOG
+            description: What this rule prescribes
+          conditions:
+            type: object
+            description: Conditions under which this rule applies
+        required: [rule_id, effect]
+      description: Policy rules applicable to this action
+
+    constraints:
+      type: object
+      properties:
+        max_risk_level:
+          type: string
+          enum: [low, medium, high, critical]
+          description: Maximum permitted risk level
+        required_authority_level:
+          type: string
+          description: Minimum authority level required
+        time_restrictions:
+          type: object
+          description: Time-based constraints on execution
+        jurisdiction:
+          type: string
+          description: Applicable jurisdiction or regulatory framework
+      description: Constraints imposed by policy
+
+    evaluation_mode:
+      type: string
+      enum:
+        - strict
+        - advisory
+        - audit_only
+      description: How policy violations should be treated
+
+    valid_from:
+      type: string
+      format: date-time
+      description: When this policy version became effective
+
+    valid_until:
+      type:
+        - string
+        - "null"
+      format: date-time
+      description: When this policy version expires
+
+    policy_data:
+      type: object
+      description: |
+        Arbitrary policy data payload.
+        Policy is data — this field carries the actual policy content
+        as structured data, not executable code.
+        Implementations MUST NOT evaluate policy_data as code.
+      additionalProperties: true
+
+  required:
+    - policy_id
+    - policy_set_ref
+    - policy_set_version
+    - evaluation_mode
+    - valid_from

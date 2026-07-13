@@ -1,0 +1,114 @@
+# RACS Authority Context Specification
+# Version: Draft 0.1
+#
+# Describes who or what may authorize an action and under which delegation.
+# Authority chains must be explicit and traceable — no implicit authority.
+
+racs_spec_version: "0.1"
+
+authority_context:
+  type: object
+  properties:
+    authority_id:
+      type: string
+      description: Unique identifier for this authority context instance
+
+    authorizing_entity:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier of the authorizing entity
+        role:
+          type: string
+          description: Role of the authorizing entity
+        name:
+          type: string
+          description: Human-readable name of the authorizing entity
+      required: [id, role]
+      description: The entity granting authorization
+
+    authority_type:
+      type: string
+      enum:
+        - direct
+        - delegated
+        - policy_based
+        - emergent
+      description: How this authority was established
+
+    delegation_chain:
+      type: array
+      items:
+        type: object
+        properties:
+          delegator_id:
+            type: string
+            description: Identifier of the delegating entity
+          delegate_id:
+            type: string
+            description: Identifier of the receiving entity
+          scope:
+            type: string
+            description: Scope of the delegation
+          granted_at:
+            type: string
+            format: date-time
+            description: When the delegation was granted
+          expires_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+            description: When the delegation expires
+        required: [delegator_id, delegate_id, scope]
+      description: Traceable chain of delegated authority
+
+    governance_scope:
+      type: object
+      properties:
+        action_types:
+          type: array
+          items:
+            type: string
+          description: Allowed action types under this authority
+        domains:
+          type: array
+          items:
+            type: string
+          description: Allowed operational domains
+        max_risk_level:
+          type: string
+          enum: [low, medium, high, critical]
+          description: Maximum acceptable risk level
+      description: Limits of this authority's governance scope
+
+    valid_from:
+      type: string
+      format: date-time
+      description: When this authority context becomes valid
+
+    valid_until:
+      type:
+        - string
+        - "null"
+      format: date-time
+      description: When this authority context expires
+
+    proof:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Proof mechanism (e.g., signature, cryptographic attestation)
+        value:
+          type: string
+          description: Proof value or reference
+      description: Cryptographic or documentary proof of authority
+
+  required:
+    - authority_id
+    - authorizing_entity
+    - authority_type
+    - governance_scope
+    - valid_from
