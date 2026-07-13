@@ -1,0 +1,124 @@
+# RACS Example: Financial Transaction Action
+#
+# This example demonstrates a valid action envelope for
+# an AI-mediated financial trade execution.
+# Domain-neutral: demonstrates how RACS applies to financial services.
+
+racs_version: "0.1"
+action_id: "ae-20260713-002"
+action_type: "trade_execution"
+
+actor:
+  id: "actor:algo-trader-v7"
+  role: "trading_agent"
+  delegation_chain:
+    - delegator_id: "org:investment-fund"
+      delegate_id: "actor:algo-trader-v7"
+      scope: "trading.equities.nyse"
+
+target:
+  id: "NYSE:ACME"
+  type: "equity_security"
+
+requested_effect:
+  description: "Execute limit buy order for 500 shares of ACME at market price"
+  parameters:
+    order_type: "limit_buy"
+    quantity: 500
+    ticker: "ACME"
+    max_price_usd: 45.50
+    exchange: "NYSE"
+
+authority_context:
+  authority_id: "auth-20260713-002"
+  authorizing_entity:
+    id: "org:investment-fund"
+    role: "fund_manager"
+    name: "Alpha Fund Management"
+  authority_type: "delegated"
+  delegation_chain:
+    - delegator_id: "regulator:sec"
+      delegate_id: "org:investment-fund"
+      scope: "trading.equities.US"
+      granted_at: "2026-01-15T00:00:00Z"
+      expires_at: "2026-12-31T23:59:59Z"
+  governance_scope:
+    action_types: ["trade_execution", "order_cancellation"]
+    domains: ["finance"]
+    max_risk_level: "medium"
+  valid_from: "2026-07-13T14:00:00Z"
+  valid_until: "2026-07-13T14:05:00Z"
+
+policy_context:
+  policy_id: "policy-trading-2026-v3"
+  policy_set_ref: "racs.policy.finance.trade_execution"
+  policy_set_version: "3.0.1"
+  rules:
+    - rule_id: "max-order-size"
+      description: "Maximum order size per single trade"
+      effect: "ALLOW"
+      conditions:
+        max_shares: 10000
+        max_notional_usd: 500000
+    - rule_id: "no-penny-stocks"
+      description: "Do not trade securities below minimum price"
+      effect: "DENY"
+      conditions:
+        min_price_usd: 5.00
+  evaluation_mode: "strict"
+  valid_from: "2026-01-01T00:00:00Z"
+  valid_until: "2027-01-01T00:00:00Z"
+
+evidence_package:
+  evidence_id: "ev-20260713-002"
+  package_type: "composite"
+  producer:
+    id: "component:vaig-market-analyzer"
+    system: "VAIG"
+    version: "2.0.0"
+  items:
+    - item_id: "ev-item-001"
+      fact_type: "measurement"
+      value:
+        metric: "current_price"
+        value: 44.80
+        currency: "USD"
+      confidence: 0.98
+      source_ref: "market://NYSE/ACME/quote"
+      freshness:
+        max_age_seconds: 10
+        captured_at: "2026-07-13T14:02:30Z"
+    - item_id: "ev-item-002"
+      fact_type: "inference"
+      value:
+        analysis: "liquidity_sufficient"
+        bid_ask_spread: 0.05
+        depth: 5000
+      confidence: 0.92
+      source_ref: "vaig://market/liquidity/ACME"
+  integrity:
+    signed_digest: "sha256:abc123def456..."
+    algorithm: "sha256"
+    signing_key_ref: "key:vaig-prod-2026"
+  created_at: "2026-07-13T14:02:35Z"
+  expires_at: "2026-07-13T14:03:05Z"
+
+environment_state:
+  snapshot_id: "env-20260713-14:02:30"
+  relevant_facts:
+    - key: "market_status"
+      value: "open"
+    - key: "vix_level"
+      value: 15.2
+    - key: "portfolio_exposure_pct"
+      value: 12.5
+
+risk_context:
+  level: "low"
+  assessment:
+    impact: "capital_allocation_change"
+    probability: 0.05
+    max_loss_usd: 22750
+
+created_at: "2026-07-13T14:02:40Z"
+expires_at: "2026-07-13T14:03:10Z"

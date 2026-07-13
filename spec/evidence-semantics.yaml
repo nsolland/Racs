@@ -1,0 +1,133 @@
+# RACS Evidence Semantics Specification
+# Version: Draft 0.1
+#
+# Rules for what evidence is sufficient, how it is validated,
+# how it expires, and how integrity is maintained.
+# Evidence is immutable in transmission — never modify during transit.
+
+racs_spec_version: "0.1"
+
+evidence_semantics:
+  type: object
+  properties:
+    validation_rules:
+      type: object
+      properties:
+        require_provenance:
+          type: boolean
+          description: Whether provenance chain is required
+          default: true
+        require_signature:
+          type: boolean
+          description: Whether evidence must be signed
+          default: true
+        min_confidence_threshold:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Minimum acceptable confidence score
+        max_evidence_age_seconds:
+          type: number
+          description: Maximum age of evidence in seconds
+        allowed_producers:
+          type: array
+          items:
+            type: string
+          description: List of trusted evidence producers
+        freshness_policy:
+          type: string
+          enum:
+            - strict
+            - advisory
+            - disabled
+          description: How evidence freshness is enforced
+      description: Rules for validating evidence items
+
+    evidence_types:
+      type: array
+      items:
+        type: object
+        properties:
+          type_id:
+            type: string
+            description: Identifier for this evidence type
+          description:
+            type: string
+            description: Description of this evidence type
+          validation_schema:
+            type: object
+            description: Schema that evidence of this type must satisfy
+        required: [type_id]
+      description: Registered evidence types and their validation schemas
+
+    integrity_rules:
+      type: object
+      properties:
+        immutable_payload:
+          type: boolean
+          description: Evidence payload must not change after signing
+          default: true
+        signature_required:
+          type: boolean
+          description: Whether a signature is required
+          default: true
+        algorithm:
+          type: string
+          description: Recommended cryptographic algorithm
+        key_rotation_policy:
+          type: string
+          description: Policy for rotating signing keys
+      description: Rules for evidence integrity and non-repudiation
+
+    lifecycle:
+      type: object
+      properties:
+        default_ttl_seconds:
+          type: number
+          description: Default time-to-live for evidence in seconds
+        renewal_policy:
+          type: string
+          enum:
+            - automatic
+            - manual_review
+            - prohibited
+          description: How evidence can be renewed
+        archival_after_seconds:
+          type: number
+          description: After how long evidence should be archived
+      description: Evidence lifecycle and expiration rules
+
+    sufficiency:
+      type: object
+      properties:
+        minimum_items:
+          type: integer
+          minimum: 1
+          description: Minimum number of evidence items required
+        minimum_unique_sources:
+          type: integer
+          minimum: 1
+          description: Minimum number of distinct evidence sources
+        require_independent_corroboration:
+          type: boolean
+          description: Whether multiple independent sources are needed
+          default: false
+        confidence_aggregation:
+          type: string
+          enum:
+            - minimum
+            - average
+            - weighted
+            - custom
+          description: How to aggregate confidence from multiple items
+      description: Rules for determining whether evidence is sufficient
+
+  required:
+    - validation_rules
+    - integrity_rules
+
+# Core principles:
+# 1. Evidence must be traceable to source references.
+# 2. Evidence packages are immutable after signing.
+# 3. Expired evidence is not admissible.
+# 4. Confidence is always explicit, never implied.
