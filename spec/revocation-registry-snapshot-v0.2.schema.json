@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.2/revocation-registry-snapshot.schema.json",
+  "title": "RACS RevocationRegistrySnapshot Payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["registry_id", "tenant_id", "trust_domain", "sequence", "generated_at", "valid_until", "previous_snapshot_digest", "revocations"],
+  "properties": {
+    "registry_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "trust_domain": {"type": "string", "minLength": 1},
+    "sequence": {"type": "integer", "minimum": 1},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "valid_until": {"type": "string", "format": "date-time"},
+    "previous_snapshot_digest": {"$ref": "#/$defs/digest"},
+    "revocations": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["revocation_id", "subject_type", "subject_id", "subject_digest", "effective_at", "sequence"],
+        "properties": {
+          "revocation_id": {"type": "string", "minLength": 1},
+          "subject_type": {"type": "string", "minLength": 1},
+          "subject_id": {"type": "string", "minLength": 1},
+          "subject_digest": {"$ref": "#/$defs/digest"},
+          "effective_at": {"type": "string", "format": "date-time"},
+          "sequence": {"type": "integer", "minimum": 1}
+        }
+      }
+    }
+  },
+  "$defs": {"digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}}
+}
