@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.2/error.schema.json",
+  "title": "RACS Error Payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["error_id", "tenant_id", "code", "category", "severity", "message", "artifact_ref", "occurred_at", "retryable", "commit_preclusive"],
+  "properties": {
+    "error_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "code": {"type": "string", "pattern": "^RACS_[A-Z0-9_]+$"},
+    "category": {"type": "string", "enum": ["SCHEMA", "TRUST", "AUTHORITY", "POLICY", "EVIDENCE", "PURPOSE", "STATE", "REPLAY", "REVOCATION", "EXECUTION", "RECEIPT", "TRANSPORT"]},
+    "severity": {"type": "string", "enum": ["INFO", "WARNING", "ERROR", "CRITICAL"]},
+    "message": {"type": "string", "minLength": 1},
+    "artifact_ref": {"type": "string", "minLength": 1},
+    "details": {"type": "object"},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "retryable": {"type": "boolean"},
+    "commit_preclusive": {"type": "boolean"}
+  }
+}
