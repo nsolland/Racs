@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.2/settlement-receipt.schema.json",
+  "title": "RACS SettlementReceipt Payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["settlement_receipt_id", "value_receipt_id", "value_receipt_digest", "tenant_id", "beneficiary_id", "settlement_policy_ref", "amount", "unit", "idempotency_key", "settlement_state", "provider_reference", "settled_at", "previous_receipt_hash"],
+  "properties": {
+    "settlement_receipt_id": {"type": "string", "minLength": 1},
+    "value_receipt_id": {"type": "string", "minLength": 1},
+    "value_receipt_digest": {"$ref": "#/$defs/digest"},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "beneficiary_id": {"type": "string", "minLength": 1},
+    "settlement_policy_ref": {"type": "string", "minLength": 1},
+    "amount": {"type": "number", "minimum": 0},
+    "unit": {"type": "string", "minLength": 1},
+    "idempotency_key": {"type": "string", "minLength": 8},
+    "settlement_state": {"type": "string", "enum": ["PENDING", "SETTLED", "FAILED", "REVERSED", "DISPUTED"]},
+    "provider_reference": {"type": "string", "minLength": 1},
+    "settled_at": {"type": "string", "format": "date-time"},
+    "previous_receipt_hash": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {"digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}}
+}
