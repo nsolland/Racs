@@ -56,7 +56,12 @@ def valid_medical() -> dict:
 
 
 def make_envelope(**overrides) -> dict:
-    """Create a minimal valid envelope dict, with optional overrides."""
+    """Create a minimal valid envelope dict, with optional overrides.
+
+    The base envelope is governance-complete: authority, policy and evidence
+    contexts are present, non-empty and well-formed. Override any context with
+    ``{}`` (or other shapes) to test rejection.
+    """
     base = {
         "racs_version": "0.1",
         "action_id": "test-ae-001",
@@ -64,9 +69,28 @@ def make_envelope(**overrides) -> dict:
         "actor": {"id": "actor:test", "role": "test_agent"},
         "target": {"id": "target:test", "type": "test_resource"},
         "requested_effect": {"description": "Test effect"},
-        "authority_context": {},
-        "policy_context": {},
-        "evidence_package": {},
+        "authority_context": {
+            "authority_id": "auth:test-001",
+            "authorizing_entity": {"id": "org:test", "role": "operator"},
+            "authority_type": "direct",
+        },
+        "policy_context": {
+            "policy_id": "pol-001",
+            "policy_set_ref": "racs.policy.test",
+            "policy_set_version": "1.0.0",
+            "evaluation_mode": "strict",
+            "valid_from": "2026-01-01T00:00:00Z",
+        },
+        "evidence_package": {
+            "evidence_id": "ev-001",
+            "package_type": "observation",
+            "producer": {"id": "comp:test", "system": "BARO"},
+            "items": [
+                {"item_id": "item-001", "fact_type": "observation", "value": {"result": "ok"}}
+            ],
+            "integrity": {"signed_digest": "abc123", "algorithm": "sha256"},
+            "created_at": "2026-07-13T12:00:00Z",
+        },
         "environment_state": {"snapshot_id": "test-snap-001"},
         "created_at": "2026-07-13T12:00:00Z",
     }
@@ -85,6 +109,75 @@ class TestEnvelopeValidator:
         env = make_envelope()
         errors = ev.validate_envelope(env)
         assert errors == [], f"Expected no errors, got: {errors}"
+
+    # ---- Audit #4 regression: empty governance contexts must be rejected ----
+
+    def test_empty_authority_context_rejected(self):
+        """Empty authority_context must fail (audit #4, regression #1)."""
+        env = make_envelope(authority_context={})
+        errors = ev.validate_envelope(env)
+        assert any("authority_context" in e for e in errors), (
+            f"Expected authority_context error, got: {errors}"
+        )
+
+    def test_empty_policy_context_rejected(self):
+        """Empty policy_context must fail (audit #4, regression #2)."""
+        env = make_envelope(policy_context={})
+        errors = ev.validate_envelope(env)
+        assert any("policy_context" in e for e in errors), (
+            f"Expected policy_context error, got: {errors}"
+        )
+
+    def test_empty_evidence_package_rejected(self):
+        """Empty evidence_package must fail (audit #4, regression #3)."""
+        env = make_envelope(evidence_package={})
+        errors = ev.validate_envelope(env)
+        assert any("evidence_package" in e for e in errors), (
+            f"Expected evidence_package error, got: {errors}"
+        )
+
+    def test_missing_policy_id_rejected(self):
+        """Policy context missing policy_id must fail (audit #4, regression #5)."""
+        env = make_envelope(policy_context={"evaluation_mode": "strict"})
+        errors = ev.validate_envelope(env)
+        assert any("policy_id" in e for e in errors), (
+            f"Expected policy_id error, got: {errors}"
+        )
+
+    def test_missing_evidence_items_rejected(self):
+        """Evidence package with empty items must fail (audit #4, regression #6)."""
+        env = make_envelope(
+            evidence_package={
+                "evidence_id": "ev-001",
+                "package_type": "observation",
+                "producer": {"id": "comp:test", "system": "BARO"},
+                "items": [],
+                "integrity": {"signed_digest": "abc", "algorithm": "sha256"},
+                "created_at": "2026-07-13T12:00:00Z",
+            }
+        )
+        errors = ev.validate_envelope(env)
+        assert any("items" in e for e in errors), (
+            f"Expected items error, got: {errors}"
+        )
+
+    def test_unknown_racs_version_rejected(self):
+        """Non-string/empty racs_version must fail (audit #4, regression #7)."""
+        env = make_envelope(racs_version="")
+        errors = ev.validate_envelope(env)
+        assert any("racs_version" in e for e in errors), (
+            f"Expected racs_version error, got: {errors}"
+        )
+
+    def test_structural_only_accepts_empty_contexts(self):
+        """governance_complete=False parses structure without requiring contexts.
+
+        Distinct from governance-complete validation: callers must not treat
+        this as admissibility readiness (audit #4).
+        """
+        env = make_envelope(authority_context={}, policy_context={}, evidence_package={})
+        errors = ev.validate_envelope(env, governance_complete=False)
+        assert errors == [], f"Expected no structural errors, got: {errors}"
 
     def test_valid_with_optional_fields(self):
         """Envelope with all optional fields passes."""
