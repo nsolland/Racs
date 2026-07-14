@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.2/value-receipt.schema.json",
+  "title": "RACS ValueReceipt Payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["value_receipt_id", "outcome_receipt_id", "outcome_receipt_digest", "tenant_id", "value_type", "unit", "gross_value", "costs", "net_value", "beneficiary_id", "measurement_policy_ref", "approved_at", "previous_receipt_hash"],
+  "properties": {
+    "value_receipt_id": {"type": "string", "minLength": 1},
+    "outcome_receipt_id": {"type": "string", "minLength": 1},
+    "outcome_receipt_digest": {"$ref": "#/$defs/digest"},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "value_type": {"type": "string", "enum": ["REVENUE", "COST_SAVING", "RISK_AVOIDED", "QUALITY", "TIME", "OTHER"]},
+    "unit": {"type": "string", "minLength": 1},
+    "gross_value": {"type": "number"},
+    "costs": {"type": "number"},
+    "net_value": {"type": "number"},
+    "beneficiary_id": {"type": "string", "minLength": 1},
+    "measurement_policy_ref": {"type": "string", "minLength": 1},
+    "approval_ref": {"type": "string"},
+    "approved_at": {"type": "string", "format": "date-time"},
+    "previous_receipt_hash": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {"digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}}
+}
