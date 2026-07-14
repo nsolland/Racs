@@ -1,10 +1,12 @@
 # RACS Specification
 
-Status: Draft 0.1
+Status: Draft 0.2
 
 ## 1. Purpose
 
-RACS standardizes the control messages exchanged between observation, governance, execution and evidence systems when an AI-mediated action may affect the external world.
+RACS standardizes the signed artifacts and control messages exchanged between observation, governance, execution and evidence systems when an AI-mediated action may affect the external world.
+
+RACS owns wire schemas, canonical serialization, signature envelopes, trust metadata, cross-artifact bindings and conformance semantics. RACS does not decide whether an action is admissible and does not execute mutations.
 
 ## 2. Design principles
 
@@ -16,58 +18,97 @@ RACS standardizes the control messages exchanged between observation, governance
 - Continuous validity
 - Verifiable receipts
 - No hidden execution authority
+- Unknown trust fails closed
+- Schema validity is not authority
 
-## 3. Core objects
+## 3. Canonical artifact chain
 
-### 3.1 Action Envelope
+```text
+ActionEnvelope
+→ GovernanceEvaluation
+→ AdmissibilityDetermination
+→ GovernanceClearance
+→ CoreExecutionPermit
+→ CommitToken
+→ ExecutionReceipt
+→ OutcomeReceipt
+→ ValueReceipt
+→ SettlementReceipt
+```
 
-Represents one proposed action.
+Every authoritative artifact is wrapped in the RACS Canonical Signed Artifact Envelope.
 
-Required fields:
+## 4. Core objects
 
-- `racs_version`
-- `action_id`
-- `action_type`
-- `actor`
-- `target`
-- `requested_effect`
-- `authority_context`
-- `policy_context`
-- `evidence_package`
-- `environment_state`
-- `risk_context`
-- `created_at`
-- `expires_at`
+### 4.1 ActionEnvelope
 
-### 3.2 Authority Context
+Represents one proposed action. It is not authority, admissibility or execution permission.
 
-Describes who or what may authorize the action and under which delegation.
+Required semantic bindings include action, actor, tenant, target, requested effect, connector capability, authority, delegation, policy, evidence, purpose, environment, state, risk, consequence, reversibility, validity and replay identity.
 
-### 3.3 Evidence Package
+### 4.2 GovernanceEvaluation
 
-Contains evidence references, provenance, freshness, confidence and integrity metadata.
+A signed evaluator artifact containing risk, uncertainty, policy, evidence and context assessments. An `ALLOW` or `MODIFY` evaluation is not execution authorization.
 
-### 3.4 Policy Context
+### 4.3 AdmissibilityDetermination
 
-Identifies the policy set and exact version used for evaluation.
+REHT's determination of whether the exact action is presently legitimate to progress toward execution.
 
-### 3.5 Admissibility State
+### 4.4 GovernanceClearance
 
-Possible states:
+A signed, scoped, time-bounded and non-transferable artifact issued only by an authorized REHT issuer. It binds the full ActionEnvelope digest and the exact authority, delegation, policy, evidence, purpose, state, target, payload, connector and capability digests.
 
-- `SUBMITTED`
-- `UNDER_REVIEW`
-- `ADMISSIBLE`
-- `CONDITIONALLY_ADMISSIBLE`
-- `NOT_ADMISSIBLE`
-- `STALE`
-- `REVOKED`
-- `HALTED`
-- `COMPLETED`
+Normative payload schema: `spec/governance-clearance.schema.json`.
 
-### 3.6 Governance Decision
+### 4.5 CoreExecutionPermit
 
-Initial decision vocabulary:
+A single-execution artifact presented to the deterministic enforcement core. It binds the clearance, action, connector request, replay reservation and validity interval.
+
+Normative payload schema: `spec/core-execution-permit.schema.json`.
+
+### 4.6 ContinuousIntegrityEvent
+
+A signed event recording a material change in authority, delegation, policy, purpose, evidence, target, payload, environment, state or risk while execution is pending or active.
+
+### 4.7 ExecutionReceipt
+
+Records the technical attempt and external execution result. It must bind the permit, exact payload, connector, external transaction reference and technical outcome.
+
+### 4.8 OutcomeReceipt
+
+Records an observed effect after execution. It is distinct from admissibility and technical execution success.
+
+### 4.9 ValueReceipt
+
+Records measured and attributed value under an explicit measurement policy. It is distinct from outcome observation.
+
+### 4.10 SettlementReceipt
+
+Records an idempotent value transfer or reputation mutation bound to a verified ValueReceipt.
+
+## 5. Signed artifact envelope
+
+All authoritative artifacts MUST conform to `spec/canonical-artifact-envelope.schema.json`.
+
+The envelope binds:
+
+- artifact type and schema version
+- profile
+- artifact and tenant identity
+- trust domain
+- issuer identity and role
+- issuance and expiry
+- canonical payload digest
+- signing algorithm and key ID
+- signature
+
+Canonical serialization is defined by `spec/CANONICALIZATION.md`.
+
+Trust resolution and fail-closed rules are defined by `spec/TRUST_MODEL.md`.
+
+## 6. Decision vocabulary
+
+Governance evaluation decisions:
 
 - `ALLOW`
 - `MODIFY`
@@ -76,58 +117,73 @@ Initial decision vocabulary:
 - `STEP_UP`
 - `HALT`
 
-### 3.7 Continuous Integrity Event
+Only a valid GovernanceClearance may progress toward execution. Evaluation decisions never directly authorize execution.
 
-Records any material change in authority, policy, evidence, target, environment or risk while execution is pending or active.
-
-### 3.8 Execution Receipt
-
-Records what was proposed, evaluated, decided, executed and observed.
-
-## 4. Protocol flow
+## 7. Protocol flow
 
 ```text
 PROPOSE
-  -> PACKAGE
-  -> EVALUATE
-  -> DECIDE
-  -> COMMIT
-  -> EXECUTE
-  -> OBSERVE
-  -> RECEIPT
+  → EVALUATE
+  → DETERMINE ADMISSIBILITY
+  → ISSUE OR REFUSE CLEARANCE
+  → RESERVE EXECUTION IDENTITY
+  → ISSUE CORE PERMIT
+  → VERIFY AT CORE
+  → COMMIT THROUGH BOUNDED CONNECTOR
+  → RECEIPT EXECUTION
+  → OBSERVE OUTCOME
+  → MEASURE VALUE
+  → SETTLE
 ```
 
-At any point before terminal completion, a material integrity change may trigger re-evaluation.
+At any point before terminal completion, a material integrity change may suspend, revoke or halt execution.
 
-## 5. Invariants
+## 8. Invariants
 
-1. No execution without a valid decision.
-2. No valid decision without explicit authority context.
-3. No valid decision without a versioned policy context.
-4. Evidence must be traceable to source references.
-5. Expired or revoked authority invalidates pending execution.
-6. Material state change requires re-evaluation.
-7. Every terminal outcome produces a receipt.
-8. Refusal and halt are first-class outcomes.
+1. `EvaluationDecision(ALLOW | MODIFY) != ExecutionAuthorization`.
+2. No execution without a valid, current and authentic GovernanceClearance.
+3. No clearance without verified authority, delegation, policy, evidence and purpose bindings.
+4. A clearance binds one exact ActionEnvelope digest.
+5. A CoreExecutionPermit binds one exact clearance, target, payload, connector and capability.
+6. Unknown issuer, key, schema, trust domain or revocation status fails closed.
+7. Expired or revoked authority invalidates pending and active non-terminal execution.
+8. Material state change requires revalidation.
+9. Replay and idempotency identities are single-use and durably reserved.
+10. Every terminal or indeterminate execution state produces an authoritative receipt.
+11. Admissibility is not execution success.
+12. Execution success is not outcome or value proof.
+13. Refusal, halt, indeterminate and reversal are first-class outcomes.
 
-## 6. Conformance
+## 9. Conformance
 
-Conformance levels will be defined for:
+Conformance profiles will be published for:
 
-- message producers
+- artifact producers
 - governance evaluators
-- execution adapters
-- receipt stores
+- REHT clearance issuers
+- deterministic enforcement cores
+- bounded execution adapters
+- receipt and revocation stores
 - continuous-integrity monitors
+- outcome and settlement issuers
 
-## 7. Reserved work
+## 10. Implemented Draft 0.2 baseline
 
-- JSON schemas
-- canonical serialization
-- signatures
-- trust model
-- delegation grammar
-- receipt chain rules
+- canonical signed artifact envelope schema
+- GovernanceClearance payload schema
+- CoreExecutionPermit payload schema
+- RACS-JCS-1 canonicalization rules
+- trust model baseline and fail-closed issuer rules
+
+## 11. Remaining normative work
+
+- complete ActionEnvelope schema
+- GovernanceEvaluation and AdmissibilityDetermination schemas
+- authority and delegation grammar
+- revocation event schema and registry schema
+- CommitToken schema
+- execution, outcome, value and settlement receipt schemas
 - error model
 - transport bindings
-- conformance test vectors
+- cross-language conformance implementation
+- signed golden test vectors
