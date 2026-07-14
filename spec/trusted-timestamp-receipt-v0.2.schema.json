@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/trusted-timestamp-receipt-v0.2.schema.json",
+  "title": "RACS TrustedTimestampReceipt Payload v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["timestamp_receipt_id", "tenant_id", "subject_artifact_id", "subject_artifact_digest", "timestamp_authority_id", "timestamp_policy_id", "message_imprint_algorithm", "message_imprint", "gen_time", "serial_number", "tsa_token_digest", "previous_receipt_hash"],
+  "properties": {
+    "timestamp_receipt_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "subject_artifact_id": {"type": "string", "minLength": 1},
+    "subject_artifact_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "timestamp_authority_id": {"type": "string", "minLength": 1},
+    "timestamp_policy_id": {"type": "string", "minLength": 1},
+    "message_imprint_algorithm": {"enum": ["SHA-256", "SHA-384", "SHA-512"]},
+    "message_imprint": {"type": "string", "minLength": 16},
+    "gen_time": {"type": "string", "format": "date-time"},
+    "accuracy_millis": {"type": "integer", "minimum": 0},
+    "ordering": {"type": "boolean", "default": false},
+    "serial_number": {"type": "string", "minLength": 1},
+    "tsa_certificate_chain_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "tsa_token_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "previous_receipt_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}
