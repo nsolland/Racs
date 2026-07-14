@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.2/canonical-artifact-envelope.schema.json",
+  "title": "RACS Canonical Signed Artifact Envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "profile_id",
+    "artifact_id",
+    "tenant_id",
+    "trust_domain",
+    "issuer_id",
+    "issuer_role",
+    "issued_at",
+    "expires_at",
+    "payload",
+    "payload_digest",
+    "canonicalization",
+    "signature"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "minLength": 1},
+    "schema_version": {"type": "string", "const": "0.2.0"},
+    "profile_id": {"type": "string", "minLength": 1},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "trust_domain": {"type": "string", "minLength": 1},
+    "issuer_id": {"type": "string", "minLength": 1},
+    "issuer_role": {"type": "string", "minLength": 1},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "previous_artifact_ref": {"type": ["string", "null"]},
+    "payload": {"type": "object"},
+    "payload_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "canonicalization": {"type": "string", "const": "RACS-JCS-1"},
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "key_id", "value"],
+      "properties": {
+        "algorithm": {"type": "string", "enum": ["Ed25519"]},
+        "key_id": {"type": "string", "minLength": 1},
+        "value": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}
