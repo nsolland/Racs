@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.2/action-envelope.schema.json",
+  "title": "RACS ActionEnvelope Payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["action_id","tenant_id","action_type","actor_ref","target_ref","target_digest","payload_digest","authority_grant_ref","delegation_chain_ref","policy_ref","evidence_package_ref","purpose_ref","environment_state_ref","risk_context_ref","connector_id","capability","consequence_class","reversibility","created_at","expires_at","replay_nonce","idempotency_key"],
+  "properties": {
+    "action_id": {"type":"string","minLength":1},
+    "tenant_id": {"type":"string","minLength":1},
+    "action_type": {"type":"string","minLength":1},
+    "actor_ref": {"type":"string","minLength":1},
+    "target_ref": {"type":"string","minLength":1},
+    "target_digest": {"$ref":"#/$defs/digest"},
+    "payload_digest": {"$ref":"#/$defs/digest"},
+    "authority_grant_ref": {"type":"string","minLength":1},
+    "delegation_chain_ref": {"type":"string","minLength":1},
+    "policy_ref": {"type":"string","minLength":1},
+    "evidence_package_ref": {"type":"string","minLength":1},
+    "purpose_ref": {"type":"string","minLength":1},
+    "environment_state_ref": {"type":"string","minLength":1},
+    "risk_context_ref": {"type":"string","minLength":1},
+    "connector_id": {"type":"string","minLength":1},
+    "capability": {"type":"string","minLength":1},
+    "consequence_class": {"type":"string","enum":["LOW","MEDIUM","HIGH","CRITICAL"]},
+    "reversibility": {"type":"string","enum":["REVERSIBLE","COMPENSATABLE","IRREVERSIBLE"]},
+    "created_at": {"type":"string","format":"date-time"},
+    "expires_at": {"type":"string","format":"date-time"},
+    "replay_nonce": {"type":"string","minLength":16},
+    "idempotency_key": {"type":"string","minLength":8}
+  },
+  "$defs": {"digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}}
+}
