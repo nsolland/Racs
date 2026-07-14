@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.2/continuous-integrity-event.schema.json",
+  "title": "RACS ContinuousIntegrityEvent Payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "execution_id", "tenant_id", "domain", "previous_digest", "current_digest", "change_type", "observed_at", "effective_at", "source_ref", "severity", "required_response", "sequence"],
+  "properties": {
+    "event_id": {"type": "string", "minLength": 1},
+    "execution_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "domain": {"type": "string", "enum": ["AUTHORITY", "DELEGATION", "POLICY", "PURPOSE", "EVIDENCE", "TARGET", "PAYLOAD", "ENVIRONMENT", "STATE", "RISK", "CAPABILITY"]},
+    "previous_digest": {"$ref": "#/$defs/digest"},
+    "current_digest": {"$ref": "#/$defs/digest"},
+    "change_type": {"type": "string", "enum": ["UPDATED", "EXPIRED", "REVOKED", "STALE", "CONFLICTING", "UNAVAILABLE", "RESTORED"]},
+    "observed_at": {"type": "string", "format": "date-time"},
+    "effective_at": {"type": "string", "format": "date-time"},
+    "source_ref": {"type": "string", "minLength": 1},
+    "severity": {"type": "string", "enum": ["INFO", "WARNING", "CRITICAL"]},
+    "required_response": {"type": "string", "enum": ["NONE", "REVALIDATE", "RESTRICT", "SUSPEND", "REVOKE", "HALT", "COMPENSATE"]},
+    "sequence": {"type": "integer", "minimum": 1}
+  },
+  "$defs": {"digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}}
+}
