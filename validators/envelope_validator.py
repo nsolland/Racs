@@ -216,13 +216,71 @@ def _validate_field(value: Any, field_name: str) -> list[str]:
     return []
 
 
+def _validate_governed_context(value: Any, field_name: str) -> list[str]:
+    """Validate a governance context (authority/policy/evidence).
+
+    Structural validation only: the context must be a non-empty object AND must
+    pass its dedicated validator. This rejects empty ``{}`` contexts, which the
+    envelope-level ``_validate_object`` alone would accept.
+
+    Signature/cryptographic verification is NOT performed here — a passing
+    structural check must never be presented as proof of signature validity.
+    """
+    errors: list[str] = []
+
+    if value is None:
+        errors.append(f"{field_name}: is required")
+        return errors
+    if not isinstance(value, dict):
+        errors.append(f"{field_name}: must be an object, got {type(value).__name__}")
+        return errors
+    if len(value) == 0:
+        errors.append(
+            f"{field_name}: must not be empty; an explicit {field_name} is required"
+        )
+        return errors
+
+    if field_name == "authority_context":
+        from validators.authority_validator import validate_authority_context
+
+        errors.extend(validate_authority_context(value))
+    elif field_name == "policy_context":
+        from validators.policy_validator import validate_policy_context
+
+        errors.extend(validate_policy_context(value))
+    elif field_name == "evidence_package":
+        from validators.evidence_validator import validate_evidence_package
+
+        errors.extend(validate_evidence_package(value))
+
+    return errors
+
+
 # ---- Public API ----
 
 
-def validate_envelope(data: dict[str, Any], *, strict: bool = True) -> list[str]:
+def validate_envelope(
+    data: dict[str, Any],
+    *,
+    strict: bool = True,
+    governance_complete: bool = True,
+) -> list[str]:
     """Validate an action envelope dict.
 
     Returns a list of error messages (empty = valid).
+
+    Two validation levels are exposed so callers can distinguish structural
+    parsing from governance completeness:
+
+    * ``governance_complete=True`` (default): the governance contexts
+      (authority_context, policy_context, evidence_package) are recursively
+      validated and MUST be present, non-empty, and well-formed. An envelope
+      that passes at this level is structurally AND governance-ready, but this
+      does NOT imply signature/cryptographic verification was performed.
+    * ``governance_complete=False``: only the envelope shell is validated
+      (required fields present and well-typed). Governance contexts are checked
+      for type only, not completeness. Use this for pure structural parsing;
+      never treat its success as admissibility readiness.
     """
     errors: list[str] = []
 
@@ -231,7 +289,13 @@ def validate_envelope(data: dict[str, Any], *, strict: bool = True) -> list[str]
         if field not in data or data[field] is None:
             errors.append(f"{field}: is required and must not be null")
             continue
-        errors.extend(_validate_field(data[field], field))
+        if (
+            governance_complete
+            and field in ("authority_context", "policy_context", "evidence_package")
+        ):
+            errors.extend(_validate_governed_context(data[field], field))
+        else:
+            errors.extend(_validate_field(data[field], field))
 
     # 1b. Validate optional fields when present
     for field in OPTIONAL_FIELDS:
