@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/algorithm-migration-authorization-v0.2.schema.json",
+  "title": "RACS AlgorithmMigrationAuthorization Payload v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["migration_authorization_id", "tenant_id", "evidence_set_id", "evidence_set_digest", "from_signature_algorithm", "to_signature_algorithm", "from_digest_algorithm", "to_digest_algorithm", "migration_reason", "approved_by", "valid_from", "valid_until", "migration_policy_id", "revocation_registry_ref"],
+  "properties": {
+    "migration_authorization_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "evidence_set_id": {"type": "string", "minLength": 1},
+    "evidence_set_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "from_signature_algorithm": {"type": "string", "minLength": 1},
+    "to_signature_algorithm": {"type": "string", "minLength": 1},
+    "from_digest_algorithm": {"type": "string", "minLength": 1},
+    "to_digest_algorithm": {"type": "string", "minLength": 1},
+    "migration_reason": {"type": "string", "minLength": 1},
+    "approved_by": {"type": "string", "minLength": 1},
+    "approval_evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "valid_from": {"type": "string", "format": "date-time"},
+    "valid_until": {"type": "string", "format": "date-time"},
+    "migration_policy_id": {"type": "string", "minLength": 1},
+    "revocation_registry_ref": {"type": "string", "minLength": 1}
+  }
+}
