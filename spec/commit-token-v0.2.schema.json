@@ -1,0 +1,29 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://racs.dev/schema/0.2/commit-token.schema.json",
+  "title":"RACS CommitToken Payload",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["commit_token_id","execution_id","tenant_id","action_id","action_envelope_digest","clearance_id","clearance_digest","execution_permit_id","execution_permit_digest","connector_id","capability","target_digest","payload_digest","reservation_id","issued_at","valid_until","single_use","consumption_registry_ref"],
+  "properties":{
+    "commit_token_id":{"type":"string","minLength":1},
+    "execution_id":{"type":"string","minLength":1},
+    "tenant_id":{"type":"string","minLength":1},
+    "action_id":{"type":"string","minLength":1},
+    "action_envelope_digest":{"$ref":"#/$defs/digest"},
+    "clearance_id":{"type":"string","minLength":1},
+    "clearance_digest":{"$ref":"#/$defs/digest"},
+    "execution_permit_id":{"type":"string","minLength":1},
+    "execution_permit_digest":{"$ref":"#/$defs/digest"},
+    "connector_id":{"type":"string","minLength":1},
+    "capability":{"type":"string","minLength":1},
+    "target_digest":{"$ref":"#/$defs/digest"},
+    "payload_digest":{"$ref":"#/$defs/digest"},
+    "reservation_id":{"type":"string","minLength":1},
+    "issued_at":{"type":"string","format":"date-time"},
+    "valid_until":{"type":"string","format":"date-time"},
+    "single_use":{"const":true},
+    "consumption_registry_ref":{"type":"string","minLength":1}
+  },
+  "$defs":{"digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}}
+}
