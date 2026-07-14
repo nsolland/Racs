@@ -28,7 +28,9 @@
     "replay_nonce",
     "idempotency_key",
     "revocation_registry_ref",
-    "evaluator_refs"
+    "evaluator_refs",
+    "admissibility_determination_ref",
+    "admissibility_determination_digest"
   ],
   "properties": {
     "clearance_id": {"type": "string", "minLength": 1},
@@ -60,7 +62,9 @@
       "minItems": 1,
       "uniqueItems": true,
       "items": {"type": "string", "minLength": 1}
-    }
+    },
+    "admissibility_determination_ref": {"type": "string", "minLength": 1},
+    "admissibility_determination_digest": {"$ref": "#/$defs/digest"}
   },
   "$defs": {
     "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
