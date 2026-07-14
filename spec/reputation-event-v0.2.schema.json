@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.2/reputation-event.schema.json",
+  "title": "RACS ReputationEvent Payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reputation_event_id",
+    "tenant_id",
+    "agent_id",
+    "source_artifact_type",
+    "source_artifact_id",
+    "source_artifact_digest",
+    "event_type",
+    "dimension",
+    "delta",
+    "weight",
+    "evidence_refs",
+    "policy_ref",
+    "occurred_at",
+    "previous_event_hash"
+  ],
+  "properties": {
+    "reputation_event_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "agent_id": {"type": "string", "minLength": 1},
+    "source_artifact_type": {"type": "string", "enum": ["OUTCOME_RECEIPT", "VALUE_RECEIPT", "SETTLEMENT_RECEIPT"]},
+    "source_artifact_id": {"type": "string", "minLength": 1},
+    "source_artifact_digest": {"$ref": "#/$defs/digest"},
+    "event_type": {"type": "string", "enum": ["SUCCESS", "FAILURE", "RISK_AVOIDED", "VALUE_DELIVERED", "SETTLED", "REVERSED", "DISPUTED"]},
+    "dimension": {"type": "string", "enum": ["RELIABILITY", "SAFETY", "VALUE", "DELIVERY", "INTEGRITY"]},
+    "delta": {"type": "number", "minimum": -1, "maximum": 1},
+    "weight": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "evidence_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "policy_ref": {"type": "string", "minLength": 1},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "previous_event_hash": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}
