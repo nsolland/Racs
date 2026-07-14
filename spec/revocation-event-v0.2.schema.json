@@ -1,0 +1,22 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://racs.dev/schema/0.2/revocation-event.schema.json",
+  "title":"RACS RevocationEvent Payload",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["revocation_id","tenant_id","subject_type","subject_id","subject_digest","reason_code","effective_at","issued_at","sequence","supersedes_ref"],
+  "properties":{
+    "revocation_id":{"type":"string","minLength":1},
+    "tenant_id":{"type":"string","minLength":1},
+    "subject_type":{"type":"string","enum":["AUTHORITY_GRANT","DELEGATION_CHAIN","PURPOSE","POLICY","EVIDENCE_PACKAGE","GOVERNANCE_CLEARANCE","EXECUTION_PERMIT","COMMIT_TOKEN","AGENT_CREDENTIAL","CAPABILITY_CREDENTIAL"]},
+    "subject_id":{"type":"string","minLength":1},
+    "subject_digest":{"$ref":"#/$defs/digest"},
+    "reason_code":{"type":"string","minLength":1},
+    "details":{"type":"object"},
+    "effective_at":{"type":"string","format":"date-time"},
+    "issued_at":{"type":"string","format":"date-time"},
+    "sequence":{"type":"integer","minimum":1},
+    "supersedes_ref":{"type":"string","minLength":1}
+  },
+  "$defs":{"digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}}
+}
