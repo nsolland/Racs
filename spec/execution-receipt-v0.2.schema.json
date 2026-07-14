@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.2/execution-receipt.schema.json",
+  "title": "RACS ExecutionReceipt Payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["execution_receipt_id", "execution_id", "tenant_id", "action_id", "action_envelope_digest", "clearance_id", "clearance_digest", "commit_token_id", "commit_token_digest", "connector_id", "capability", "target_digest", "payload_digest", "started_at", "completed_at", "technical_outcome", "provider_reference", "response_digest", "reversal_status", "previous_receipt_hash"],
+  "properties": {
+    "execution_receipt_id": {"type": "string", "minLength": 1},
+    "execution_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "action_id": {"type": "string", "minLength": 1},
+    "action_envelope_digest": {"$ref": "#/$defs/digest"},
+    "clearance_id": {"type": "string", "minLength": 1},
+    "clearance_digest": {"$ref": "#/$defs/digest"},
+    "commit_token_id": {"type": "string", "minLength": 1},
+    "commit_token_digest": {"$ref": "#/$defs/digest"},
+    "connector_id": {"type": "string", "minLength": 1},
+    "capability": {"type": "string", "minLength": 1},
+    "target_digest": {"$ref": "#/$defs/digest"},
+    "payload_digest": {"$ref": "#/$defs/digest"},
+    "started_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "technical_outcome": {"type": "string", "enum": ["BLOCKED", "SIMULATED", "SUCCEEDED", "FAILED", "INDETERMINATE", "REVERSED"]},
+    "provider_reference": {"type": "string", "minLength": 1},
+    "response_digest": {"$ref": "#/$defs/digest"},
+    "error_class": {"type": "string"},
+    "reversal_status": {"type": "string", "enum": ["NOT_APPLICABLE", "NOT_REVERSED", "PENDING", "REVERSED", "FAILED"]},
+    "previous_receipt_hash": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {"digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}}
+}
