@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/continuity-restoration-receipt-v0.2.schema.json",
+  "title": "ContinuityRestorationReceipt payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["continuity_restoration_receipt_id","tenant_id","evidence_set_id","original_evidence_set_digest","restored_evidence_set_digest","recovery_authorization_id","recovery_authorization_digest","reconstruction_evidence_id","reconstruction_evidence_digest","new_archival_renewal_id","new_archival_renewal_digest","restored_valid_until","incident_id","post_incident_review_due","restoration_state","restored_at","previous_receipt_hash"],
+  "properties": {
+    "continuity_restoration_receipt_id": {"type":"string","minLength":1},
+    "tenant_id": {"type":"string","minLength":1},
+    "evidence_set_id": {"type":"string","minLength":1},
+    "original_evidence_set_digest": {"type":"string","pattern":"^sha(256|384|512):[0-9a-f]+$"},
+    "restored_evidence_set_digest": {"type":"string","pattern":"^sha(256|384|512):[0-9a-f]+$"},
+    "recovery_authorization_id": {"type":"string","minLength":1},
+    "recovery_authorization_digest": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},
+    "reconstruction_evidence_id": {"type":"string","minLength":1},
+    "reconstruction_evidence_digest": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},
+    "new_archival_renewal_id": {"type":"string","minLength":1},
+    "new_archival_renewal_digest": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},
+    "restored_valid_until": {"type":"string","format":"date-time"},
+    "incident_id": {"type":"string","minLength":1},
+    "post_incident_review_due": {"type":"string","format":"date-time"},
+    "restoration_state": {"const":"RESTORED_WITH_EXCEPTION"},
+    "restored_at": {"type":"string","format":"date-time"},
+    "previous_receipt_hash": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}
+  }
+}
