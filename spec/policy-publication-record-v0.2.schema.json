@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/policy-publication-record-v0.2.schema.json",
+  "title": "PolicyPublicationRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "publication_id", "tenant_id", "ratification_id", "policy_id", "policy_version", "policy_digest", "publication_channel", "published_at", "effective_at", "supersedes_policy_version", "acknowledgement_deadline"],
+  "properties": {
+    "artifact_type": {"const": "POLICY_PUBLICATION_RECORD"},
+    "publication_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "ratification_id": {"type": "string", "minLength": 1},
+    "policy_id": {"type": "string", "minLength": 1},
+    "policy_version": {"type": "integer", "minimum": 1},
+    "policy_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "publication_channel": {"type": "string", "minLength": 1},
+    "published_at": {"type": "string", "format": "date-time"},
+    "effective_at": {"type": "string", "format": "date-time"},
+    "supersedes_policy_version": {"type": ["integer", "null"], "minimum": 1},
+    "acknowledgement_deadline": {"type": "string", "format": "date-time"}
+  }
+}
