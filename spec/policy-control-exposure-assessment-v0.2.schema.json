@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/policy-control-exposure-assessment-v0.2.schema.json",
+  "title": "POLICY_CONTROL_EXPOSURE_ASSESSMENT",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "tenant_id", "policy_domain", "policy_set_digest", "provenance_receipt_id", "exposure_level", "unresolved_dependencies", "assessed_at", "assessor", "signature"],
+  "properties": {
+    "artifact_type": {"const": "POLICY_CONTROL_EXPOSURE_ASSESSMENT"},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "policy_domain": {"type": "string", "minLength": 1},
+    "policy_set_digest": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "provenance_receipt_id": {"type": "string", "minLength": 1},
+    "exposure_level": {"enum": ["ACCEPTABLE", "ELEVATED", "HIGH", "SYSTEMIC", "INDETERMINATE"]},
+    "unresolved_dependencies": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "assessed_at": {"type": "string", "format": "date-time"},
+    "assessor": {"type": "string", "minLength": 1},
+    "signature": {"type": "string", "minLength": 1}
+  }
+}
