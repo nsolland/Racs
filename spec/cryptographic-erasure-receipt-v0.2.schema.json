@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/cryptographic-erasure-receipt-v0.2.schema.json",
+  "title": "RACS CryptographicErasureReceipt v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cryptographic_erasure_receipt_id", "tenant_id", "subject_type", "subject_id",
+    "subject_digest", "retention_policy_id", "retention_policy_digest",
+    "retention_policy_version", "deletion_basis", "encryption_key_ref_digest",
+    "destruction_provider_ref", "destroyed_at", "erasure_method", "content_state",
+    "previous_receipt_hash"
+  ],
+  "properties": {
+    "cryptographic_erasure_receipt_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "subject_type": {"type": "string", "enum": ["AUDITOR_PACKAGE", "EXECUTION_DOSSIER", "DISCLOSURE_DOSSIER"]},
+    "subject_id": {"type": "string", "minLength": 1},
+    "subject_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "retention_policy_id": {"type": "string", "minLength": 1},
+    "retention_policy_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "retention_policy_version": {"type": "integer", "minimum": 1},
+    "deletion_basis": {"type": "string", "minLength": 1},
+    "encryption_key_ref_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "destruction_provider_ref": {"type": "string", "minLength": 1},
+    "destroyed_at": {"type": "string", "format": "date-time"},
+    "erasure_method": {"const": "ENCRYPTION_KEY_DESTRUCTION"},
+    "content_state": {"const": "CRYPTOGRAPHICALLY_UNRECOVERABLE"},
+    "legal_hold_release_ref": {"type": ["string", "null"]},
+    "previous_receipt_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}

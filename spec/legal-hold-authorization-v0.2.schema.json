@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/legal-hold-authorization-v0.2.schema.json",
+  "title": "RACS LegalHoldAuthorization v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "legal_hold_authorization_id", "tenant_id", "case_id", "subject_type",
+    "subject_id", "subject_digest", "authorized_by", "authority_ref",
+    "effective_from", "valid_until", "revocation_registry_ref", "reason"
+  ],
+  "properties": {
+    "legal_hold_authorization_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "case_id": {"type": "string", "minLength": 1},
+    "subject_type": {"type": "string", "enum": ["AUDITOR_PACKAGE", "EXECUTION_DOSSIER", "DISCLOSURE_DOSSIER", "ENCRYPTION_KEY"]},
+    "subject_id": {"type": "string", "minLength": 1},
+    "subject_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "authorized_by": {"type": "string", "minLength": 1},
+    "authority_ref": {"type": "string", "minLength": 1},
+    "effective_from": {"type": "string", "format": "date-time"},
+    "valid_until": {"type": "string", "format": "date-time"},
+    "revocation_registry_ref": {"type": "string", "minLength": 1},
+    "reason": {"type": "string", "minLength": 1},
+    "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}}
+  }
+}
