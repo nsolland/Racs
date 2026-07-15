@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/policy-activation-authorization-v0.2.schema.json",
+  "title": "PolicyActivationAuthorization",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "activation_authorization_id", "tenant_id", "publication_id", "policy_id", "policy_version", "policy_digest", "effective_at", "superseded_policy_version", "superseded_policy_digest", "required_component_set_digest", "single_use", "valid_until"],
+  "properties": {
+    "artifact_type": {"const": "POLICY_ACTIVATION_AUTHORIZATION"},
+    "activation_authorization_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "publication_id": {"type": "string", "minLength": 1},
+    "policy_id": {"type": "string", "minLength": 1},
+    "policy_version": {"type": "integer", "minimum": 1},
+    "policy_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "effective_at": {"type": "string", "format": "date-time"},
+    "superseded_policy_version": {"type": ["integer", "null"], "minimum": 1},
+    "superseded_policy_digest": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "required_component_set_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "single_use": {"const": true},
+    "valid_until": {"type": "string", "format": "date-time"}
+  }
+}
