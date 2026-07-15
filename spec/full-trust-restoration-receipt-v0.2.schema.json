@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/full-trust-restoration-receipt-v0.2.schema.json",
+  "title": "FULL_TRUST_RESTORATION_RECEIPT payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["receipt_id", "tenant_id", "component_id", "suspension_recovery_receipt_id", "probation_authorization_id", "capability_envelope_id", "monitoring_result_id", "monitoring_result_digest", "policy_id", "policy_version", "policy_digest", "restoration_decision", "restored_at", "previous_receipt_hash"],
+  "properties": {
+    "receipt_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "component_id": {"type": "string", "minLength": 1},
+    "suspension_recovery_receipt_id": {"type": "string", "minLength": 1},
+    "probation_authorization_id": {"type": "string", "minLength": 1},
+    "capability_envelope_id": {"type": "string", "minLength": 1},
+    "monitoring_result_id": {"type": "string", "minLength": 1},
+    "monitoring_result_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "policy_id": {"type": "string", "minLength": 1},
+    "policy_version": {"type": "integer", "minimum": 1},
+    "policy_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "restoration_decision": {"enum": ["FULL_TRUST_RESTORED", "PROBATION_EXTENDED", "RE_SUSPENDED"]},
+    "restored_at": {"type": "string", "format": "date-time"},
+    "previous_receipt_hash": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"}
+  }
+}
