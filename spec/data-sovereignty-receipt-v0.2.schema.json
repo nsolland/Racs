@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/data-sovereignty-receipt-v0.2.schema.json",
+  "title": "DataSovereigntyReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "receipt_id", "tenant_id", "model_sovereignty_receipt_id", "attestation_id", "assessment_id", "dataset_id", "dataset_digest", "lineage_graph_digest", "result", "unresolved_data_refs", "issued_at"],
+  "properties": {
+    "artifact_type": {"const": "DATA_SOVEREIGNTY_RECEIPT"},
+    "receipt_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "model_sovereignty_receipt_id": {"type": "string", "minLength": 1},
+    "attestation_id": {"type": "string", "minLength": 1},
+    "assessment_id": {"type": "string", "minLength": 1},
+    "isolation_id": {"type": "string"},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "dataset_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "lineage_graph_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "result": {"enum": ["ASSURED", "CONSTRAINED", "ISOLATED", "SUBSTITUTED", "SUSPENDED", "INDETERMINATE"]},
+    "unresolved_data_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "previous_receipt_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "issued_at": {"type": "string", "format": "date-time"}
+  }
+}
