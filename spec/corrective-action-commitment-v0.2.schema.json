@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/corrective-action-commitment-v0.2.schema.json",
+  "title": "RACS CorrectiveActionCommitment Payload v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["corrective_action_commitment_id", "tenant_id", "incident_id", "post_incident_review_id", "owner_id", "control_id", "action", "success_criteria", "due_at", "verification_required", "status"],
+  "properties": {
+    "corrective_action_commitment_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "incident_id": {"type": "string", "minLength": 1},
+    "post_incident_review_id": {"type": "string", "minLength": 1},
+    "owner_id": {"type": "string", "minLength": 1},
+    "control_id": {"type": "string", "minLength": 1},
+    "action": {"type": "string", "minLength": 1},
+    "success_criteria": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "due_at": {"type": "string", "format": "date-time"},
+    "verification_required": {"const": true},
+    "status": {"enum": ["COMMITTED", "IN_PROGRESS", "IMPLEMENTED", "OVERDUE", "FAILED"]}
+  }
+}
