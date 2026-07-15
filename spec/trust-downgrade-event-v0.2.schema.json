@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/trust-downgrade-event-v0.2.schema.json",
+  "title": "TRUST_DOWNGRADE_EVENT payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["trust_downgrade_event_id", "tenant_id", "component_id", "trust_lease_id", "source_reattestation_id", "reason", "from_level", "to_level", "effective_at", "required_control_action"],
+  "properties": {
+    "trust_downgrade_event_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "component_id": {"type": "string", "minLength": 1},
+    "trust_lease_id": {"type": "string", "minLength": 1},
+    "source_reattestation_id": {"type": ["string", "null"]},
+    "reason": {"enum": ["STALE_EVIDENCE", "DRIFT", "INCONCLUSIVE_ATTESTATION", "LEASE_EXPIRED", "LEASE_REVOKED"]},
+    "from_level": {"enum": ["FULL", "CONSTRAINED", "SUSPENDED"]},
+    "to_level": {"enum": ["CONSTRAINED", "SUSPENDED"]},
+    "effective_at": {"type": "string", "format": "date-time"},
+    "required_control_action": {"enum": ["CAPABILITY_DECAY", "RE_ATTEST", "SUSPEND_EXECUTION"]}
+  }
+}
