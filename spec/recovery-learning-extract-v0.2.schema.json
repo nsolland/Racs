@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/recovery-learning-extract-v0.2.schema.json",
+  "title": "RecoveryLearningExtract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type","schema_version","learning_extract_id","tenant_id","systemic_recovery_closure_receipt_id","source_incident_ids","root_cause_classes","control_failures","effective_recovery_measures","evidence_refs","extracted_at"],
+  "properties": {
+    "artifact_type": {"const": "RECOVERY_LEARNING_EXTRACT"},
+    "schema_version": {"const": "0.2.0"},
+    "learning_extract_id": {"type": "string","minLength": 1},
+    "tenant_id": {"type": "string","minLength": 1},
+    "systemic_recovery_closure_receipt_id": {"type": "string","minLength": 1},
+    "source_incident_ids": {"type": "array","minItems": 1,"uniqueItems": true,"items": {"type": "string","minLength": 1}},
+    "root_cause_classes": {"type": "array","minItems": 1,"uniqueItems": true,"items": {"type": "string","minLength": 1}},
+    "control_failures": {"type": "array","items": {"type": "string","minLength": 1}},
+    "effective_recovery_measures": {"type": "array","items": {"type": "string","minLength": 1}},
+    "evidence_refs": {"type": "array","minItems": 1,"uniqueItems": true,"items": {"type": "string","minLength": 1}},
+    "extracted_at": {"type": "string","format": "date-time"}
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/governance-policy-ratification-v0.2.schema.json",
+  "title": "GovernancePolicyRatification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type","schema_version","ratification_id","tenant_id","recommendation_id","proposed_policy_id","proposed_policy_version","proposed_policy_digest","decision","ratifier_ids","authority_refs","decision_at"],
+  "properties": {
+    "artifact_type": {"const": "GOVERNANCE_POLICY_RATIFICATION"},
+    "schema_version": {"const": "0.2.0"},
+    "ratification_id": {"type": "string","minLength": 1},
+    "tenant_id": {"type": "string","minLength": 1},
+    "recommendation_id": {"type": "string","minLength": 1},
+    "proposed_policy_id": {"type": "string","minLength": 1},
+    "proposed_policy_version": {"type": "string","minLength": 1},
+    "proposed_policy_digest": {"type": "string","pattern": "^[a-fA-F0-9]{64}$"},
+    "decision": {"enum": ["RATIFIED","REJECTED","DEFERRED"]},
+    "ratifier_ids": {"type": "array","minItems": 1,"uniqueItems": true,"items": {"type": "string","minLength": 1}},
+    "authority_refs": {"type": "array","minItems": 1,"uniqueItems": true,"items": {"type": "string","minLength": 1}},
+    "conditions": {"type": "array","items": {"type": "string","minLength": 1}},
+    "decision_at": {"type": "string","format": "date-time"}
+  }
+}
