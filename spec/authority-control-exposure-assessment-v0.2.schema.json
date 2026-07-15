@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/authority-control-exposure-assessment-v0.2.schema.json",
+  "title": "AUTHORITY_CONTROL_EXPOSURE_ASSESSMENT",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "tenant_id", "authority_domain", "registry_digest", "exposure_level", "unresolved_authority_refs", "assessor", "assessed_at", "signature"],
+  "properties": {
+    "artifact_type": {"const": "AUTHORITY_CONTROL_EXPOSURE_ASSESSMENT"},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "authority_domain": {"type": "string", "minLength": 1},
+    "registry_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "exposure_level": {"enum": ["ACCEPTABLE", "ELEVATED", "HIGH", "SYSTEMIC", "INDETERMINATE"]},
+    "foreign_governance_controls": {"type": "array", "items": {"type": "string"}},
+    "unresolved_authority_refs": {"type": "array", "items": {"type": "string"}},
+    "assessor": {"type": "string", "minLength": 1},
+    "assessed_at": {"type": "string", "format": "date-time"},
+    "signature": {"type": "string", "minLength": 1}
+  }
+}
