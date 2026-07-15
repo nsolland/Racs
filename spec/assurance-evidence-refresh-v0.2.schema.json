@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/assurance-evidence-refresh-v0.2.schema.json",
+  "title": "AssuranceEvidenceRefresh",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type","refresh_id","tenant_id","lease_id","evidence_package_digest","observed_at","coverage","freshness_result","evidence_refs"],
+  "properties": {
+    "artifact_type": {"const": "ASSURANCE_EVIDENCE_REFRESH"},
+    "refresh_id": {"type": "string","minLength": 1},
+    "tenant_id": {"type": "string","minLength": 1},
+    "lease_id": {"type": "string","minLength": 1},
+    "evidence_package_digest": {"type": "string","pattern": "^[a-f0-9]{64}$"},
+    "observed_at": {"type": "string","format": "date-time"},
+    "coverage": {"type": "number","minimum": 0,"maximum": 1},
+    "freshness_result": {"enum": ["CURRENT","STALE","INCOMPLETE","INDETERMINATE"]},
+    "evidence_refs": {"type": "array","minItems": 1,"items": {"type": "string","minLength": 1},"uniqueItems": true}
+  }
+}

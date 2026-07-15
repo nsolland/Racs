@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/assurance-validity-lease-v0.2.schema.json",
+  "title": "AssuranceValidityLease",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type","lease_id","tenant_id","governance_assurance_receipt_id","assurance_scope_digest","valid_from","valid_until","refresh_interval_seconds","material_change_threshold"],
+  "properties": {
+    "artifact_type": {"const": "ASSURANCE_VALIDITY_LEASE"},
+    "lease_id": {"type": "string","minLength": 1},
+    "tenant_id": {"type": "string","minLength": 1},
+    "governance_assurance_receipt_id": {"type": "string","minLength": 1},
+    "assurance_scope_digest": {"type": "string","pattern": "^[a-f0-9]{64}$"},
+    "valid_from": {"type": "string","format": "date-time"},
+    "valid_until": {"type": "string","format": "date-time"},
+    "refresh_interval_seconds": {"type": "integer","minimum": 60},
+    "material_change_threshold": {"type": "number","minimum": 0,"maximum": 1}
+  }
+}
