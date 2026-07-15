@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/jurisdiction-sovereignty-map-v0.2.schema.json",
+  "title": "JurisdictionSovereigntyMap",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type","map_id","tenant_id","ecosystem_assurance_receipt_id","observation_window","dependencies","map_digest","observed_at"],
+  "properties": {
+    "artifact_type": {"const": "JURISDICTION_SOVEREIGNTY_MAP"},
+    "map_id": {"type": "string","minLength": 1},
+    "tenant_id": {"type": "string","minLength": 1},
+    "ecosystem_assurance_receipt_id": {"type": "string","minLength": 1},
+    "observation_window": {"type": "object","required": ["from","until"],"properties": {"from":{"type":"string","format":"date-time"},"until":{"type":"string","format":"date-time"}},"additionalProperties": false},
+    "dependencies": {"type":"array","minItems":1,"items":{"type":"object","required":["dependency_id","provider_id","data_jurisdictions","control_plane_jurisdictions","legal_entity_jurisdiction","subprocessor_jurisdictions","sovereignty_class"],"properties":{"dependency_id":{"type":"string"},"provider_id":{"type":"string"},"data_jurisdictions":{"type":"array","items":{"type":"string"}},"control_plane_jurisdictions":{"type":"array","items":{"type":"string"}},"legal_entity_jurisdiction":{"type":"string"},"subprocessor_jurisdictions":{"type":"array","items":{"type":"string"}},"sovereignty_class":{"enum":["SOVEREIGN","ALIGNED","CROSS_BORDER","HIGH_EXPOSURE","UNKNOWN"]}},"additionalProperties":false}},
+    "map_digest": {"type":"string","pattern":"^[a-f0-9]{64}$"},
+    "observed_at": {"type":"string","format":"date-time"}
+  }
+}
