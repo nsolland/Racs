@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/affected-action-set-v0.2.schema.json",
+  "title": "AFFECTED_ACTION_SET payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["affected_action_set_id", "tenant_id", "rollout_plan_id", "rollout_plan_digest", "query_digest", "snapshot_version", "identified_at", "action_refs", "action_count", "requires_reclearance"],
+  "properties": {
+    "affected_action_set_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "rollout_plan_id": {"type": "string", "minLength": 1},
+    "rollout_plan_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "query_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "snapshot_version": {"type": "integer", "minimum": 1},
+    "identified_at": {"type": "string", "format": "date-time"},
+    "action_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "action_count": {"type": "integer", "minimum": 0},
+    "requires_reclearance": {"const": true}
+  }
+}
