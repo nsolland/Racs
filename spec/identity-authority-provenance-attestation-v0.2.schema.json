@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IdentityAuthorityProvenanceAttestation",
+  "type": "object",
+  "required": ["artifact_type", "attestation_id", "tenant_id", "identity_domain_id", "identity_graph_digest", "provider_refs", "authority_refs", "delegation_chain_digest", "issued_at"],
+  "properties": {
+    "artifact_type": {"const": "IDENTITY_AUTHORITY_PROVENANCE_ATTESTATION"},
+    "attestation_id": {"type": "string"},
+    "tenant_id": {"type": "string"},
+    "identity_domain_id": {"type": "string"},
+    "identity_graph_digest": {"type": "string"},
+    "provider_refs": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "authority_refs": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "delegation_chain_digest": {"type": "string"},
+    "issued_at": {"type": "string", "format": "date-time"}
+  }
+}

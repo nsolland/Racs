@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/model-sovereignty-receipt-v0.2.schema.json",
+  "title": "MODEL_SOVEREIGNTY_RECEIPT",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "receipt_id", "tenant_id", "cryptographic_sovereignty_receipt_id", "attestation_id", "assessment_id", "model_id", "model_digest", "result", "unresolved_dependency_ids", "issued_at"],
+  "properties": {
+    "artifact_type": {"const": "MODEL_SOVEREIGNTY_RECEIPT"},
+    "receipt_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "cryptographic_sovereignty_receipt_id": {"type": "string", "minLength": 1},
+    "attestation_id": {"type": "string", "minLength": 1},
+    "assessment_id": {"type": "string", "minLength": 1},
+    "substitution_id": {"type": "string"},
+    "model_id": {"type": "string", "minLength": 1},
+    "model_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "result": {"enum": ["ASSURED", "CONSTRAINED", "SUBSTITUTED", "SUSPENDED", "INDETERMINATE"]},
+    "unresolved_dependency_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "issued_at": {"type": "string", "format": "date-time"}
+  }
+}

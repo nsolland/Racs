@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IdentityControlExposureAssessment",
+  "type": "object",
+  "required": ["artifact_type", "assessment_id", "tenant_id", "attestation_id", "identity_domain_id", "exposure_level", "foreign_provider_refs", "delegated_authority_refs", "unresolved_identity_refs", "assessed_at"],
+  "properties": {
+    "artifact_type": {"const": "IDENTITY_CONTROL_EXPOSURE_ASSESSMENT"},
+    "assessment_id": {"type": "string"},
+    "tenant_id": {"type": "string"},
+    "attestation_id": {"type": "string"},
+    "identity_domain_id": {"type": "string"},
+    "exposure_level": {"enum": ["ACCEPTABLE", "ELEVATED", "HIGH", "SYSTEMIC", "INDETERMINATE"]},
+    "foreign_provider_refs": {"type": "array", "items": {"type": "string"}},
+    "delegated_authority_refs": {"type": "array", "items": {"type": "string"}},
+    "unresolved_identity_refs": {"type": "array", "items": {"type": "string"}},
+    "assessed_at": {"type": "string", "format": "date-time"}
+  }
+}
