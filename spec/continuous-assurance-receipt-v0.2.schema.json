@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/continuous-assurance-receipt-v0.2.schema.json",
+  "title": "ContinuousAssuranceReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type","continuous_assurance_receipt_id","tenant_id","lease_id","governance_assurance_receipt_id","latest_refresh_id","material_change_event_ids","assurance_result","issued_at","valid_until","open_findings","previous_receipt_hash"],
+  "properties": {
+    "artifact_type": {"const": "CONTINUOUS_ASSURANCE_RECEIPT"},
+    "continuous_assurance_receipt_id": {"type": "string","minLength": 1},
+    "tenant_id": {"type": "string","minLength": 1},
+    "lease_id": {"type": "string","minLength": 1},
+    "governance_assurance_receipt_id": {"type": "string","minLength": 1},
+    "latest_refresh_id": {"type": "string","minLength": 1},
+    "material_change_event_ids": {"type": "array","items": {"type": "string","minLength": 1},"uniqueItems": true},
+    "assurance_result": {"enum": ["RENEWED","WITHDRAWN","CONSTRAINED","EXPIRED"]},
+    "issued_at": {"type": "string","format": "date-time"},
+    "valid_until": {"type": "string","format": "date-time"},
+    "open_findings": {"type": "array","items": {"type": "string","minLength": 1},"uniqueItems": true},
+    "previous_receipt_hash": {"type": "string","pattern": "^[a-f0-9]{64}$"}
+  }
+}
