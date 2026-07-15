@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/staged-fleet-restart-plan-v0.2.schema.json",
+  "title": "StagedFleetRestartPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["restart_plan_id", "tenant_id", "authorization_id", "policy_id", "policy_version", "policy_digest", "stages", "integrity_quorum"],
+  "properties": {
+    "restart_plan_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "authorization_id": {"type": "string", "minLength": 1},
+    "policy_id": {"type": "string", "minLength": 1},
+    "policy_version": {"type": "integer", "minimum": 1},
+    "policy_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "stages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stage", "component_ids", "dependency_component_ids", "required_quorum", "verification_window_seconds"],
+        "properties": {
+          "stage": {"type": "integer", "minimum": 1},
+          "component_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "dependency_component_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "required_quorum": {"type": "integer", "minimum": 1},
+          "verification_window_seconds": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "integrity_quorum": {"type": "integer", "minimum": 1}
+  }
+}

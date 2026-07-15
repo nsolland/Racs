@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/return-to-normal-receipt-v0.2.schema.json",
+  "title": "ReturnToNormalReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["receipt_id", "tenant_id", "fleet_integrity_receipt_id", "systemic_recovery_authorization_id", "restart_plan_id", "stage_attestation_ids", "integrity_quorum_achieved", "final_state", "unresolved_component_ids", "completed_at", "previous_receipt_hash"],
+  "properties": {
+    "receipt_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "fleet_integrity_receipt_id": {"type": "string", "minLength": 1},
+    "systemic_recovery_authorization_id": {"type": "string", "minLength": 1},
+    "restart_plan_id": {"type": "string", "minLength": 1},
+    "stage_attestation_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "integrity_quorum_achieved": {"type": "boolean"},
+    "final_state": {"enum": ["NORMAL", "PARTIAL_SAFE", "HALT"]},
+    "unresolved_component_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "previous_receipt_hash": {"type": ["string", "null"]}
+  }
+}
