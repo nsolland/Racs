@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GovernedIdentityProviderSubstitution",
+  "type": "object",
+  "required": ["artifact_type", "substitution_id", "tenant_id", "assessment_id", "identity_domain_id", "action", "source_provider_ref", "target_provider_ref", "authority_rebinding_required", "single_use", "valid_until"],
+  "properties": {
+    "artifact_type": {"const": "GOVERNED_IDENTITY_PROVIDER_SUBSTITUTION"},
+    "substitution_id": {"type": "string"},
+    "tenant_id": {"type": "string"},
+    "assessment_id": {"type": "string"},
+    "identity_domain_id": {"type": "string"},
+    "action": {"enum": ["CONSTRAIN", "LOCALIZE", "SUBSTITUTE", "SUSPEND"]},
+    "source_provider_ref": {"type": "string"},
+    "target_provider_ref": {"type": ["string", "null"]},
+    "authority_rebinding_required": {"const": true},
+    "single_use": {"const": true},
+    "valid_until": {"type": "string", "format": "date-time"}
+  }
+}
