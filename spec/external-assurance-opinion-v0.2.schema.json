@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/external-assurance-opinion-v0.2.schema.json",
+  "title": "ExternalAssuranceOpinion",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "opinion_id", "tenant_id", "evidence_package_id", "assurance_provider_id", "opinion", "finding_refs", "issued_at"],
+  "properties": {
+    "artifact_type": {"const": "EXTERNAL_ASSURANCE_OPINION"},
+    "opinion_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "evidence_package_id": {"type": "string", "minLength": 1},
+    "assurance_provider_id": {"type": "string", "minLength": 1},
+    "opinion": {"enum": ["UNQUALIFIED", "QUALIFIED", "ADVERSE", "DISCLAIMER"]},
+    "finding_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "independence_attested": {"type": "boolean"},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "valid_until": {"type": "string", "format": "date-time"}
+  }
+}
