@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/material-assurance-change-event-v0.2.schema.json",
+  "title": "MaterialAssuranceChangeEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type","change_event_id","tenant_id","lease_id","change_type","severity","change_digest","detected_at","requires_withdrawal","evidence_refs"],
+  "properties": {
+    "artifact_type": {"const": "MATERIAL_ASSURANCE_CHANGE_EVENT"},
+    "change_event_id": {"type": "string","minLength": 1},
+    "tenant_id": {"type": "string","minLength": 1},
+    "lease_id": {"type": "string","minLength": 1},
+    "change_type": {"enum": ["POLICY","CONTROL","RUNTIME","SCOPE","EVIDENCE","ORGANIZATION","EXTERNAL_CONDITION"]},
+    "severity": {"enum": ["LOW","MEDIUM","HIGH","CRITICAL"]},
+    "change_digest": {"type": "string","pattern": "^[a-f0-9]{64}$"},
+    "detected_at": {"type": "string","format": "date-time"},
+    "requires_withdrawal": {"type": "boolean"},
+    "evidence_refs": {"type": "array","minItems": 1,"items": {"type": "string","minLength": 1},"uniqueItems": true}
+  }
+}
