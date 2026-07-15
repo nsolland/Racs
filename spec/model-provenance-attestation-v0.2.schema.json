@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/model-provenance-attestation-v0.2.schema.json",
+  "title": "MODEL_PROVENANCE_ATTESTATION",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "attestation_id", "tenant_id", "cryptographic_sovereignty_receipt_id", "model_id", "model_digest", "provider_id", "training_jurisdictions", "inference_jurisdictions", "dependency_graph_digest", "issued_at"],
+  "properties": {
+    "artifact_type": {"const": "MODEL_PROVENANCE_ATTESTATION"},
+    "attestation_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "cryptographic_sovereignty_receipt_id": {"type": "string", "minLength": 1},
+    "model_id": {"type": "string", "minLength": 1},
+    "model_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "provider_id": {"type": "string", "minLength": 1},
+    "training_jurisdictions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+    "inference_jurisdictions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+    "dependency_graph_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "issued_at": {"type": "string", "format": "date-time"}
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/data-control-exposure-assessment-v0.2.schema.json",
+  "title": "DataControlExposureAssessment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "assessment_id", "tenant_id", "attestation_id", "dataset_id", "dataset_digest", "lineage_graph_digest", "exposure_level", "foreign_control_points", "unresolved_data_refs", "assessed_at"],
+  "properties": {
+    "artifact_type": {"const": "DATA_CONTROL_EXPOSURE_ASSESSMENT"},
+    "assessment_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "attestation_id": {"type": "string", "minLength": 1},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "dataset_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "lineage_graph_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "exposure_level": {"enum": ["ACCEPTABLE", "ELEVATED", "HIGH", "SYSTEMIC", "INDETERMINATE"]},
+    "foreign_control_points": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "unresolved_data_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "requires_governed_action": {"type": "boolean"},
+    "evidence_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "assessed_at": {"type": "string", "format": "date-time"}
+  }
+}

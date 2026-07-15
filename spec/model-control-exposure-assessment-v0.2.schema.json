@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/model-control-exposure-assessment-v0.2.schema.json",
+  "title": "MODEL_CONTROL_EXPOSURE_ASSESSMENT",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "assessment_id", "tenant_id", "attestation_id", "model_id", "dependency_graph_digest", "exposure_level", "foreign_control_points", "unresolved_dependency_ids", "assessed_at"],
+  "properties": {
+    "artifact_type": {"const": "MODEL_CONTROL_EXPOSURE_ASSESSMENT"},
+    "assessment_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "attestation_id": {"type": "string", "minLength": 1},
+    "model_id": {"type": "string", "minLength": 1},
+    "dependency_graph_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "exposure_level": {"enum": ["ACCEPTABLE", "ELEVATED", "HIGH", "SYSTEMIC", "INDETERMINATE"]},
+    "foreign_control_points": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "unresolved_dependency_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "assessed_at": {"type": "string", "format": "date-time"}
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IdentitySovereigntyReceipt",
+  "type": "object",
+  "required": ["artifact_type", "receipt_id", "tenant_id", "identity_domain_id", "attestation_id", "assessment_id", "result", "unresolved_identity_refs", "issued_at"],
+  "properties": {
+    "artifact_type": {"const": "IDENTITY_SOVEREIGNTY_RECEIPT"},
+    "receipt_id": {"type": "string"},
+    "tenant_id": {"type": "string"},
+    "identity_domain_id": {"type": "string"},
+    "attestation_id": {"type": "string"},
+    "assessment_id": {"type": "string"},
+    "substitution_id": {"type": ["string", "null"]},
+    "result": {"enum": ["ASSURED", "CONSTRAINED", "SUBSTITUTED", "SUSPENDED", "INDETERMINATE"]},
+    "unresolved_identity_refs": {"type": "array", "items": {"type": "string"}},
+    "issued_at": {"type": "string"}
+  }
+}
