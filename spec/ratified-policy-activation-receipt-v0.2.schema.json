@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/ratified-policy-activation-receipt-v0.2.schema.json",
+  "title": "RatifiedPolicyActivationReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "activation_receipt_id", "tenant_id", "publication_id", "activation_authorization_id", "policy_id", "policy_version", "policy_digest", "effective_at", "required_component_count", "acknowledged_component_count", "unresolved_component_ids", "superseded_policy_revocation_id", "activation_result", "issued_at"],
+  "properties": {
+    "artifact_type": {"const": "RATIFIED_POLICY_ACTIVATION_RECEIPT"},
+    "activation_receipt_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "publication_id": {"type": "string", "minLength": 1},
+    "activation_authorization_id": {"type": "string", "minLength": 1},
+    "policy_id": {"type": "string", "minLength": 1},
+    "policy_version": {"type": "integer", "minimum": 1},
+    "policy_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "effective_at": {"type": "string", "format": "date-time"},
+    "required_component_count": {"type": "integer", "minimum": 0},
+    "acknowledged_component_count": {"type": "integer", "minimum": 0},
+    "unresolved_component_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "superseded_policy_revocation_id": {"type": ["string", "null"]},
+    "activation_result": {"enum": ["ACTIVE", "PARTIAL", "FAILED"]},
+    "issued_at": {"type": "string", "format": "date-time"}
+  }
+}
