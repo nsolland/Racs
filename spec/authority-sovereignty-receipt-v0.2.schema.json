@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/authority-sovereignty-receipt-v0.2.schema.json",
+  "title": "AuthoritySovereigntyReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type","receipt_id","tenant_id","identity_sovereignty_receipt_id","attestation_id","assessment_id","authority_domain","registry_id","registry_digest","result","unresolved_authority_refs","issued_at"],
+  "properties": {
+    "artifact_type": {"const": "AUTHORITY_SOVEREIGNTY_RECEIPT"},
+    "receipt_id": {"type": "string","minLength": 1},
+    "tenant_id": {"type": "string","minLength": 1},
+    "identity_sovereignty_receipt_id": {"type": "string","minLength": 1},
+    "attestation_id": {"type": "string","minLength": 1},
+    "assessment_id": {"type": "string","minLength": 1},
+    "rebinding_id": {"type": "string"},
+    "authority_domain": {"type": "string","minLength": 1},
+    "registry_id": {"type": "string","minLength": 1},
+    "registry_digest": {"type": "string","pattern": "^[a-f0-9]{64}$"},
+    "result": {"enum": ["ASSURED","CONSTRAINED","REBOUND","SUBSTITUTED","SUSPENDED","INDETERMINATE"]},
+    "unresolved_authority_refs": {"type": "array","items": {"type": "string"},"uniqueItems": true},
+    "clearance_invalidation_confirmed": {"type": "boolean"},
+    "issued_at": {"type": "string","format": "date-time"}
+  }
+}

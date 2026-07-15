@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/authority-registry-provenance-attestation-v0.2.schema.json",
+  "title": "AuthorityRegistryProvenanceAttestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type","attestation_id","tenant_id","identity_sovereignty_receipt_id","authority_domain","registry_id","registry_digest","mandate_graph_digest","standing_graph_digest","registry_jurisdiction","administrative_control_jurisdiction","issued_at"],
+  "properties": {
+    "artifact_type": {"const": "AUTHORITY_REGISTRY_PROVENANCE_ATTESTATION"},
+    "attestation_id": {"type": "string","minLength": 1},
+    "tenant_id": {"type": "string","minLength": 1},
+    "identity_sovereignty_receipt_id": {"type": "string","minLength": 1},
+    "authority_domain": {"type": "string","minLength": 1},
+    "registry_id": {"type": "string","minLength": 1},
+    "registry_digest": {"type": "string","pattern": "^[a-f0-9]{64}$"},
+    "mandate_graph_digest": {"type": "string","pattern": "^[a-f0-9]{64}$"},
+    "standing_graph_digest": {"type": "string","pattern": "^[a-f0-9]{64}$"},
+    "registry_jurisdiction": {"type": "string","minLength": 2},
+    "administrative_control_jurisdiction": {"type": "string","minLength": 2},
+    "authority_sources": {"type": "array","items": {"type": "string"},"uniqueItems": true},
+    "delegation_registry_refs": {"type": "array","items": {"type": "string"},"uniqueItems": true},
+    "issued_at": {"type": "string","format": "date-time"}
+  }
+}
