@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/governance-propagation-receipt-v0.2.schema.json",
+  "title": "GOVERNANCE_PROPAGATION_RECEIPT payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["governance_propagation_receipt_id", "tenant_id", "control_update_id", "control_update_digest", "rollout_plan_id", "rollout_plan_digest", "affected_action_set_id", "affected_action_set_digest", "policy_id", "policy_version", "affected_action_count", "recleared_action_count", "blocked_action_count", "unresolved_action_count", "propagation_state", "completed_at", "previous_receipt_hash"],
+  "properties": {
+    "governance_propagation_receipt_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "control_update_id": {"type": "string", "minLength": 1},
+    "control_update_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "rollout_plan_id": {"type": "string", "minLength": 1},
+    "rollout_plan_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "affected_action_set_id": {"type": "string", "minLength": 1},
+    "affected_action_set_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "policy_id": {"type": "string", "minLength": 1},
+    "policy_version": {"type": "integer", "minimum": 1},
+    "affected_action_count": {"type": "integer", "minimum": 0},
+    "recleared_action_count": {"type": "integer", "minimum": 0},
+    "blocked_action_count": {"type": "integer", "minimum": 0},
+    "unresolved_action_count": {"type": "integer", "minimum": 0},
+    "propagation_state": {"enum": ["COMPLETED", "PARTIAL", "FAILED"]},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "previous_receipt_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}
