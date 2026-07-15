@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/governed-authority-rebinding-v0.2.schema.json",
+  "title": "GovernedAuthorityRebinding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type","rebinding_id","tenant_id","assessment_id","authority_domain","action","source_registry_id","target_registry_id","target_registry_digest","affected_mandate_refs","affected_standing_refs","single_use","valid_until"],
+  "properties": {
+    "artifact_type": {"const": "GOVERNED_AUTHORITY_REBINDING"},
+    "rebinding_id": {"type": "string","minLength": 1},
+    "tenant_id": {"type": "string","minLength": 1},
+    "assessment_id": {"type": "string","minLength": 1},
+    "authority_domain": {"type": "string","minLength": 1},
+    "action": {"enum": ["CONSTRAIN","LOCALIZE","REBIND","SUBSTITUTE_REGISTRY","SUSPEND"]},
+    "source_registry_id": {"type": "string","minLength": 1},
+    "target_registry_id": {"type": "string","minLength": 1},
+    "target_registry_digest": {"type": "string","pattern": "^[a-f0-9]{64}$"},
+    "affected_mandate_refs": {"type": "array","items": {"type": "string"},"uniqueItems": true},
+    "affected_standing_refs": {"type": "array","items": {"type": "string"},"uniqueItems": true},
+    "clearance_invalidation_required": {"type": "boolean","const": true},
+    "single_use": {"type": "boolean","const": true},
+    "valid_until": {"type": "string","format": "date-time"}
+  }
+}
