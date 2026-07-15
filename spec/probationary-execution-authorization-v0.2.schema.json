@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/probationary-execution-authorization-v0.2.schema.json",
+  "title": "PROBATIONARY_EXECUTION_AUTHORIZATION payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["authorization_id", "tenant_id", "component_id", "suspension_recovery_receipt_id", "suspension_recovery_receipt_digest", "policy_id", "policy_version", "policy_digest", "capability_envelope_id", "capability_envelope_digest", "monitoring_plan_ref", "valid_from", "valid_until", "revocation_registry_ref", "single_use"],
+  "properties": {
+    "authorization_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "component_id": {"type": "string", "minLength": 1},
+    "suspension_recovery_receipt_id": {"type": "string", "minLength": 1},
+    "suspension_recovery_receipt_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "policy_id": {"type": "string", "minLength": 1},
+    "policy_version": {"type": "integer", "minimum": 1},
+    "policy_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "capability_envelope_id": {"type": "string", "minLength": 1},
+    "capability_envelope_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "monitoring_plan_ref": {"type": "string", "minLength": 1},
+    "valid_from": {"type": "string", "format": "date-time"},
+    "valid_until": {"type": "string", "format": "date-time"},
+    "revocation_registry_ref": {"type": "string", "minLength": 1},
+    "single_use": {"const": true}
+  }
+}
