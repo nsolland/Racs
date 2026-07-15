@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/policy-provenance-attestation-v0.2.schema.json",
+  "title": "POLICY_PROVENANCE_ATTESTATION",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "tenant_id", "policy_domain", "policy_set_digest", "dependency_graph_digest", "policy_sources", "issued_at", "issuer", "signature"],
+  "properties": {
+    "artifact_type": {"const": "POLICY_PROVENANCE_ATTESTATION"},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "policy_domain": {"type": "string", "minLength": 1},
+    "policy_set_digest": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "dependency_graph_digest": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "policy_sources": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["source_id", "controller", "jurisdiction", "version"], "properties": {"source_id": {"type": "string"}, "controller": {"type": "string"}, "jurisdiction": {"type": "string"}, "version": {"type": "string"}}, "additionalProperties": true}},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "issuer": {"type": "string", "minLength": 1},
+    "signature": {"type": "string", "minLength": 1}
+  }
+}
