@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/governed-authority-rebinding-v0.2.schema.json",
+  "title": "GOVERNED_AUTHORITY_REBINDING",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "tenant_id", "authority_domain", "action", "source_registry_digest", "authorization_id", "valid_until", "control_plane_ack", "signature"],
+  "properties": {
+    "artifact_type": {"const": "GOVERNED_AUTHORITY_REBINDING"},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "authority_domain": {"type": "string", "minLength": 1},
+    "action": {"enum": ["CONSTRAIN", "LOCALIZE", "REBIND", "SUSPEND"]},
+    "source_registry_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "target_registry_digest": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "authorization_id": {"type": "string", "minLength": 1},
+    "valid_until": {"type": "string", "format": "date-time"},
+    "control_plane_ack": {"type": "boolean"},
+    "signature": {"type": "string", "minLength": 1}
+  }
+}
