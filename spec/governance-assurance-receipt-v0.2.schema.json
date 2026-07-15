@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GovernanceAssuranceReceipt",
+  "type": "object",
+  "required": ["artifact_type", "assurance_receipt_id", "tenant_id", "board_attestation_id", "evidence_package_id", "opinion_id", "assurance_result", "issued_at"],
+  "properties": {
+    "artifact_type": {"const": "GOVERNANCE_ASSURANCE_RECEIPT"},
+    "assurance_receipt_id": {"type": "string"},
+    "tenant_id": {"type": "string"},
+    "board_attestation_id": {"type": "string"},
+    "evidence_package_id": {"type": "string"},
+    "opinion_id": {"type": "string"},
+    "assurance_result": {"enum": ["ASSURED", "QUALIFIED", "REMEDIATION_REQUIRED", "NOT_ASSURED"]},
+    "open_finding_refs": {"type": "array", "items": {"type": "string"}},
+    "remediation_evidence_refs": {"type": "array", "items": {"type": "string"}},
+    "issued_at": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": false
+}

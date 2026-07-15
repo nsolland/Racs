@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/regulatory-evidence-package-v0.2.schema.json",
+  "title": "RegulatoryEvidencePackage",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "evidence_package_id", "tenant_id", "governance_program_receipt_id", "framework_refs", "evidence_refs", "package_digest", "prepared_at"],
+  "properties": {
+    "artifact_type": {"const": "REGULATORY_EVIDENCE_PACKAGE"},
+    "evidence_package_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "governance_program_receipt_id": {"type": "string", "minLength": 1},
+    "framework_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "evidence_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "package_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "prepared_at": {"type": "string", "format": "date-time"},
+    "scope_limitations": {"type": "array", "items": {"type": "string"}}
+  }
+}
