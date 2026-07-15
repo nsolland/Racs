@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LONG_RUNNING_INTEGRITY_RECEIPT payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["integrity_receipt_id", "tenant_id", "component_id", "trust_lease_id", "period_start", "period_end", "required_attestations", "verified_attestations", "downgrade_events", "final_trust_level", "continuity_state"],
+  "properties": {
+    "integrity_receipt_id": {"type": "string"},
+    "tenant_id": {"type": "string"},
+    "component_id": {"type": "string"},
+    "trust_lease_id": {"type": "string"},
+    "period_start": {"type": "string", "format": "date-time"},
+    "period_end": {"type": "string", "format": "date-time"},
+    "required_attestations": {"type": "integer", "minimum": 1},
+    "verified_attestations": {"type": "integer", "minimum": 0},
+    "downgrade_events": {"type": "array", "items": {"type": "string"}},
+    "final_trust_level": {"enum": ["FULL", "CONSTRAINED", "SUSPENDED"]},
+    "continuity_state": {"enum": ["CONTINUOUS", "DEGRADED", "INTERRUPTED"]},
+    "previous_receipt_hash": {"type": ["string", "null"]}
+  }
+}
