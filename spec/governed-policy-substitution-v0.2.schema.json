@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/governed-policy-substitution-v0.2.schema.json",
+  "title": "GOVERNED_POLICY_SUBSTITUTION",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "tenant_id", "policy_domain", "source_policy_set_digest", "target_policy_set_digest", "action", "authorization_id", "valid_until", "control_plane_acknowledged", "issued_at", "signature"],
+  "properties": {
+    "artifact_type": {"const": "GOVERNED_POLICY_SUBSTITUTION"},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "policy_domain": {"type": "string", "minLength": 1},
+    "source_policy_set_digest": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "target_policy_set_digest": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "action": {"enum": ["CONSTRAIN", "LOCALIZE", "SUBSTITUTE", "SUSPEND"]},
+    "authorization_id": {"type": "string", "minLength": 1},
+    "valid_until": {"type": "string", "format": "date-time"},
+    "control_plane_acknowledged": {"type": "boolean"},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "signature": {"type": "string", "minLength": 1}
+  }
+}
