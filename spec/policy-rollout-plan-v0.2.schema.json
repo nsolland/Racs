@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/policy-rollout-plan-v0.2.schema.json",
+  "title": "POLICY_ROLLOUT_PLAN payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["rollout_plan_id", "tenant_id", "control_update_id", "control_update_digest", "policy_id", "from_version", "to_version", "affected_action_query", "reclearance_required", "effective_from", "completion_deadline", "rollback_policy_ref", "revocation_registry_ref"],
+  "properties": {
+    "rollout_plan_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "control_update_id": {"type": "string", "minLength": 1},
+    "control_update_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "policy_id": {"type": "string", "minLength": 1},
+    "from_version": {"type": "integer", "minimum": 0},
+    "to_version": {"type": "integer", "minimum": 1},
+    "affected_action_query": {"type": "object", "minProperties": 1},
+    "reclearance_required": {"const": true},
+    "effective_from": {"type": "string", "format": "date-time"},
+    "completion_deadline": {"type": "string", "format": "date-time"},
+    "rollback_policy_ref": {"type": "string", "minLength": 1},
+    "revocation_registry_ref": {"type": "string", "minLength": 1}
+  }
+}
