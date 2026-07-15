@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/authority-registry-provenance-attestation-v0.2.schema.json",
+  "title": "AUTHORITY_REGISTRY_PROVENANCE_ATTESTATION",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "tenant_id", "authority_domain", "registry_digest", "mandate_graph_digest", "issuer", "issued_at", "signature"],
+  "properties": {
+    "artifact_type": {"const": "AUTHORITY_REGISTRY_PROVENANCE_ATTESTATION"},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "authority_domain": {"type": "string", "minLength": 1},
+    "registry_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "mandate_graph_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "registry_jurisdictions": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "authority_sources": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "issuer": {"type": "string", "minLength": 1},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "signature": {"type": "string", "minLength": 1}
+  }
+}
