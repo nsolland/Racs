@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/remediation-authorization-v0.2.schema.json",
+  "title": "RACS RemediationAuthorization Payload v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["remediation_authorization_id","tenant_id","component_id","suspension_ref","suspension_digest","drift_event_ref","drift_event_digest","approved_plan_ref","approved_plan_digest","target_policy_id","target_policy_version","target_policy_digest","allowed_software_digest","allowed_configuration_digest","required_attestation_profile","authorized_by","valid_from","valid_until","single_use","revocation_registry_ref"],
+  "properties": {
+    "remediation_authorization_id": {"type":"string","minLength":1},
+    "tenant_id": {"type":"string","minLength":1},
+    "component_id": {"type":"string","minLength":1},
+    "suspension_ref": {"type":"string","minLength":1},
+    "suspension_digest": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},
+    "drift_event_ref": {"type":"string","minLength":1},
+    "drift_event_digest": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},
+    "approved_plan_ref": {"type":"string","minLength":1},
+    "approved_plan_digest": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},
+    "target_policy_id": {"type":"string","minLength":1},
+    "target_policy_version": {"type":"integer","minimum":1},
+    "target_policy_digest": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},
+    "allowed_software_digest": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},
+    "allowed_configuration_digest": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},
+    "required_attestation_profile": {"type":"string","minLength":1},
+    "authorized_by": {"type":"array","minItems":1,"items":{"type":"string","minLength":1},"uniqueItems":true},
+    "valid_from": {"type":"string","format":"date-time"},
+    "valid_until": {"type":"string","format":"date-time"},
+    "single_use": {"const":true},
+    "revocation_registry_ref": {"type":"string","minLength":1}
+  }
+}

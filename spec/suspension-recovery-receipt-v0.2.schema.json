@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/suspension-recovery-receipt-v0.2.schema.json",
+  "title": "RACS SuspensionRecoveryReceipt Payload v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["suspension_recovery_receipt_id","tenant_id","component_id","suspension_ref","suspension_digest","remediation_authorization_id","remediation_authorization_digest","redeployment_attestation_id","redeployment_attestation_digest","fresh_runtime_attestation_id","fresh_runtime_attestation_digest","policy_id","policy_version","policy_digest","resumption_decision","resumed_at","control_plane_ack_ref","previous_receipt_hash"],
+  "properties": {
+    "suspension_recovery_receipt_id": {"type":"string","minLength":1},
+    "tenant_id": {"type":"string","minLength":1},
+    "component_id": {"type":"string","minLength":1},
+    "suspension_ref": {"type":"string","minLength":1},
+    "suspension_digest": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},
+    "remediation_authorization_id": {"type":"string","minLength":1},
+    "remediation_authorization_digest": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},
+    "redeployment_attestation_id": {"type":"string","minLength":1},
+    "redeployment_attestation_digest": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},
+    "fresh_runtime_attestation_id": {"type":"string","minLength":1},
+    "fresh_runtime_attestation_digest": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},
+    "policy_id": {"type":"string","minLength":1},
+    "policy_version": {"type":"integer","minimum":1},
+    "policy_digest": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},
+    "resumption_decision": {"enum":["RESUMED","REMAIN_SUSPENDED"]},
+    "resumed_at": {"type":["string","null"],"format":"date-time"},
+    "control_plane_ack_ref": {"type":"string","minLength":1},
+    "previous_receipt_hash": {"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}
+  }
+}
