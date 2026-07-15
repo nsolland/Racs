@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/superseded-policy-revocation-v0.2.schema.json",
+  "title": "SupersededPolicyRevocation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "revocation_id", "tenant_id", "policy_id", "superseded_policy_version", "superseded_policy_digest", "replacement_policy_version", "replacement_policy_digest", "revoked_at", "effective_at", "clearance_invalidation_required"],
+  "properties": {
+    "artifact_type": {"const": "SUPERSEDED_POLICY_REVOCATION"},
+    "revocation_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "policy_id": {"type": "string", "minLength": 1},
+    "superseded_policy_version": {"type": "integer", "minimum": 1},
+    "superseded_policy_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "replacement_policy_version": {"type": "integer", "minimum": 1},
+    "replacement_policy_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "revoked_at": {"type": "string", "format": "date-time"},
+    "effective_at": {"type": "string", "format": "date-time"},
+    "clearance_invalidation_required": {"const": true}
+  }
+}
