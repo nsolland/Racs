@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/post-incident-review-v0.2.schema.json",
+  "title": "RACS PostIncidentReview Payload v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["post_incident_review_id", "tenant_id", "incident_id", "recovery_case_id", "restoration_receipt_id", "restoration_receipt_digest", "review_owner_id", "root_causes", "control_failures", "lessons", "corrective_action_refs", "reviewed_at"],
+  "properties": {
+    "post_incident_review_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "incident_id": {"type": "string", "minLength": 1},
+    "recovery_case_id": {"type": "string", "minLength": 1},
+    "restoration_receipt_id": {"type": "string", "minLength": 1},
+    "restoration_receipt_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "review_owner_id": {"type": "string", "minLength": 1},
+    "root_causes": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "control_failures": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "lessons": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "corrective_action_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "reviewed_at": {"type": "string", "format": "date-time"}
+  }
+}
