@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/systemic-recovery-closure-receipt-v0.2.schema.json",
+  "title": "RACS Systemic Recovery Closure Receipt Payload v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["closure_receipt_id", "tenant_id", "fleet_id", "return_to_normal_receipt_id", "return_to_normal_receipt_digest", "observation_window_id", "observation_window_digest", "latent_drift_assessment_id", "latent_drift_assessment_digest", "rollback_readiness_attestation_id", "rollback_readiness_attestation_digest", "policy_id", "policy_version", "policy_digest", "closure_result", "closed_at", "previous_receipt_hash"],
+  "properties": {
+    "closure_receipt_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "fleet_id": {"type": "string", "minLength": 1},
+    "return_to_normal_receipt_id": {"type": "string", "minLength": 1},
+    "return_to_normal_receipt_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "observation_window_id": {"type": "string", "minLength": 1},
+    "observation_window_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "latent_drift_assessment_id": {"type": "string", "minLength": 1},
+    "latent_drift_assessment_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "rollback_readiness_attestation_id": {"type": "string", "minLength": 1},
+    "rollback_readiness_attestation_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "policy_id": {"type": "string", "minLength": 1},
+    "policy_version": {"type": "string", "minLength": 1},
+    "policy_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "closure_result": {"enum": ["CLOSED_NORMAL_CONFIRMED", "OBSERVATION_EXTENDED", "ROLLBACK_REQUIRED", "RETURNED_TO_SAFE", "RETURNED_TO_HALT"]},
+    "closed_at": {"type": "string", "format": "date-time"},
+    "previous_receipt_hash": {"type": ["string", "null"], "pattern": "^sha(256|384|512):[0-9a-f]+$"}
+  }
+}
