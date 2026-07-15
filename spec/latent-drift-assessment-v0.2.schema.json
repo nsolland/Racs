@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/spec/latent-drift-assessment-v0.2.schema.json",
+  "title": "RACS Latent Drift Assessment Payload v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["assessment_id", "tenant_id", "observation_window_id", "observation_window_digest", "fleet_id", "sample_count", "signal_set_digest", "drift_score", "threshold", "result", "unresolved_signal_refs", "assessed_at"],
+  "properties": {
+    "assessment_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "observation_window_id": {"type": "string", "minLength": 1},
+    "observation_window_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "fleet_id": {"type": "string", "minLength": 1},
+    "sample_count": {"type": "integer", "minimum": 1},
+    "signal_set_digest": {"type": "string", "pattern": "^sha(256|384|512):[0-9a-f]+$"},
+    "drift_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "threshold": {"type": "number", "minimum": 0, "maximum": 1},
+    "result": {"enum": ["PASS", "DRIFT_DETECTED", "INCONCLUSIVE"]},
+    "unresolved_signal_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "assessed_at": {"type": "string", "format": "date-time"}
+  }
+}
