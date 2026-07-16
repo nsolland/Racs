@@ -1,19 +1,11 @@
-"""RACS Draft 0.2 canonicalization and digest reference.
-
-This module implements the deterministic JSON byte representation used by the
-current RACS-JCS-1 test vectors and payload digests. It intentionally does not
-perform trust resolution or Ed25519 verification; authoritative consumers must
-perform those steps in the order specified by spec/CANONICALIZATION.md.
-"""
+"""RACS Draft 0.2 canonicalization and digest reference.\n\nThis module implements the deterministic JSON byte representation used by the\ncurrent RACS-JCS-1 test vectors and payload digests. It intentionally does not\nperform trust resolution or Ed25519 verification; authoritative consumers must\nperform those steps in the order specified by spec/CANONICALIZATION.md.\n"""
 
 from __future__ import annotations
-
 import copy
 import hashlib
 import json
 import math
 from typing import Any, Mapping
-
 
 class CanonicalizationError(ValueError):
     """Raised when a value cannot be represented by RACS-JCS-1."""
@@ -57,6 +49,23 @@ def canonical_json_bytes(value: Any) -> bytes:
     return encoded.encode("utf-8")
 
 
+def make_envelope(action: str, authority: str, policy: str, evidence: str) -> dict:
+    """Create an action envelope structure."""
+    return {
+        "action": action,
+        "authority": authority,
+        "policy": policy,
+        "evidence": evidence
+    }
+
+
+def validate_envelope(envelope: dict) -> bool:
+    """Validate the action envelope structure."""
+    # Perform validation checks...
+    # This is a placeholder — implement actual validation logic as required
+    return True
+
+
 def sha256_digest(value: Any) -> str:
     """Return a lowercase RACS SHA-256 digest over canonical JSON bytes."""
     digest = hashlib.sha256(canonical_json_bytes(value)).hexdigest()
@@ -74,11 +83,8 @@ def verify_payload_digest(artifact: Mapping[str, Any]) -> bool:
 
 
 def signature_input_bytes(artifact: Mapping[str, Any]) -> bytes:
-    """Build the RACS-JCS-1 signature input.
-
-    The signature value is replaced by the empty string while every other
-    signed field remains unchanged.
-    """
+    """Build the RACS-JCS-1 signature input.\n
+    The signature value is replaced by the empty string while every other\n    signed field remains unchanged.\n    """
     candidate = copy.deepcopy(dict(artifact))
     signature = candidate.get("signature")
     if not isinstance(signature, dict):
@@ -95,4 +101,6 @@ __all__ = [
     "sha256_digest",
     "signature_input_bytes",
     "verify_payload_digest",
+    "make_envelope",
+    "validate_envelope",
 ]
