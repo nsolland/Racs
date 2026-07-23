@@ -70,6 +70,14 @@ used directly as execution authorization downstream. The evaluation is bound by
 the reference and the `sha256:` digest of the exact signed GovernanceEvaluation,
 so the determination cannot be silently pointed at a different evaluation.
 
+**Single binding path.** A `GovernanceClearance` MUST NOT carry its own
+`evaluation_bindings`. Its only link to the evaluation layer is
+`admissibility_determination_ref` + `admissibility_determination_digest`, which
+resolves to the issuing `AdmissibilityDetermination`; that determination in turn
+carries `evaluation_bindings` to the underlying `GovernanceEvaluation`(s). This
+prevents a clearance from asserting an evaluation binding the determination does
+not support.
+
 ## 4. NO_LONGER_ADMISSIBLE — deliberately OUT of scope for initial mapping
 
 An initial AARM HALT MUST NOT map to NO_LONGER_ADMISSIBLE. NO_LONGER_ADMISSIBLE
@@ -116,7 +124,23 @@ If the modification changes payload, target, capability, or intended effect,
 the system MUST create a NEW ActionEnvelope version with a NEW digest and run
 evaluation again. A loose "permit + constraints" is insufficient.
 
-## 7. Conformance obligations
+## 7. `evaluation_digest` — normative definition
+
+`evaluation_digest` inside `evaluation_bindings` MUST be the digest of the
+**exact signed evaluation artifact**. In RACS-JCS-1 terms (CANONICALIZATION.md)
+this is defined precisely as:
+
+> `evaluation_digest = SHA-256( canonicalize( GovernanceEvaluation.payload ) )`
+> and therefore MUST equal that artifact's `payload_digest` (CANONICALIZATION.md
+> rule 9). It is NOT a digest over the artifact envelope, the signature, or any
+> wrapper.
+
+A determination MUST verify `evaluation_digest == payload_digest` of the
+referenced, signature-verified GovernanceEvaluation before trusting the binding.
+This closes the gap left by the earlier "digest of the exact signed artifact"
+wording, which RACS-JCS-1 did not previously pin down.
+
+## 8. Conformance obligations
 
 Implementations MUST:
 - Accept REQUIRES_STEP_UP as a valid AdmissibilityDetermination state.

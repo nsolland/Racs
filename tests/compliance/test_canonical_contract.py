@@ -33,15 +33,16 @@ VEC_DIR = REPO_ROOT / "test-vectors" / "0.2"
 
 # Independent, hardcoded canonical fasit. NOT derived from the golden file.
 # (aarm_verdict, expected REHT state, expected clearance decision,
-#  clearance issued?)
+#  expected clearance admissibility_state, clearance issued?)
 EXPECTED = {
-    "ALLOW":   ("ADMISSIBLE",              "ALLOW", True),
-    "MODIFY":  ("CONDITIONALLY_ADMISSIBLE", "MODIFY", True),
-    "DEFER":   ("INDETERMINATE",           None,    False),
-    "DENY":    ("NOT_ADMISSIBLE",          None,    False),
-    "STEP_UP": ("REQUIRES_STEP_UP",        None,    False),
-    "HALT":    ("HALTED",                  None,    False),
+    "ALLOW":   ("ADMISSIBLE",               "ALLOW",  "ADMISSIBLE",               True),
+    "MODIFY":  ("CONDITIONALLY_ADMISSIBLE", "MODIFY", "CONDITIONALLY_ADMISSIBLE", True),
+    "DEFER":   ("INDETERMINATE",            None,     None,                       False),
+    "DENY":    ("NOT_ADMISSIBLE",           None,     None,                       False),
+    "STEP_UP": ("REQUIRES_STEP_UP",         None,     None,                       False),
+    "HALT":    ("HALTED",                   None,     None,                       False),
 }
+REQUIRED_VERDICTS = {"ALLOW", "MODIFY", "DEFER", "DENY", "STEP_UP", "HALT"}
 
 
 def _load_schema(name: str) -> dict:
@@ -82,8 +83,7 @@ def _valid_admissibility(state: str, evaluation_bindings=None) -> dict:
 
 
 def _valid_clearance(decision: str | None, admissibility_state: str | None,
-                     constraints: dict | None = None,
-                     evaluation_bindings: list | None = None) -> dict:
+                     constraints: dict | None = None) -> dict:
     clr = {
         "clearance_id": "clr_test_002",
         "action_id": "act_test_001",
@@ -114,8 +114,6 @@ def _valid_clearance(decision: str | None, admissibility_state: str | None,
     }
     if constraints is not None:
         clr["constraints"] = constraints
-    if evaluation_bindings is not None:
-        clr["evaluation_bindings"] = evaluation_bindings
     return clr
 
 
@@ -293,6 +291,49 @@ def test_modify_constraints_present_but_wrong_type_rejected():
     assert not _validator("governance-clearance.schema.json").is_valid(clr)
 
 
+def test_allow_requires_admissible_state():
+    """ALLOW MUST be paired with admissibility_state=ADMISSIBLE, never
+    CONDITIONALLY_ADMISSIBLE (no cross-combination)."""
+    assert not _validator("governance-clearance.schema.json").is_valid(
+        _valid_clearance("ALLOW", "CONDITIONALLY_ADMISSIBLE")
+    )
+    assert _validator("governance-clearance.schema.json").is_valid(
+        _valid_clearance("ALLOW", "ADMISSIBLE")
+    )
+
+
+def test_modify_requires_conditionally_admissible_state():
+    """MODIFY MUST be paired with admissibility_state=CONDITIONALLY_ADMISSIBLE,
+    never ADMISSIBLE (no cross-combination)."""
+    assert not _validator("governance-clearance.schema.json").is_valid(
+        _valid_clearance("MODIFY", "ADMISSIBLE", constraints={
+            "machine_readable": True,
+            "binds_exact_action": True,
+            "rules": [{"id": "r1", "predicate": "capability_eq",
+                       "target": "net.send", "value": "net.send"}],
+        })
+    )
+    assert _validator("governance-clearance.schema.json").is_valid(
+        _valid_clearance("MODIFY", "CONDITIONALLY_ADMISSIBLE", constraints={
+            "machine_readable": True,
+            "binds_exact_action": True,
+            "rules": [{"id": "r1", "predicate": "capability_eq",
+                       "target": "net.send", "value": "net.send"}],
+        })
+    )
+
+
+def test_clearance_must_not_carry_evaluation_bindings():
+    """A clearance MUST NOT carry its own evaluation_bindings; it binds only via
+    admissibility_determination_ref + digest -> determination -> evaluation_bindings.
+    An extra evaluation_bindings key MUST fail (additionalProperties: false)."""
+    clr = _valid_clearance("ALLOW", "ADMISSIBLE")
+    clr["evaluation_bindings"] = [
+        {"evaluation_ref": "vaig:test:001", "evaluation_digest": _digest()},
+    ]
+    assert not _validator("governance-clearance.schema.json").is_valid(clr)
+
+
 def test_modify_rules_empty_rejected():
     """rules present but empty (minItems:1) MUST fail."""
     assert not _validator("governance-clearance.schema.json").is_valid(
@@ -327,9 +368,9 @@ def _load_vectors() -> dict:
 def test_golden_vector_mapping_matches_independent_fasit(vector: dict):
     """Each golden vector MUST match the hardcoded EXPECTED mapping BEFORE any
     schema validation. This is the independent fasit: changing a mapping value in
-    the vector file (e.g. DEFER -> NOT_ADMISSIBLE) breaks this test even though
-    both are valid enum values."""
-    exp_state, exp_decision, exp_issued = EXPECTED[vector["aarm_verdict"]]
+    the vector file (e.g. DEFER -> NOT_ADMISSIBLE) breaks this test even when both
+    are valid enum values. The fasit now also pins clearance_admissibility_state."""
+    exp_state, exp_decision, exp_clr_state, exp_issued = EXPECTED[vector["aarm_verdict"]]
     assert vector["admissibility_determination"] == exp_state, (
         f"{vector['id']}: expected REHT state {exp_state} for "
         f"AARM {vector['aarm_verdict']}, got {vector['admissibility_determination']}"
@@ -338,10 +379,25 @@ def test_golden_vector_mapping_matches_independent_fasit(vector: dict):
         f"{vector['id']}: expected clearance decision {exp_decision} for "
         f"AARM {vector['aarm_verdict']}, got {vector['clearance_decision']}"
     )
+    assert vector.get("clearance_admissibility_state") == exp_clr_state, (
+        f"{vector['id']}: expected clearance admissibility_state {exp_clr_state} for "
+        f"AARM {vector['aarm_verdict']}, got {vector.get('clearance_admissibility_state')}"
+    )
     assert vector["clearance_issued"] == exp_issued, (
         f"{vector['id']}: expected clearance_issued {exp_issued} for "
         f"AARM {vector['aarm_verdict']}, got {vector['clearance_issued']}"
     )
+
+
+def test_golden_vector_set_covers_all_six_verdicts_exactly_once():
+    """The vector set MUST contain EXACTLY the six canonical AARM verdicts, each
+    present once and only once. A missing verdict or a duplicate breaks this."""
+    seen = [v["aarm_verdict"] for v in _load_vectors()["vectors"]]
+    assert set(seen) == REQUIRED_VERDICTS, (
+        f"vector set must contain exactly {REQUIRED_VERDICTS}, got {set(seen)}"
+    )
+    assert len(seen) == len(set(seen)), f"duplicate verdicts in vector set: {seen}"
+    assert len(seen) == len(REQUIRED_VERDICTS)
 
 
 @pytest.mark.parametrize("vector", _load_vectors()["vectors"], ids=lambda v: v["id"])
