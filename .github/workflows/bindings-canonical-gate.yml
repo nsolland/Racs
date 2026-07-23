@@ -6,11 +6,13 @@ on:
     paths:
       - "reference/bindings/v0.2/**"
       - "test-vectors/jcs/**"
+      - "test-vectors/0.2/runtime-validation/**"
       - ".github/workflows/bindings-canonical-gate.yml"
   pull_request:
     paths:
       - "reference/bindings/v0.2/**"
       - "test-vectors/jcs/**"
+      - "test-vectors/0.2/runtime-validation/**"
       - ".github/workflows/bindings-canonical-gate.yml"
 
 jobs:
@@ -53,7 +55,7 @@ jobs:
           npm install
           npm run build
 
-      - name: Cross-language byte-identical gate
+      - name: Cross-language Stage 3A/3B/3C gate
         working-directory: reference/bindings/v0.2
         run: python3 gate.py
 
