@@ -1,0 +1,83 @@
+{
+  "id": "chain_reject_det_digest_mismatch",
+  "artifact_type": "GovernanceClearance",
+  "expected": "REJECT",
+  "reason_code": "CLEARANCE_DETERMINATION_DIGEST_MISMATCH",
+  "payload": {
+    "clearance_id": "clr-001",
+    "action_id": "act-001",
+    "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "tenant_id": "tenant-1",
+    "decision": "ALLOW",
+    "admissibility_state": "ADMISSIBLE",
+    "authority_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "delegation_chain_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "policy_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "evidence_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "purpose_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "state_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "target_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "payload_digest": "sha256:6e90de4fcd82131b487f6d12f21283543cbb696d90702c0528257056a3badb7b",
+    "connector_id": "conn-1",
+    "capability": "read",
+    "consequence_class": "LOW",
+    "reversibility": "REVERSIBLE",
+    "valid_from": "2026-07-23T12:10:00Z",
+    "valid_until": "2026-07-24T12:10:00Z",
+    "replay_nonce": "0123456789abcdef0123",
+    "idempotency_key": "idem-001",
+    "revocation_registry_ref": "revreg-001",
+    "evaluator_refs": [
+      "eval-1"
+    ],
+    "admissibility_determination_ref": "det-001",
+    "admissibility_determination_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  },
+  "resolved": {
+    "evaluation": {
+      "evaluation_id": "ev-001",
+      "action_id": "act-001",
+      "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "tenant_id": "tenant-1",
+      "evaluator_id": "eval-1",
+      "evaluator_version": "1.0.0",
+      "decision": "ALLOW",
+      "authority_status": "PRESENT_AND_VALID",
+      "policy_status": "PRESENT_AND_VALID",
+      "evidence_status": "PRESENT_AND_VALID",
+      "purpose_status": "PRESENT_AND_VALID",
+      "state_status": "PRESENT_AND_VALID",
+      "risk_status": "PRESENT_AND_VALID",
+      "reason_codes": [
+        "OK"
+      ],
+      "evaluated_at": "2026-07-23T12:00:00Z",
+      "valid_until": "2026-07-24T12:00:00Z"
+    },
+    "determination": {
+      "determination_id": "det-001",
+      "action_id": "act-001",
+      "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "tenant_id": "tenant-1",
+      "authority_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "delegation_chain_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "policy_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "evidence_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "purpose_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "state_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "evaluation_bindings": [
+        {
+          "evaluation_ref": "ev-001",
+          "evaluation_digest": "sha256:968b185cfab835d1c69d07f934a756255334629e92732f19e3bb2168f8d2e08e"
+        }
+      ],
+      "state": "ADMISSIBLE",
+      "reason_codes": [
+        "OK"
+      ],
+      "determined_at": "2026-07-23T12:05:00Z",
+      "valid_until": "2026-07-24T12:05:00Z",
+      "revocation_registry_ref": "revreg-001"
+    }
+  }
+}

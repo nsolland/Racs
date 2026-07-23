@@ -1,0 +1,26 @@
+{
+  "id": "det_reject_empty_bindings",
+  "artifact_type": "AdmissibilityDetermination",
+  "expected": "REJECT",
+  "reason_code": "SCHEMA_INVALID",
+  "payload": {
+    "determination_id": "det-001",
+    "action_id": "act-001",
+    "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "tenant_id": "tenant-1",
+    "authority_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "delegation_chain_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "policy_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "evidence_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "purpose_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "state_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "evaluation_bindings": [],
+    "state": "ADMISSIBLE",
+    "reason_codes": [
+      "OK"
+    ],
+    "determined_at": "2026-07-23T12:05:00Z",
+    "valid_until": "2026-07-24T12:05:00Z",
+    "revocation_registry_ref": "revreg-001"
+  }
+}
