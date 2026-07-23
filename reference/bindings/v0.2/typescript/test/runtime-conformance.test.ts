@@ -23,6 +23,7 @@ const repoRoot = join(
   "..",
   "..",
   "..",
+  "..",
 );
 
 function loadVectors(dir: string): any[] {

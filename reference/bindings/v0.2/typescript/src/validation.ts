@@ -23,8 +23,10 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as url from "node:url";
 import { fileURLToPath } from "node:url";
-import Ajv = require("ajv");
-import addFormats = require("ajv-formats");
+import * as AjvNs from "ajv";
+import * as addFormatsNs from "ajv-formats";
+const Ajv = (AjvNs as any).default ?? AjvNs;
+const addFormats = (addFormatsNs as any).default ?? addFormatsNs;
 import { canonicalString, sha256Digest } from "./index.js";
 import type {
   AdmissibilityDetermination,
