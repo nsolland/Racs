@@ -58,12 +58,13 @@ as clearance variants.
 | DEFER        | INDETERMINATE               | (no clearance)                       |
 | DENY         | NOT_ADMISSIBLE              | (no clearance)                       |
 | STEP_UP      | REQUIRES_STEP_UP            | (no clearance)                       |
-| HALT         | HALTED                      | (no clearance); active artifacts recalled |
+| HALT         | HALTED                      | (no clearance); any previously granted clearance is revoked or invalidated through a signed RevocationEvent |
 
 The AARM verdict is preserved as BOUND PROVENANCE through the entire chain
-(see `governance-evaluation.admissibility_determination_ref` / clearance
-`admissibility_determination_digest`); it is never used directly as execution
-authorization downstream.
+(see `AdmissibilityDetermination.evaluation_refs` → `GovernanceEvaluation`, and
+`GovernanceClearance.admissibility_determination_ref` /
+`admissibility_determination_digest` → `AdmissibilityDetermination`); it is never
+used directly as execution authorization downstream.
 
 ## 4. NO_LONGER_ADMISSIBLE — deliberately OUT of scope for initial mapping
 
@@ -72,8 +73,8 @@ belongs to continuous integrity: an action previously admissible that became
 invalid due to drift, revocation, stale evidence, or changed state. RACS already
 expresses this more precisely via STALE, REVOKED and HALTED post-clearance
 events. An initial HALT maps to HALTED (terminal for that ActionEnvelope version
-/ execution attempt); post-clearance revocation (REVOKED / STALE / HALTED)
-recedes the artifact back to a halted state.
+/ execution attempt); post-clearance revocation (REVOKED / STALE / HALTED) revokes or invalidates the
+artifact through a signed RevocationEvent.
 
 ## 5. Monotonicity (normative)
 

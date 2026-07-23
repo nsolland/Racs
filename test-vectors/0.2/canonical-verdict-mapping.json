@@ -22,7 +22,9 @@
       "constraints": {
         "machine_readable": true,
         "binds_exact_action": true,
-        "example_field": "capability=net.send, target=host:10.0.0.5, payload_unchanged=true"
+        "capability": "net.send",
+        "target": "host:10.0.0.5",
+        "payload_unchanged": true
       },
       "note": "Positive path: MODIFY only with explicit, machine-readable, action-binding constraints."
     },
@@ -60,9 +62,16 @@
       "clearance_decision": null,
       "clearance_admissibility_state": null,
       "clearance_issued": false,
-      "note": "Negative path: active artifacts must be recalled; terminal for this attempt."
+      "note": "Negative path: terminal for this attempt; any previously granted clearance is revoked or invalidated through a signed RevocationEvent."
     }
   ],
   "monotonicity_rule": "AARM verdict is bound provenance through the chain; never used directly as execution authorization. New evidence/authority/state requires NEW artifact, NEW ID, NEW digest.",
-  "no_longer_admissible": "OUT of scope for initial mapping; belongs to continuous integrity (STALE/REVOKED/HALTED post-clearance)."
+  "no_longer_admissible": "OUT of scope for initial mapping; belongs to continuous integrity (STALE/REVOKED/HALTED post-clearance).",
+  "provenance_chain": {
+    "AdmissibilityDetermination": {"evaluation_refs": "-> GovernanceEvaluation"},
+    "GovernanceClearance": {
+      "admissibility_determination_ref": "-> AdmissibilityDetermination",
+      "admissibility_determination_digest": "-> AdmissibilityDetermination"
+    }
+  }
 }
