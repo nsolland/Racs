@@ -1,20 +1,21 @@
-//! Conformance binary: reads JCS vectors and emits canonical + digest.
+//! Conformance binary for canonicalization and Stage 3C runtime vectors.
 //!
 //! Usage:
 //!   racs-v02-conformance --vector <jcs-vector-file>
-//!       prints JSON {got_canonical, got_digest, expected_canonical, expected_digest, match}
-//!       exits 0 if match else 1.
 //!   racs-v02-conformance --file <json-file>
-//!       prints JSON {canonical, digest}.
 //!   racs-v02-conformance --model-digest <golden-file>
-//!       parses the GovernanceEvaluation payload from a golden vector file and
-//!       prints JSON {digest} (used by the cross-language gate, stage 3B).
+//!   racs-v02-conformance --check <runtime-vector-file>
 
 use std::env;
 use std::fs;
 use std::process;
 
-use racs_v02::{canonical_string, sha256_digest, GovernanceEvaluation};
+use racs_v02::validation::check;
+use racs_v02::verification::{verify_clearance_binding, verify_evaluation_binding};
+use racs_v02::{
+    canonical_string, sha256_digest, AdmissibilityDetermination, GovernanceClearance,
+    GovernanceEvaluation,
+};
 use serde_json::Value;
 
 fn main() {
@@ -25,13 +26,20 @@ fn main() {
     match (mode, path) {
         (Some("--vector"), Some(p)) => {
             let text = fs::read_to_string(p).unwrap_or_else(|e| die(&format!("read {p}: {e}")));
-            let vec: Value = serde_json::from_str(&text).unwrap_or_else(|e| die(&format!("parse {p}: {e}")));
-            // support both official JCS vectors (input/expected_*) and RACS
-            // payload vectors (payload/canonical_payload/payload_digest)
+            let vec: Value =
+                serde_json::from_str(&text).unwrap_or_else(|e| die(&format!("parse {p}: {e}")));
             let (subject, exp_canon, exp_digest) = if vec.get("input").is_some() {
-                (vec["input"].clone(), vec["expected_canonical"].clone(), vec["expected_digest"].clone())
+                (
+                    vec["input"].clone(),
+                    vec["expected_canonical"].clone(),
+                    vec["expected_digest"].clone(),
+                )
             } else if vec.get("payload").is_some() {
-                (vec["payload"].clone(), vec["canonical_payload"].clone(), vec["payload_digest"].clone())
+                (
+                    vec["payload"].clone(),
+                    vec["canonical_payload"].clone(),
+                    vec["payload_digest"].clone(),
+                )
             } else {
                 die("vector has neither 'input' nor 'payload'");
             };
@@ -48,7 +56,9 @@ fn main() {
                 "match": ok,
             });
             println!("{}", serde_json::to_string_pretty(&out).unwrap());
-            if !ok { process::exit(1); }
+            if !ok {
+                process::exit(1);
+            }
         }
         (Some("--file"), Some(p)) => {
             let text = fs::read_to_string(p).unwrap_or_else(|e| die(&format!("read {p}: {e}")));
@@ -74,8 +84,92 @@ fn main() {
             let digest = ev.digest().unwrap();
             println!("{}", serde_json::json!({"digest": digest}));
         }
+        (Some("--check"), Some(p)) => {
+            let text = fs::read_to_string(p).unwrap_or_else(|e| die(&format!("read {p}: {e}")));
+            let vec: Value =
+                serde_json::from_str(&text).unwrap_or_else(|e| die(&format!("parse {p}: {e}")));
+            let artifact_type = vec["artifact_type"]
+                .as_str()
+                .unwrap_or_else(|| die("runtime vector has no artifact_type"));
+            let payload = &vec["payload"];
+            let port_a = check(artifact_type, payload);
+
+            let mut decision = port_a.decision.clone();
+            let mut reason_code = port_a.reason_code.clone();
+
+            if decision == "ACCEPT" {
+                if let Some(resolved) = vec.get("resolved") {
+                    if artifact_type == "GovernanceClearance" {
+                        let clearance: GovernanceClearance = serde_json::from_value(payload.clone())
+                            .unwrap_or_else(|e| die(&format!("clearance model: {e}")));
+                        let determination: AdmissibilityDetermination = serde_json::from_value(
+                            resolved["determination"].clone(),
+                        )
+                        .unwrap_or_else(|e| die(&format!("determination model: {e}")));
+                        let evaluation: GovernanceEvaluation = serde_json::from_value(
+                            resolved["evaluation"].clone(),
+                        )
+                        .unwrap_or_else(|e| die(&format!("evaluation model: {e}")));
+
+                        let mut verification =
+                            verify_evaluation_binding(&determination, &evaluation);
+                        if verification.decision == "ACCEPT" {
+                            verification =
+                                verify_clearance_binding(&clearance, &determination, None);
+                        }
+                        if verification.decision == "REJECT" {
+                            decision = verification.decision;
+                            reason_code = verification.reason_code;
+                        }
+                    } else if artifact_type == "AdmissibilityDetermination" {
+                        let determination: AdmissibilityDetermination =
+                            serde_json::from_value(payload.clone())
+                                .unwrap_or_else(|e| die(&format!("determination model: {e}")));
+                        let evaluation: GovernanceEvaluation = serde_json::from_value(
+                            resolved["evaluation"].clone(),
+                        )
+                        .unwrap_or_else(|e| die(&format!("evaluation model: {e}")));
+                        let verification =
+                            verify_evaluation_binding(&determination, &evaluation);
+                        if verification.decision == "REJECT" {
+                            decision = verification.decision;
+                            reason_code = verification.reason_code;
+                        }
+                    }
+                }
+            }
+
+            let mut out = serde_json::Map::new();
+            out.insert("id".into(), vec.get("id").cloned().unwrap_or(Value::Null));
+            out.insert("decision".into(), Value::String(decision.clone()));
+            out.insert("reason_code".into(), Value::String(reason_code.clone()));
+            if decision == "ACCEPT" {
+                if let Some(canonical) = port_a.canonical {
+                    out.insert("canonical".into(), Value::String(canonical));
+                }
+                if let Some(digest) = port_a.payload_digest {
+                    out.insert("payload_digest".into(), Value::String(digest));
+                }
+            }
+
+            let expected = vec.get("expected").cloned().unwrap_or(Value::Null);
+            let expected_reason = vec.get("reason_code").cloned().unwrap_or(Value::Null);
+            let matches = expected.as_str() == Some(decision.as_str())
+                && expected_reason.as_str() == Some(reason_code.as_str());
+            out.insert("expected".into(), expected);
+            out.insert("expected_reason_code".into(), expected_reason);
+            out.insert("match".into(), Value::Bool(matches));
+
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&Value::Object(out)).unwrap()
+            );
+            if !matches {
+                process::exit(1);
+            }
+        }
         _ => {
-            die("usage: racs-v02-conformance (--vector <file> | --file <file> | --model-digest <golden-file>)");
+            die("usage: racs-v02-conformance (--vector <file> | --file <file> | --model-digest <golden-file> | --check <runtime-vector-file>)");
         }
     }
 }
