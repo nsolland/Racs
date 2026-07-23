@@ -50,8 +50,9 @@
       "nsolland/valo-platform PRs — separate repository and work streams",
       "spec/ normative schemas unless a concrete defect requires it"
     ],
-    "status": "open_pr",
+    "status": "merged",
     "pr": "https://github.com/nsolland/Racs/pull/70",
+    "merge_commit": "30160d4ea685936249648972473a54afcbf99620",
     "ci": "repo-profile validate: PASS",
     "dependencies": "nsolland/Index#338 (canonical profile definition)"
   }
