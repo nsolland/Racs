@@ -14,6 +14,9 @@ These tests pin the locked 2026-07-23 contract:
     expected mapping (EXPECTED) BEFORE any schema validation, so changing a
     mapping value in the vector file is caught even if it stays schema-valid.
   - The golden vector file is integrity-checked against its .sha256 sidecar.
+  - evaluation_digest is computed from a REAL golden GovernanceEvaluation payload
+    (canonicalize + SHA-256) and MUST equal that artifact's payload_digest; the
+    AdmissibilityDetermination's binding digest MUST match (Rule 13 / payload digest).
 
 No runtime is exercised; only the normative JSON Schemas and golden vectors.
 """
@@ -30,6 +33,40 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SPEC_DIR = REPO_ROOT / "spec"
 VEC_DIR = REPO_ROOT / "test-vectors" / "0.2"
+
+
+def _rjcs_canonicalize(obj) -> str:
+    """Minimal RFC 8785 (JCS) canonicalizer matching RACS-JCS-1 rules 2-5:
+    sorted object keys, no insignificant whitespace, shortest number form.
+    This is the SAME canonicalization used to compute the golden
+    governance-evaluation-golden.json payload_digest, so the computed digest in
+    this test MUST reproduce the vector's stored digest byte-for-byte."""
+    if isinstance(obj, bool):
+        return "true" if obj else "false"
+    if obj is None:
+        return "null"
+    if isinstance(obj, int):
+        return str(obj)
+    if isinstance(obj, float):
+        s = repr(obj)
+        if "e" not in s and "." not in s:
+            s += ".0"
+        return s
+    if isinstance(obj, str):
+        return json.dumps(obj, ensure_ascii=False)
+    if isinstance(obj, list):
+        return "[" + ",".join(_rjcs_canonicalize(x) for x in obj) + "]"
+    if isinstance(obj, dict):
+        return "{" + ",".join(
+            json.dumps(k, ensure_ascii=False) + ":" + _rjcs_canonicalize(obj[k])
+            for k in sorted(obj.keys())
+        ) + "}"
+    raise TypeError(f"cannot canonicalize {type(obj)}")
+
+
+def _load_governance_evaluation_golden() -> dict:
+    with open(VEC_DIR / "governance-evaluation-golden.json") as fh:
+        return json.load(fh)
 
 # Independent, hardcoded canonical fasit. NOT derived from the golden file.
 # (aarm_verdict, expected REHT state, expected clearance decision,
@@ -302,6 +339,22 @@ def test_allow_requires_admissible_state():
     )
 
 
+def test_allow_with_constraints_rejected():
+    """An ALLOW is an exact grant; constraints belong to MODIFY. A constrained
+    ALLOW is semantically a MODIFY with the wrong verdict and MUST be rejected."""
+    clearance = _valid_clearance(
+        "ALLOW", "ADMISSIBLE",
+        constraints={
+            "machine_readable": True,
+            "binds_exact_action": True,
+            "rules": [
+                {"id": "r1", "predicate": "capability_eq", "target": "net.send"},
+            ],
+        },
+    )
+    assert not _validator("governance-clearance.schema.json").is_valid(clearance)
+
+
 def test_modify_requires_conditionally_admissible_state():
     """MODIFY MUST be paired with admissibility_state=CONDITIONALLY_ADMISSIBLE,
     never ADMISSIBLE (no cross-combination)."""
@@ -452,3 +505,66 @@ def test_golden_vector_sha256_sidecar_matches():
         f"golden vector .sha256 mismatch: expected {expected}, got {actual}. "
         f"Regenerate with: sha256sum {vec_path.name} > {sha_path.name}"
     )
+
+
+# ---- evaluation_digest normative computation (Rule 13 / payload digest) ----
+
+def test_evaluation_digest_computed_from_canonical_payload():
+    """evaluation_digest MUST equal the SHA-256 over the RACS-JCS-1 canonicalized
+    GovernanceEvaluation.payload, i.e. MUST equal that artifact's payload_digest.
+    This test uses a REAL golden GovernanceEvaluation vector (not a synthetic
+    digest) and actually canonicalizes + hashes the payload, so an implementation
+    that computes the digest differently (e.g. over the envelope/signature) will
+    not reproduce the stored digest."""
+    gev = _load_governance_evaluation_golden()
+
+    # 1. payload is a schema-valid GovernanceEvaluation
+    gev_schema = json.load(open(SPEC_DIR / "governance-evaluation-v0.2.schema.json"))
+    errs = sorted(
+        jsonschema.Draft202012Validator(gev_schema).iter_errors(gev["payload"]),
+        key=lambda e: list(e.path),
+    )
+    assert not errs, [e.message for e in errs]
+
+    # 2. re-canonicalize the stored payload and recompute the digest
+    recomputed = "sha256:" + hashlib.sha256(
+        _rjcs_canonicalize(gev["payload"]).encode("utf-8")
+    ).hexdigest()
+
+    # 3. recomputed digest MUST equal the vector's stored payload_digest
+    assert recomputed == gev["payload_digest"], (
+        f"recomputed payload digest {recomputed} != stored {gev['payload_digest']}"
+    )
+
+    # 4. the stored canonical_payload MUST canonicalize to the same digest
+    assert "sha256:" + hashlib.sha256(
+        gev["canonical_payload"].encode("utf-8")
+    ).hexdigest() == gev["payload_digest"]
+
+    # 5. the AdmissibilityDetermination's evaluation_digest MUST equal this
+    #    payload_digest (binding digests are payload digests, not wrappers)
+    vecs = _load_vectors()
+    gv_allow = next(v for v in vecs["vectors"] if v["aarm_verdict"] == "ALLOW")
+    assert len(gv_allow["evaluation_bindings"]) == 1
+    assert gv_allow["evaluation_bindings"][0]["evaluation_digest"] == gev["payload_digest"]
+
+
+def test_evaluation_digest_mutated_payload_fails():
+    """Mutating the GovernanceEvaluation payload MUST change its payload_digest,
+    so the stored evaluation_digest no longer matches (proving the digest is
+    bound to the exact content, not to the identifier)."""
+    gev = _load_governance_evaluation_golden()
+    original = gev["payload_digest"]
+
+    mutated = dict(gev["payload"])
+    mutated["decision"] = "DENY"  # change a field
+    recomputed = "sha256:" + hashlib.sha256(
+        _rjcs_canonicalize(mutated).encode("utf-8")
+    ).hexdigest()
+    assert recomputed != original, (
+        "mutating the payload must change the digest; canonicalizer is broken"
+    )
+    # the determination's stored binding digest must NOT match the mutated digest
+    vecs = _load_vectors()
+    gv_allow = next(v for v in vecs["vectors"] if v["aarm_verdict"] == "ALLOW")
+    assert gv_allow["evaluation_bindings"][0]["evaluation_digest"] != recomputed

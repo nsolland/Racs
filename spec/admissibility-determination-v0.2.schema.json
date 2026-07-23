@@ -18,7 +18,7 @@
     "state_digest":{"$ref":"#/$defs/digest"},
     "evaluation_bindings":{
       "$ref":"#/$defs/evaluation_bindings",
-      "description":"Cryptographic binding from this determination to the signed GovernanceEvaluation(s) it is based on. Each binding carries evaluation_ref (id of the GovernanceEvaluation artifact) and evaluation_digest. evaluation_digest MUST equal the SHA-256 (RACS-JCS-1 canonicalization, see CANONICALIZATION.md rule 13) over the GovernanceEvaluation payload, i.e. MUST equal that artifact's payload_digest. This is the normative definition of 'digest of the exact signed evaluation artifact': a digest over the canonicalized payload, not over any wrapper or signature."
+      "description":"Cryptographic binding from this determination to the signed GovernanceEvaluation(s) it is based on. Each binding carries evaluation_ref (id of the GovernanceEvaluation artifact) and evaluation_digest. evaluation_digest is the PAYLOAD DIGEST of the exact referenced, signature-verified GovernanceEvaluation artifact: SHA-256 over its RACS-JCS-1 canonicalized payload, i.e. MUST equal that artifact's payload_digest (CANONICALIZATION.md rule 13 / rule 9). It is NOT a digest over the envelope or signature."
     },
     "state": {"type": "string", "enum": ["ADMISSIBLE", "CONDITIONALLY_ADMISSIBLE", "NOT_ADMISSIBLE", "INDETERMINATE", "STALE", "REVOKED", "HALTED", "REQUIRES_STEP_UP"]},
     "conditions":{"type":"object"},

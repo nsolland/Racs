@@ -132,8 +132,9 @@ this is defined precisely as:
 
 > `evaluation_digest = SHA-256( canonicalize( GovernanceEvaluation.payload ) )`
 > and therefore MUST equal that artifact's `payload_digest` (CANONICALIZATION.md
-> rule 9). It is NOT a digest over the artifact envelope, the signature, or any
-> wrapper.
+> rule 9). It is the **payload digest** of the exact referenced, signature-verified
+> GovernanceEvaluation artifact, NOT a digest over the envelope, the signature, or
+> any wrapper.
 
 A determination MUST verify `evaluation_digest == payload_digest` of the
 referenced, signature-verified GovernanceEvaluation before trusting the binding.

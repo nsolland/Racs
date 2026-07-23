@@ -11,7 +11,7 @@
       "clearance_admissibility_state": "ADMISSIBLE",
       "clearance_issued": true,
       "evaluation_bindings": [
-        {"evaluation_ref": "vaig:gv_allow", "evaluation_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"}
+        {"evaluation_ref": "vaig:gv_allow", "evaluation_digest": "sha256:58c8431515435642ee92d148a0636f2b20c5292c843fc8977a1fda3f5d94644c"}
       ],
       "note": "Positive path: full ALLOW with no constraints."
     },

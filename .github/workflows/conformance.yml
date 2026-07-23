@@ -31,9 +31,10 @@ jobs:
       - name: Run canonical contract conformance suite
         run: |
           python -m pytest tests/compliance/test_canonical_contract.py -v
-      - name: Verify golden vector .sha256 sidecar
+      - name: Verify golden vector .sha256 sidecars
         run: |
           sha256sum -c test-vectors/0.2/canonical-verdict-mapping.sha256
+          sha256sum -c test-vectors/0.2/governance-evaluation-golden.sha256
 
   full-compliance:
     name: Full compliance suite (baseline reference)
