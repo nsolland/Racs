@@ -1,0 +1,9 @@
+{
+  "name": "escaping: backslash, quote, control, non-BMP emoji",
+  "input": {
+    "esc": "\\\"\b\f\n\r\t\u000b\f\u001f",
+    "emoji": "😀 emoji"
+  },
+  "expected_canonical": "{\"emoji\":\"😀 emoji\",\"esc\":\"\\\\\\\"\\b\\f\\n\\r\\t\\u000b\\f\\u001f\"}",
+  "expected_digest": "sha256:e56ea4f5f255fd1be63c4c53f9d9b4464076075661cc6e19584909b3b7346b27"
+}

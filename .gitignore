@@ -7,3 +7,5 @@ build/
 .venv/
 env/
 venv/
+target/
+node_modules/

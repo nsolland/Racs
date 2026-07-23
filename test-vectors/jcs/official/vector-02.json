@@ -1,0 +1,15 @@
+{
+  "name": "unicode and escaping: non-ASCII must be \\uXXXX, control chars escaped",
+  "input": {
+    "strings": [
+      "€é",
+      "EURO!.!.\\\\",
+      "line\nbreak\ttab",
+      "nul\u0000end",
+      "😀 emoji",
+      "quote\"and\\slash"
+    ]
+  },
+  "expected_canonical": "{\"strings\":[\"€é\",\"EURO!.!.\\\\\\\\\",\"line\\nbreak\\ttab\",\"nul\\u0000end\",\"😀 emoji\",\"quote\\\"and\\\\slash\"]}",
+  "expected_digest": "sha256:7382a36eaa1d575a9de96ba5a6e631efce027a39f420022e9877f29693f2f513"
+}

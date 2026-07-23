@@ -1,0 +1,20 @@
+{
+  "name": "rfc8785 appendix A style: mixed object preserving key order by sort",
+  "input": {
+    "a": 1,
+    "B": 2,
+    "c": [
+      1,
+      2,
+      {
+        "d": "ø",
+        "e": -0.0,
+        "f": 10000000000.0
+      }
+    ],
+    "g": null,
+    "h": true
+  },
+  "expected_canonical": "{\"B\":2,\"a\":1,\"c\":[1,2,{\"d\":\"ø\",\"e\":0,\"f\":10000000000}],\"g\":null,\"h\":true}",
+  "expected_digest": "sha256:0bf08163e767ec825e23a2206451bbeae41f7660fb094b0b72c59895b319d37c"
+}
