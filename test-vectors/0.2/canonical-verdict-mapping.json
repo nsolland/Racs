@@ -1,0 +1,68 @@
+{
+  "title": "Canonical VALO Verdict Mapping — golden vectors",
+  "base_commit": "valo-platform d99d2f96",
+  "schema_version": "0.2",
+  "vectors": [
+    {
+      "id": "gv_allow",
+      "aarm_verdict": "ALLOW",
+      "admissibility_determination": "ADMISSIBLE",
+      "clearance_decision": "ALLOW",
+      "clearance_admissibility_state": "ADMISSIBLE",
+      "clearance_issued": true,
+      "note": "Positive path: full ALLOW with no constraints."
+    },
+    {
+      "id": "gv_modify",
+      "aarm_verdict": "MODIFY",
+      "admissibility_determination": "CONDITIONALLY_ADMISSIBLE",
+      "clearance_decision": "MODIFY",
+      "clearance_admissibility_state": "CONDITIONALLY_ADMISSIBLE",
+      "clearance_issued": true,
+      "constraints": {
+        "machine_readable": true,
+        "binds_exact_action": true,
+        "example_field": "capability=net.send, target=host:10.0.0.5, payload_unchanged=true"
+      },
+      "note": "Positive path: MODIFY only with explicit, machine-readable, action-binding constraints."
+    },
+    {
+      "id": "gv_defer",
+      "aarm_verdict": "DEFER",
+      "admissibility_determination": "INDETERMINATE",
+      "clearance_decision": null,
+      "clearance_admissibility_state": null,
+      "clearance_issued": false,
+      "note": "Negative path: no clearance emitted."
+    },
+    {
+      "id": "gv_deny",
+      "aarm_verdict": "DENY",
+      "admissibility_determination": "NOT_ADMISSIBLE",
+      "clearance_decision": null,
+      "clearance_admissibility_state": null,
+      "clearance_issued": false,
+      "note": "Negative path: terminal for this ActionEnvelope version; no clearance."
+    },
+    {
+      "id": "gv_step_up",
+      "aarm_verdict": "STEP_UP",
+      "admissibility_determination": "REQUIRES_STEP_UP",
+      "clearance_decision": null,
+      "clearance_admissibility_state": null,
+      "clearance_issued": false,
+      "note": "Negative path: requires stronger authority + new determination before any ALLOW."
+    },
+    {
+      "id": "gv_halt",
+      "aarm_verdict": "HALT",
+      "admissibility_determination": "HALTED",
+      "clearance_decision": null,
+      "clearance_admissibility_state": null,
+      "clearance_issued": false,
+      "note": "Negative path: active artifacts must be recalled; terminal for this attempt."
+    }
+  ],
+  "monotonicity_rule": "AARM verdict is bound provenance through the chain; never used directly as execution authorization. New evidence/authority/state requires NEW artifact, NEW ID, NEW digest.",
+  "no_longer_admissible": "OUT of scope for initial mapping; belongs to continuous integrity (STALE/REVOKED/HALTED post-clearance)."
+}

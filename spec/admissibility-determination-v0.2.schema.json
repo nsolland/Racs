@@ -17,7 +17,7 @@
     "purpose_digest":{"$ref":"#/$defs/digest"},
     "state_digest":{"$ref":"#/$defs/digest"},
     "evaluation_refs":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},
-    "state":{"type":"string","enum":["ADMISSIBLE","CONDITIONALLY_ADMISSIBLE","NOT_ADMISSIBLE","INDETERMINATE","STALE","REVOKED","HALTED"]},
+    "state": {"type": "string", "enum": ["ADMISSIBLE", "CONDITIONALLY_ADMISSIBLE", "NOT_ADMISSIBLE", "INDETERMINATE", "STALE", "REVOKED", "HALTED", "REQUIRES_STEP_UP"]},
     "conditions":{"type":"object"},
     "reason_codes":{"type":"array","uniqueItems":true,"items":{"type":"string","minLength":1}},
     "determined_at":{"type":"string","format":"date-time"},
