@@ -50,7 +50,9 @@
       "nsolland/valo-platform PRs — separate repository and work streams",
       "spec/ normative schemas unless a concrete defect requires it"
     ],
-    "status": "in_progress",
+    "status": "open_pr",
+    "pr": "https://github.com/nsolland/Racs/pull/70",
+    "ci": "repo-profile validate: PASS",
     "dependencies": "nsolland/Index#338 (canonical profile definition)"
   }
 }
