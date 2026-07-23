@@ -47,7 +47,7 @@ export interface EvaluationBinding {
   evaluation_digest: string; // sha256:<64 hex>
 }
 
-// --- Typed model classes (pure data + canonical helpers) -------------------
+// --- Typed model classes (pure data + canonical helpers) --------------------
 
 export class GovernanceEvaluation implements Canonicalizable {
   evaluation_id!: string;
@@ -139,3 +139,8 @@ export class GovernanceClearance implements Canonicalizable {
     return sha256Digest(this);
   }
 }
+
+// --- Stage 3C: runtime conformance (Port A schema + Port B cross-artifact) ---
+
+export * from "./validation.js";
+export * from "./verification.js";

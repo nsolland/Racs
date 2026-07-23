@@ -1,0 +1,25 @@
+{
+  "id": "ev_reject_missing_required",
+  "artifact_type": "GovernanceEvaluation",
+  "expected": "REJECT",
+  "reason_code": "SCHEMA_INVALID",
+  "payload": {
+    "evaluation_id": "ev-001",
+    "action_id": "act-001",
+    "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "tenant_id": "tenant-1",
+    "evaluator_version": "1.0.0",
+    "decision": "ALLOW",
+    "authority_status": "PRESENT_AND_VALID",
+    "policy_status": "PRESENT_AND_VALID",
+    "evidence_status": "PRESENT_AND_VALID",
+    "purpose_status": "PRESENT_AND_VALID",
+    "state_status": "PRESENT_AND_VALID",
+    "risk_status": "PRESENT_AND_VALID",
+    "reason_codes": [
+      "OK"
+    ],
+    "evaluated_at": "2026-07-23T12:00:00Z",
+    "valid_until": "2026-07-24T12:00:00Z"
+  }
+}

@@ -9,7 +9,12 @@
 //!   - GovernanceClearance
 //! These are pure data types + canonicalization helpers (no JSON-Schema
 //! validation). Each model can canonicalize itself and compute its sha256 digest.
+//!
+//! 3C (runtime conformance) is provided by the `validation` and `verification`
+//! modules, layered on top of these pure types.
 
+pub mod validation;
+pub mod verification;
 use serde::{Deserialize, Serialize};
 use serde_jcs::to_string as canonicalize;
 use sha2::{Digest, Sha256};

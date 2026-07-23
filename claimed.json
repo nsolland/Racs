@@ -1,1 +1,26 @@
-{}
+{
+  "hermes/runtime-conformance-3c": {
+    "repo": "nsolland/Racs",
+    "stage": "3C",
+    "base_sha": "7d6a7d981a6c91804b51cab6f844f7ee1b504eae",
+    "branch": "hermes/bindings-runtime-3c",
+    "draft_pr": "https://github.com/nsolland/Racs/pull/68",
+    "owner": "Hermes",
+    "scope": "runtime schema conformance and cross-artifact verification",
+    "claimed_paths": [
+      "reference/bindings/v0.2/python/src/racs_v02/validation.py",
+      "reference/bindings/v0.2/python/src/racs_v02/verification.py",
+      "reference/bindings/v0.2/python/tests/test_validation.py",
+      "test-vectors/0.2/runtime-validation/"
+    ],
+    "must_not_touch": [
+      "nsolland/valo-platform PRs (#879/#870/#874 etc.) — irrelevant to this branch",
+      "3A/3B merged contract schemas unless a concrete contract defect requires it"
+    ],
+    "status": "in_progress",
+    "last_verified_head": "ca27033",
+    "tests": "reference/bindings/v0.2/python/tests/test_validation.py",
+    "dependencies": "3B (#67) merged at base SHA 7d6a7d9",
+    "merged": false
+  }
+}

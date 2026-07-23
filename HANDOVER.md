@@ -1,163 +1,34 @@
-# HANDOVER — valo-platform cross-shift state
+# HANDOVER — RACS Stage 3C
 
+## Active working stream
 
-## NIGHT STATE — 2026-07-13T12:39:44
+| Field | Value |
+|---|---|
+| Repo | nsolland/Racs |
+| Base SHA | 7d6a7d981a6c91804b51cab6f844f7ee1b504eae (origin/main, verified) |
+| Branch | hermes/bindings-runtime-3c |
+| Draft PR | https://github.com/nsolland/Racs/pull/68 |
+| Owner/agent | Hermes |
+| Stage | 3C — runtime schema conformance and cross-artifact verification |
+| Scope | runtime schema conformance + cross-artifact verification for RACS v0.2 contract schemas |
+| Claimed paths | reference/bindings/v0.2/python/src/racs_v02/validation.py, verification.py, tests/test_validation.py, test-vectors/0.2/runtime-validation/ |
+| Must not touch | valo-platform PRs (#879/#870/#874 etc.); 3A/3B merged schemas unless contract defect |
+| Dependencies | 3B (#67) merged at base |
+| Status | in_progress |
+| Last verified head | ca27033 |
+| Tests | reference/bindings/v0.2/python/tests/test_validation.py |
+| CI run | pending on draft PR |
+| Merge status | unmerged (draft) |
 
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
+## Rule compliance (new working-anchor rule)
+- [x] Canonical main-SHA documented (7d6a7d9)
+- [x] Own branch created from that SHA (hermes/bindings-runtime-3c)
+- [x] Draft PR created immediately (PR #68, before further code)
+- [x] Work claimed in claimed.json
+- [x] Boundary + dependencies recorded in HANDOVER.md
 
-## NIGHT STATE — 2026-07-13T14:41:10
+## Other streams (irrelevant to this branch)
+- nsolland/valo-platform open PRs (#879 Vectorly/BlueBox, #870 verification-factory, #874 Leiden, #868 SkillOpt, #862/#860/#856/#853/#823/#814 drafts) are separate agents' streams. No file overlap with RACS v0.2 bindings. Do not touch.
 
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-13T16:43:18
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-13T18:45:25
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-13T20:47:11
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-13T22:48:31
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-14T00:50:15
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-14T02:51:34
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-14T04:53:22
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-14T06:54:44
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-14T08:57:01
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-14T11:09:51
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-14T13:12:55
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-14T15:14:54
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-14T17:18:14
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-14T19:26:08
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, agent/foreman-issue-4, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-4; claims now: {}
-
-## NIGHT STATE — 2026-07-14T21:31:16
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, agent/foreman-issue-4, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-4; claims now: {}
-
-## NIGHT STATE — 2026-07-14T23:35:18
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, agent/foreman-issue-4, hermes/audit-racs-envelope-empty-context, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-15T01:38:19
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, agent/foreman-issue-4, hermes/audit-racs-envelope-empty-context, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-1; claims now: {}
-
-## NIGHT STATE — 2026-07-15T03:41:49
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, agent/foreman-issue-12, agent/foreman-issue-4, hermes/audit-racs-envelope-empty-context, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-12; claims now: {}
-
-## NIGHT STATE — 2026-07-15T05:44:42
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, agent/foreman-issue-12, agent/foreman-issue-4, hermes/audit-racs-envelope-empty-context, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-12; claims now: {}
-
-## NIGHT STATE — 2026-07-15T07:48:54
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, agent/foreman-issue-12, agent/foreman-issue-28, agent/foreman-issue-4, hermes/audit-racs-envelope-empty-context, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-28; claims now: {}
-
-## NIGHT STATE — 2026-07-15T09:52:03
-
-- Actor: Hermes foreman (DeepSeek)
-- Open branches: agent/foreman-issue-1, agent/foreman-issue-12, agent/foreman-issue-28, agent/foreman-issue-4, hermes/audit-racs-envelope-empty-context, hermes/racs-build-validators
-- Claims: {}
-- Note: branch agent/foreman-issue-28; claims now: {}
+## Note on repo location
+Working copy is /home/njaal/all-repos/Racs (NOT ~/Racs). ~/Racs had a stray empty branch (hermes/runtime-conformance-3c) which was deleted locally and remotely on 2026-07-23.
