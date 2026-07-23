@@ -3,7 +3,7 @@
 //   racs-v02 --vector <jcs-vector-file>  -> {got_canonical,got_digest,...,match}
 //   racs-v02 --file <json-file>          -> {canonical, digest}
 import { readFileSync } from "node:fs";
-import { canonicalString, sha256Digest } from "./index.js";
+import { canonicalString, sha256Digest, GovernanceEvaluation } from "./index.js";
 
 function die(msg: string): never {
   process.stderr.write(`error: ${msg}\n`);
@@ -35,6 +35,11 @@ if (mode === "--vector" && path) {
 } else if (mode === "--file" && path) {
   const val = JSON.parse(readFileSync(path, "utf-8"));
   console.log(JSON.stringify({ canonical: canonicalString(val), digest: sha256Digest(val) }));
+} else if (mode === "--model-digest" && path) {
+  const raw = JSON.parse(readFileSync(path, "utf-8"));
+  const payload = raw.payload as Record<string, unknown>;
+  const ev = Object.assign(new GovernanceEvaluation(), payload) as GovernanceEvaluation;
+  console.log(JSON.stringify({ digest: ev.digest() }));
 } else {
-  die("usage: racs-v02 (--vector <file> | --file <file>)");
+  die("usage: racs-v02 (--vector <file> | --file <file> | --model-digest <golden-file>)");
 }

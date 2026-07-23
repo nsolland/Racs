@@ -1,7 +1,7 @@
 {
   "name": "@racs/v0.2",
   "version": "0.2.0",
-  "description": "RACS v0.2 canonical contract bindings — canonicalization kernel (3A)",
+  "description": "RACS v0.2 canonical contract bindings — canonicalization kernel (3A) + typed model bindings (3B)",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "tsc && node --test dist/test/conformance.test.js"
+    "test": "tsc && node --test dist/test/conformance.test.js dist/test/models.test.js"
   },
   "dependencies": {
     "json-canonicalize": "^2.0.0"

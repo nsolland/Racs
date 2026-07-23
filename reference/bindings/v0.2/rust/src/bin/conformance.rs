@@ -6,12 +6,15 @@
 //!       exits 0 if match else 1.
 //!   racs-v02-conformance --file <json-file>
 //!       prints JSON {canonical, digest}.
+//!   racs-v02-conformance --model-digest <golden-file>
+//!       parses the GovernanceEvaluation payload from a golden vector file and
+//!       prints JSON {digest} (used by the cross-language gate, stage 3B).
 
 use std::env;
 use std::fs;
 use std::process;
 
-use racs_v02::{canonical_string, sha256_digest};
+use racs_v02::{canonical_string, sha256_digest, GovernanceEvaluation};
 use serde_json::Value;
 
 fn main() {
@@ -49,13 +52,30 @@ fn main() {
         }
         (Some("--file"), Some(p)) => {
             let text = fs::read_to_string(p).unwrap_or_else(|e| die(&format!("read {p}: {e}")));
-            let val: Value = serde_json::from_str(&text).unwrap_or_else(|e| die(&format!("parse {p}: {e}")));
+            let val: Value =
+                serde_json::from_str(&text).unwrap_or_else(|e| die(&format!("parse {p}: {e}")));
             let canon = canonical_string(&val).unwrap();
             let digest = sha256_digest(&val).unwrap();
-            println!("{}", serde_json::json!({"canonical": canon, "digest": digest}));
+            println!(
+                "{}",
+                serde_json::json!({"canonical": canon, "digest": digest})
+            );
+        }
+        (Some("--model-digest"), Some(p)) => {
+            let text = fs::read_to_string(p).unwrap_or_else(|e| die(&format!("read {p}: {e}")));
+            let vec: Value =
+                serde_json::from_str(&text).unwrap_or_else(|e| die(&format!("parse {p}: {e}")));
+            let payload = vec
+                .get("payload")
+                .cloned()
+                .unwrap_or_else(|| die("golden has no 'payload'"));
+            let ev: GovernanceEvaluation =
+                serde_json::from_value(payload).unwrap_or_else(|e| die(&format!("model: {e}")));
+            let digest = ev.digest().unwrap();
+            println!("{}", serde_json::json!({"digest": digest}));
         }
         _ => {
-            die("usage: racs-v02-conformance (--vector <file> | --file <file>)");
+            die("usage: racs-v02-conformance (--vector <file> | --file <file> | --model-digest <golden-file>)");
         }
     }
 }
