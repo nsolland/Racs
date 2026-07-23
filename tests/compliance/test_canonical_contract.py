@@ -5,12 +5,14 @@ These tests pin the locked 2026-07-23 contract:
   - REHT AdmissibilityDetermination accepts REQUIRES_STEP_UP (the only addition).
   - GovernanceClearance is positive-only: ALLOW / MODIFY-with-constraints only;
     DEFER / DENY / STEP_UP / HALT MUST NOT yield a clearance.
-  - MODIFY clearance MUST bind a machine-readable, action-binding constraint set
-    (enforced by the schema via if/then, not just by documentation).
+  - MODIFY clearance MUST bind a machine-readable, action-binding constraint SET
+    (enforced by the schema via if/then + allOf, not just by booleans).
+  - AdmissibilityDetermination MUST cryptographically bind its GovernanceEvaluation
+    via evaluation_bindings [{evaluation_ref, evaluation_digest}], not bare strings.
   - AARM verdict is provenance, never usable directly as a clearance decision.
-  - The golden vectors' MAPPING is actually validated: each vector is materialised
-    into the normative AdmissibilityDetermination and GovernanceClearance payloads
-    and checked against the schemas.
+  - The golden vectors' MAPPING is validated against an INDEPENDENT hardcoded
+    expected mapping (EXPECTED) BEFORE any schema validation, so changing a
+    mapping value in the vector file is caught even if it stays schema-valid.
   - The golden vector file is integrity-checked against its .sha256 sidecar.
 
 No runtime is exercised; only the normative JSON Schemas and golden vectors.
@@ -29,6 +31,18 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SPEC_DIR = REPO_ROOT / "spec"
 VEC_DIR = REPO_ROOT / "test-vectors" / "0.2"
 
+# Independent, hardcoded canonical fasit. NOT derived from the golden file.
+# (aarm_verdict, expected REHT state, expected clearance decision,
+#  clearance issued?)
+EXPECTED = {
+    "ALLOW":   ("ADMISSIBLE",              "ALLOW", True),
+    "MODIFY":  ("CONDITIONALLY_ADMISSIBLE", "MODIFY", True),
+    "DEFER":   ("INDETERMINATE",           None,    False),
+    "DENY":    ("NOT_ADMISSIBLE",          None,    False),
+    "STEP_UP": ("REQUIRES_STEP_UP",        None,    False),
+    "HALT":    ("HALTED",                  None,    False),
+}
+
 
 def _load_schema(name: str) -> dict:
     with open(SPEC_DIR / name) as fh:
@@ -43,7 +57,7 @@ def _digest() -> str:
     return "sha256:" + "a" * 64
 
 
-def _valid_admissibility(state: str, evaluation_refs=None) -> dict:
+def _valid_admissibility(state: str, evaluation_bindings=None) -> dict:
     """A minimally complete AdmissibilityDetermination payload."""
     return {
         "determination_id": "det_test_001",
@@ -56,7 +70,10 @@ def _valid_admissibility(state: str, evaluation_refs=None) -> dict:
         "evidence_digest": _digest(),
         "purpose_digest": _digest(),
         "state_digest": _digest(),
-        "evaluation_refs": evaluation_refs or ["vaig:test:001"],
+        "evaluation_bindings": evaluation_bindings or [
+            {"evaluation_ref": "vaig:test:001",
+             "evaluation_digest": _digest()},
+        ],
         "state": state,
         "determined_at": "2026-07-14T18:00:00Z",
         "valid_until": "2026-07-14T18:05:00Z",
@@ -64,7 +81,9 @@ def _valid_admissibility(state: str, evaluation_refs=None) -> dict:
     }
 
 
-def _valid_clearance(decision: str | None, admissibility_state: str | None, constraints: dict | None = None) -> dict:
+def _valid_clearance(decision: str | None, admissibility_state: str | None,
+                     constraints: dict | None = None,
+                     evaluation_bindings: list | None = None) -> dict:
     clr = {
         "clearance_id": "clr_test_002",
         "action_id": "act_test_001",
@@ -95,6 +114,8 @@ def _valid_clearance(decision: str | None, admissibility_state: str | None, cons
     }
     if constraints is not None:
         clr["constraints"] = constraints
+    if evaluation_bindings is not None:
+        clr["evaluation_bindings"] = evaluation_bindings
     return clr
 
 
@@ -146,6 +167,32 @@ def test_all_admissibility_states_validate(state: str):
     )
 
 
+# ---- AdmissibilityDetermination MUST bind its evaluation cryptographically ----
+
+def test_admissibility_requires_structured_evaluation_bindings_not_bare_strings():
+    """evaluation_refs (bare string list) is removed; evaluation_bindings with
+    ref + digest is required and MUST validate."""
+    v = _validator("admissibility-determination-v0.2.schema.json")
+    # Bare string array MUST now fail.
+    bad = _valid_admissibility("ADMISSIBLE")
+    bad["evaluation_bindings"] = ["vaig:test:001"]
+    assert not v.is_valid(bad)
+    # Structured ref + digest MUST pass.
+    good = _valid_admissibility("ADMISSIBLE", evaluation_bindings=[
+        {"evaluation_ref": "vaig:test:001", "evaluation_digest": _digest()},
+    ])
+    assert v.is_valid(good)
+
+
+def test_admissibility_binding_missing_digest_rejected():
+    """A binding without evaluation_digest MUST fail."""
+    v = _validator("admissibility-determination-v0.2.schema.json")
+    bad = _valid_admissibility("ADMISSIBLE", evaluation_bindings=[
+        {"evaluation_ref": "vaig:test:001"},
+    ])
+    assert not v.is_valid(bad)
+
+
 # ---- GovernanceClearance is positive-only ----
 
 def test_clearance_allow_valid():
@@ -154,13 +201,27 @@ def test_clearance_allow_valid():
     )
 
 
-def test_clearance_modify_with_constraints_valid():
+def test_clearance_modify_with_rules_valid():
     assert _validator("governance-clearance.schema.json").is_valid(
         _valid_clearance("MODIFY", "CONDITIONALLY_ADMISSIBLE", constraints={
             "machine_readable": True,
             "binds_exact_action": True,
-            "capability": "net.send",
-            "target": "host:10.0.0.5",
+            "rules": [
+                {"id": "r1", "predicate": "capability_eq",
+                 "target": "net.send", "value": "net.send"},
+            ],
+        })
+    )
+
+
+def test_clearance_modify_with_constraint_set_ref_valid():
+    """Alternative: a constraint_set_ref + digest (no inline rules) is valid."""
+    assert _validator("governance-clearance.schema.json").is_valid(
+        _valid_clearance("MODIFY", "CONDITIONALLY_ADMISSIBLE", constraints={
+            "machine_readable": True,
+            "binds_exact_action": True,
+            "constraint_set_ref": "racs://constraints/cs-123",
+            "constraint_set_digest": _digest(),
         })
     )
 
@@ -178,7 +239,7 @@ def test_clearance_negative_verdicts_rejected(verdict: str, state: str):
     )
 
 
-# ---- MODIFY rule: schema if/then enforces a binding constraint set ----
+# ---- MODIFY rule: schema if/then + allOf enforce a binding constraint SET ----
 
 def test_modify_without_constraints_rejected():
     """decision=MODIFY with NO constraints key MUST fail (if/then requires it)."""
@@ -194,8 +255,19 @@ def test_modify_with_empty_constraints_rejected():
     )
 
 
+def test_modify_self_attesting_only_rejected():
+    """Boolean-only constraints (no rules, no constraint_set_ref+digest) MUST fail.
+    Self-attestation (machine_readable/binds_exact_action) is NOT a constraint set."""
+    assert not _validator("governance-clearance.schema.json").is_valid(
+        _valid_clearance("MODIFY", "CONDITIONALLY_ADMISSIBLE", constraints={
+            "machine_readable": True,
+            "binds_exact_action": True,
+        })
+    )
+
+
 def test_modify_with_non_binding_constraints_rejected():
-    """decision=MODIFY with constraints that do NOT bind the exact action MUST fail."""
+    """binds_exact_action=False MUST fail."""
     assert not _validator("governance-clearance.schema.json").is_valid(
         _valid_clearance("MODIFY", "CONDITIONALLY_ADMISSIBLE", constraints={
             "machine_readable": True,
@@ -205,7 +277,7 @@ def test_modify_with_non_binding_constraints_rejected():
 
 
 def test_modify_with_non_machine_readable_constraints_rejected():
-    """decision=MODIFY with machine_readable=False MUST fail."""
+    """machine_readable=False MUST fail."""
     assert not _validator("governance-clearance.schema.json").is_valid(
         _valid_clearance("MODIFY", "CONDITIONALLY_ADMISSIBLE", constraints={
             "machine_readable": False,
@@ -221,6 +293,17 @@ def test_modify_constraints_present_but_wrong_type_rejected():
     assert not _validator("governance-clearance.schema.json").is_valid(clr)
 
 
+def test_modify_rules_empty_rejected():
+    """rules present but empty (minItems:1) MUST fail."""
+    assert not _validator("governance-clearance.schema.json").is_valid(
+        _valid_clearance("MODIFY", "CONDITIONALLY_ADMISSIBLE", constraints={
+            "machine_readable": True,
+            "binds_exact_action": True,
+            "rules": [],
+        })
+    )
+
+
 # ---- AARM verdict is provenance, never a clearance decision ----
 
 def test_aarm_verdict_not_directly_usable_as_clearance():
@@ -233,7 +316,7 @@ def test_aarm_verdict_not_directly_usable_as_clearance():
         )
 
 
-# ---- The golden vectors' MAPPING is actually validated ----
+# ---- The golden vectors' MAPPING is validated against an INDEPENDENT fasit ----
 
 def _load_vectors() -> dict:
     with open(VEC_DIR / "canonical-verdict-mapping.json") as fh:
@@ -241,18 +324,37 @@ def _load_vectors() -> dict:
 
 
 @pytest.mark.parametrize("vector", _load_vectors()["vectors"], ids=lambda v: v["id"])
-def test_golden_vector_mapping_materialises_and_validates(vector: dict):
-    """Each golden vector is materialised into the normative
-    AdmissibilityDetermination and (where applicable) GovernanceClearance
-    payloads and validated against the schemas. This pins the EXACT mapping
-    values, so changing a mapping value breaks the test."""
+def test_golden_vector_mapping_matches_independent_fasit(vector: dict):
+    """Each golden vector MUST match the hardcoded EXPECTED mapping BEFORE any
+    schema validation. This is the independent fasit: changing a mapping value in
+    the vector file (e.g. DEFER -> NOT_ADMISSIBLE) breaks this test even though
+    both are valid enum values."""
+    exp_state, exp_decision, exp_issued = EXPECTED[vector["aarm_verdict"]]
+    assert vector["admissibility_determination"] == exp_state, (
+        f"{vector['id']}: expected REHT state {exp_state} for "
+        f"AARM {vector['aarm_verdict']}, got {vector['admissibility_determination']}"
+    )
+    assert vector["clearance_decision"] == exp_decision, (
+        f"{vector['id']}: expected clearance decision {exp_decision} for "
+        f"AARM {vector['aarm_verdict']}, got {vector['clearance_decision']}"
+    )
+    assert vector["clearance_issued"] == exp_issued, (
+        f"{vector['id']}: expected clearance_issued {exp_issued} for "
+        f"AARM {vector['aarm_verdict']}, got {vector['clearance_issued']}"
+    )
+
+
+@pytest.mark.parametrize("vector", _load_vectors()["vectors"], ids=lambda v: v["id"])
+def test_golden_vector_materialises_and_validates(vector: dict):
+    """After the independent fasit check, each vector is materialised into the
+    normative AdmissibilityDetermination and (where applicable)
+    GovernanceClearance payloads and validated against the schemas."""
     adm_v = _validator("admissibility-determination-v0.2.schema.json")
     clr_v = _validator("governance-clearance.schema.json")
 
-    # AdmissibilityDetermination side of the mapping.
     determination = _valid_admissibility(
         state=vector["admissibility_determination"],
-        evaluation_refs=[f"vaig:{vector['aarm_verdict'].lower()}"],
+        evaluation_bindings=vector["evaluation_bindings"],
     )
     assert adm_v.is_valid(determination), (
         f"{vector['id']}: admissibility determination for "
@@ -260,7 +362,6 @@ def test_golden_vector_mapping_materialises_and_validates(vector: dict):
     )
 
     if vector["clearance_issued"]:
-        # GovernanceClearance side of the mapping.
         clr = _valid_clearance(
             decision=vector["clearance_decision"],
             admissibility_state=vector["clearance_admissibility_state"],
@@ -269,11 +370,8 @@ def test_golden_vector_mapping_materialises_and_validates(vector: dict):
         assert clr_v.is_valid(clr), (
             f"{vector['id']}: clearance {vector['clearance_decision']} should validate"
         )
-        # Provenance chain: clearance MUST reference the determination.
         assert clr["admissibility_determination_ref"] == determination["determination_id"]
     else:
-        # Negative mapping: building a clearance from a null decision MUST fail,
-        # proving no clearance is emitted for this AARM verdict.
         assert vector["clearance_decision"] is None
         assert not clr_v.is_valid(_valid_clearance(None, None)), (
             f"{vector['id']}: no clearance may be emitted for "
@@ -293,7 +391,6 @@ def test_golden_vector_sha256_sidecar_matches():
     actual = hashlib.sha256(content).hexdigest()
 
     sidecar = sha_path.read_text().strip()
-    # Format: "<hash>  <path>" (GNU sha256sum) or bare "<hash>".
     expected = sidecar.split()[0]
     assert actual == expected, (
         f"golden vector .sha256 mismatch: expected {expected}, got {actual}. "

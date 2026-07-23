@@ -61,10 +61,14 @@ as clearance variants.
 | HALT         | HALTED                      | (no clearance); any previously granted clearance is revoked or invalidated through a signed RevocationEvent |
 
 The AARM verdict is preserved as BOUND PROVENANCE through the entire chain
-(see `AdmissibilityDetermination.evaluation_refs` → `GovernanceEvaluation`, and
+(see `AdmissibilityDetermination.evaluation_bindings`
+`[{evaluation_ref, evaluation_digest}]` → signed `GovernanceEvaluation`, and
 `GovernanceClearance.admissibility_determination_ref` /
 `admissibility_determination_digest` → `AdmissibilityDetermination`); it is never
-used directly as execution authorization downstream.
+used directly as execution authorization downstream. The evaluation is bound by
+**content digest**, not by a bare identifier: `evaluation_bindings` carries both
+the reference and the `sha256:` digest of the exact signed GovernanceEvaluation,
+so the determination cannot be silently pointed at a different evaluation.
 
 ## 4. NO_LONGER_ADMISSIBLE — deliberately OUT of scope for initial mapping
 
@@ -90,12 +94,24 @@ artifact through a signed RevocationEvent.
 - The AARM verdict travels as bound provenance; it is never re-applied as a
   direct authorization downstream.
 
-## 6. MODIFY rule (constraints are not enough)
+## 6. MODIFY rule (constraints must be machine-enforceable, not self-attesting)
 
-MODIFY may yield a clearance ONLY IF:
-- the constraints are machine-readable;
-- the final action is unambiguous;
-- the clearance binds the EXACT action actually to be performed.
+MODIFY may yield a clearance ONLY IF the constraints are **machine-enforceable**,
+not merely self-attested. `machine_readable: true` + `binds_exact_action: true`
+are necessary but NOT sufficient: the clearance MUST additionally carry at least
+one enforceable element:
+- a structured `rules` list (`minItems: 1`), each rule with `id`, `predicate`,
+  `target`, and optional `value`; **or**
+- a `constraint_set_ref` + `constraint_set_digest` pair referencing an external,
+  digest-addressed constraint set.
+
+A MODIFY clearance that asserts `machine_readable`/`binds_exact_action` but
+carries no `rules` and no `constraint_set_ref`+`constraint_set_digest` is
+**invalid** — it proves only that the issuer *claims* the constraints bind, not
+that any binding exists. `capability`/`target` are NOT a substitute for
+action-binding: the clearance already binds the exact capability, target and
+payload via its own digests; changing them requires a NEW ActionEnvelope.
+
 If the modification changes payload, target, capability, or intended effect,
 the system MUST create a NEW ActionEnvelope version with a NEW digest and run
 evaluation again. A loose "permit + constraints" is insufficient.

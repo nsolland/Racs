@@ -33,8 +33,7 @@ jobs:
           python -m pytest tests/compliance/test_canonical_contract.py -v
       - name: Verify golden vector .sha256 sidecar
         run: |
-          cd test-vectors/0.2
-          sha256sum -c canonical-verdict-mapping.sha256
+          sha256sum -c test-vectors/0.2/canonical-verdict-mapping.sha256
 
   full-compliance:
     name: Full compliance suite (baseline reference)
