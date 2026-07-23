@@ -20,6 +20,7 @@ RACS-JCS-1 defines the byte representation used for digests and signatures on RA
 10. The artifact signature input is the canonicalized outer artifact with `signature.value` replaced by the empty string.
 11. The only signing algorithm in profile 0.2 is Ed25519.
 12. Unknown schema versions, canonicalization identifiers or algorithms MUST fail closed for authoritative use.
+13. **`evaluation_digest` (binding digests in `evaluation_bindings`).** An `evaluation_digest` is the **payload digest** of the exact referenced, signature-verified `GovernanceEvaluation` artifact. It is defined as the SHA-256 over the RACS-JCS-1 canonicalized `payload` of that artifact — i.e. it MUST equal that artifact's `payload_digest` (rule 9). It is NOT a digest over the artifact envelope, the signature, or any wrapper. A determination MUST verify `evaluation_digest == SHA-256(canonicalize(GovernanceEvaluation.payload))` before trusting the binding.
 
 ## Verification order
 

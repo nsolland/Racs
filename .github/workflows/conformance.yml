@@ -1,0 +1,54 @@
+name: RACS Conformance
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  canonical-contract:
+    name: Canonical verdict-mapping conformance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "jsonschema>=4.20" pytest
+      - name: Validate all spec schemas (Draft 2020-12)
+        run: |
+          python - <<'PY'
+          import json, glob, jsonschema
+          for path in sorted(glob.glob("spec/*.schema.json")):
+              with open(path) as fh:
+                  jsonschema.Draft202012Validator.check_schema(json.load(fh))
+              print("valid schema:", path)
+          PY
+      - name: Run canonical contract conformance suite
+        run: |
+          python -m pytest tests/compliance/test_canonical_contract.py -v
+      - name: Verify golden vector .sha256 sidecars
+        run: |
+          sha256sum -c test-vectors/0.2/canonical-verdict-mapping.sha256
+          sha256sum -c test-vectors/0.2/governance-evaluation-golden.sha256
+
+  full-compliance:
+    name: Full compliance suite (baseline reference)
+    runs-on: ubuntu-latest
+    continue-on-error: true   # Pre-existing repo failures (import path) are documented, not blockers
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "jsonschema>=4.20" pytest
+      - name: Run full compliance suite (informational)
+        run: |
+          python -m pytest tests/compliance/ -v
