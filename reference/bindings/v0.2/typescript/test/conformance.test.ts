@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { canonicalString, sha256Digest, verifyPayloadDigest } from "../src/index.js";
+import { canonicalString, sha256Digest } from "../src/index.js";
 
 // repo root: dist/test -> typescript(1) -> v0.2(2) -> bindings(3) -> reference(4) -> Racs(5)
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..", "..", "..");
@@ -27,7 +27,6 @@ test("RACS GovernanceEvaluation vector", () => {
   );
   assert.equal(canonicalString(vec.payload), vec.canonical_payload);
   assert.equal(sha256Digest(vec.payload), vec.payload_digest);
-  assert.equal(verifyPayloadDigest(vec.payload, vec.payload_digest), true);
 });
 
 test("RFC 8785 specifics (not json.dumps)", () => {

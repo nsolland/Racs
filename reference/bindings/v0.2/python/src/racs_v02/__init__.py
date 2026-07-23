@@ -1,20 +1,39 @@
-"""RACS v0.2 canonical contract bindings — canonicalization kernel (3A).
+"""RACS v0.2 canonical contract bindings.
 
-This package provides the RFC 8785-conformant canonicalization used by the RACS
-wire format, plus SHA-256 payload digests. It intentionally contains NO model
-types (those arrive in 3B) and NO signing/trust/revocation logic.
+Stage 3A — canonicalization kernel (RFC 8785 + sha256 digests).
+Stage 3B — typed model bindings for the three v0.2 payload schemas.
 
-The canonical output of `canonical_bytes` MUST be byte-for-byte identical across
-the Python, Rust, and TypeScript bindings, verified by the shared JCS test
-vectors under test-vectors/jcs/.
+The canonical output of the kernel MUST be byte-for-byte identical across the
+Python, Rust, and TypeScript bindings, verified by the shared JCS test vectors
+under test-vectors/jcs/.
 """
 
 from .canonical import canonical_bytes, canonical_str
 from .digest import sha256_digest, verify_payload_digest
+from .models import (
+    AdmissibilityDetermination,
+    AdmissibilityState,
+    ConsequenceClass,
+    Decision,
+    EvaluationBinding,
+    GovernanceClearance,
+    GovernanceEvaluation,
+    Reversibility,
+    Status,
+)
 
 __all__ = [
     "canonical_bytes",
     "canonical_str",
     "sha256_digest",
     "verify_payload_digest",
+    "GovernanceEvaluation",
+    "AdmissibilityDetermination",
+    "GovernanceClearance",
+    "EvaluationBinding",
+    "Decision",
+    "Status",
+    "AdmissibilityState",
+    "ConsequenceClass",
+    "Reversibility",
 ]
