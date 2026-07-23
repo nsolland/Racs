@@ -1,0 +1,58 @@
+# llms.txt — AI-first entry point for RACS
+# Adopted per nsolland/Racs#64 / nsolland/Index#338
+# This file is the canonical machine-readable orientation for AI agents.
+# Human-readable overview lives in README.md; this file is for machine interpretation first.
+
+# Stable identity
+- stable_id: valo.racs
+- canonical_name: RACS
+- full_name: Runtime Agent Control Standard
+- purpose: Neutral, model-agnostic protocol for representing, evaluating, authorizing, executing, and evidencing AI-mediated actions.
+- public_url: https://github.com/nsolland/Racs
+- version: 0.2
+- normative_status: normative
+- maturity: implemented
+
+# What RACS owns (contract boundary)
+- owns: canonical receipt and evidence contract
+- owns: action envelope schema
+- owns: authority / policy / evidence context schemas
+- owns: governance evaluation, determination, clearance schemas
+- does_not_own: execution authority grant (REHT owns admissibility)
+- does_not_own: action execution (Core owns execution)
+- does_not_own: evidence evaluation (VAIG owns evaluation)
+
+# Key invariants
+- Platform-local receipt objects MUST map to RACS, not become competing standards.
+- Receipts link proposal, evaluation, clearance, execution, and outcome.
+- Evidence integrity, provenance, and immutable linkage are contract concerns.
+- RACS records decisions and effects; it does NOT grant clearance or execute actions.
+
+# Repository map (normative vs informative)
+- spec/ : PUBLIC, NORMATIVE — protocol schemas and semantics
+- reference/ : PUBLIC, INFORMATIVE — example implementations (python, rust, typescript)
+- examples/ : PUBLIC, INFORMATIVE — domain action examples
+- test-vectors/ : PUBLIC, INFORMATIVE — compliance and runtime vectors
+- validators/ : PUBLIC, INFORMATIVE — compliance checkers
+- .github/workflows/ : PUBLIC, INFORMATIVE — CI validation
+
+# Start here for agents
+- Read first: spec/action-envelope.yaml (core action message format)
+- Contract lock: reference/bindings/v0.2 (typed bindings, canonicalization, runtime conformance)
+- Governance: nsolland/Index (REHT-101..REHT-105 requirement identifiers)
+- REHT-104: every clearance decision MUST issue a receipt. Map RACS receipt fields to REHT-104 without redefining REHT admissibility.
+
+# Related repositories (stable identifiers)
+- valo.reht : consumes-admissibility (https://github.com/nsolland/Index)
+- valo.vaig : consumes-evaluation (https://github.com/nsolland/Index)
+- valo.core : consumes-execution (https://github.com/nsolland/Index)
+- baro : consumes-evidence (https://github.com/nsolland/Index)
+
+# Non-claims
+- RACS is a protocol specification, not a runtime.
+- RACS does not grant clearance or execute actions.
+- RACS does not define domain-specific policy; policy is data.
+- RACS is vendor-neutral; external proof formats may be mapped but not privileged as governance authority.
+
+# License
+- MIT (https://opensource.org/licenses/MIT)
