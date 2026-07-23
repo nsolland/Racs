@@ -29,5 +29,30 @@
     },
     "dependencies": "3B (#67) merged at base SHA 7d6a7d9",
     "merged": true
+  },
+  "hermes/repo-profile-64": {
+    "repo": "nsolland/Racs",
+    "issue": 64,
+    "stage": "repo-profile",
+    "base_sha": "034f185",
+    "branch": "hermes/repo-profile-64",
+    "owner": "Hermes",
+    "scope": "adopt canonical AI-first repository profile (nsolland/Index#338): repo-manifest.yaml, publiccode.yml, llms.txt, AGENTS.md, metadata validator + CI",
+    "claimed_paths": [
+      "repo-manifest.yaml",
+      "publiccode.yml",
+      "llms.txt",
+      "AGENTS.md",
+      "scripts/validate_repo_profile.py",
+      ".github/workflows/repo-profile.yml"
+    ],
+    "must_not_touch": [
+      "nsolland/valo-platform PRs — separate repository and work streams",
+      "spec/ normative schemas unless a concrete defect requires it"
+    ],
+    "status": "open_pr",
+    "pr": "https://github.com/nsolland/Racs/pull/70",
+    "ci": "repo-profile validate: PASS",
+    "dependencies": "nsolland/Index#338 (canonical profile definition)"
   }
 }
