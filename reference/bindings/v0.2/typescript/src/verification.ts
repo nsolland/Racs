@@ -24,10 +24,11 @@
 //! Return value: a VerificationResult (decision ACCEPT/REJECT, normalized
 //! reason code). On ACCEPT the caller may construct `Verified<T>`.
 
-import type {
-  AdmissibilityDetermination,
-  GovernanceClearance,
-  GovernanceEvaluation,
+import {
+  sha256Digest,
+  type AdmissibilityDetermination,
+  type GovernanceClearance,
+  type GovernanceEvaluation,
 } from "./index.js";
 
 export interface VerificationResult {
@@ -73,7 +74,7 @@ export function verifyEvaluationBinding(
   // 2. evaluation digest must match the resolved evaluation's payload_digest
   let expected: string;
   try {
-    expected = evaluation.digest();
+    expected = sha256Digest(evaluation);
   } catch (e) {
     return reject("EVALUATION_BINDING_DIGEST_MISMATCH", (e as Error).message);
   }
@@ -110,7 +111,7 @@ export function verifyClearanceBinding(
   }
   let detDigest: string;
   try {
-    detDigest = determination.digest();
+    detDigest = sha256Digest(determination);
   } catch (e) {
     return reject("CLEARANCE_DETERMINATION_DIGEST_MISMATCH", (e as Error).message);
   }
