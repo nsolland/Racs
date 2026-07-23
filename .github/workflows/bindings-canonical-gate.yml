@@ -1,0 +1,64 @@
+name: bindings-canonical-gate
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "reference/bindings/v0.2/**"
+      - "test-vectors/jcs/**"
+      - ".github/workflows/bindings-canonical-gate.yml"
+  pull_request:
+    paths:
+      - "reference/bindings/v0.2/**"
+      - "test-vectors/jcs/**"
+      - ".github/workflows/bindings-canonical-gate.yml"
+
+jobs:
+  cross-language-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Python binding + deps
+        working-directory: reference/bindings/v0.2/python
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install -q rfc8785 pytest
+          pip install -q -e .
+
+      - name: Build Rust release
+        working-directory: reference/bindings/v0.2/rust
+        run: cargo build --release
+
+      - name: Install + build TypeScript
+        working-directory: reference/bindings/v0.2/typescript
+        run: |
+          npm install
+          npm run build
+
+      - name: Cross-language byte-identical gate
+        working-directory: reference/bindings/v0.2
+        run: python3 gate.py
+
+      - name: Per-language unit/integration tests
+        run: |
+          cd reference/bindings/v0.2/python && . .venv/bin/activate && python -m pytest tests/ -q
+          cd ../../rust && cargo test --release
+          cd ../typescript && npm test

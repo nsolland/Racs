@@ -1,0 +1,22 @@
+{
+  "name": "@racs/v0.2",
+  "version": "0.2.0",
+  "description": "RACS v0.2 canonical contract bindings — canonicalization kernel (3A)",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "racs-v02": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc && node --test dist/test/conformance.test.js"
+  },
+  "dependencies": {
+    "json-canonicalize": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "numbers: integers, floats, -0, scientific notation, edge cases",
+  "input": {
+    "numbers": [1, -1, 1.0, -1.0, 0, -0.0, 1e-9, 1000000000, 0.5, 0.30000000000000004, 3.141592653589793, 1e+300, 1e-300, 12345678901234567890]
+  },
+  "expected_canonical": "{\"numbers\":[1,-1,1,-1,0,0,1e-9,1000000000,0.5,0.30000000000000004,3.141592653589793,1e+300,1e-300,12345678901234567890]}",
+  "expected_digest": "sha256:c5d1e5c5cb5f0c0a3f0c5a7f6f8c4e0b8b8e2f0a8b8e2f0a8b8e2f0a8b8e2f0a8b8e2f0a8b8e2f0a8b8e2f0a8b8e2f0a8b8e2f0a8b8e2f0a8b8e2f0a"
+}

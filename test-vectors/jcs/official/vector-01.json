@@ -1,0 +1,22 @@
+{
+  "name": "numbers: integers, floats, -0, scientific notation",
+  "input": {
+    "numbers": [
+      1,
+      -1,
+      1.0,
+      -1.0,
+      0,
+      -0.0,
+      1e-09,
+      1000000000,
+      0.5,
+      0.30000000000000004,
+      3.141592653589793,
+      1e+300,
+      1e-300
+    ]
+  },
+  "expected_canonical": "{\"numbers\":[1,-1,1,-1,0,0,1e-9,1000000000,0.5,0.30000000000000004,3.141592653589793,1e+300,1e-300]}",
+  "expected_digest": "sha256:c0bc68e26192f56e880f84937b50c29ecbb7dea15afacc11c8d86e0766db37bf"
+}

@@ -1,0 +1,26 @@
+{
+  "vector_id": "gev_allow_rfc8785",
+  "description": "RACS GovernanceEvaluation (ALLOW) canonicalized with RFC 8785 (NOT the minimal test helper). Cross-language gate: Python/Rust/TypeScript MUST produce byte-identical canonical_payload and identical payload_digest.",
+  "payload": {
+    "evaluation_id": "vaig:gv_allow",
+    "action_id": "act_test_001",
+    "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "tenant_id": "tenant-test",
+    "evaluator_id": "vaig:test",
+    "evaluator_version": "0.2",
+    "decision": "ALLOW",
+    "authority_status": "PRESENT_AND_VALID",
+    "policy_status": "PRESENT_AND_VALID",
+    "evidence_status": "PRESENT_AND_VALID",
+    "purpose_status": "PRESENT_AND_VALID",
+    "state_status": "PRESENT_AND_VALID",
+    "risk_status": "PRESENT_AND_VALID",
+    "reason_codes": [
+      "aarm.allow"
+    ],
+    "evaluated_at": "2026-07-14T18:00:00Z",
+    "valid_until": "2026-07-14T18:05:00Z"
+  },
+  "canonical_payload": "{\"action_envelope_digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"action_id\":\"act_test_001\",\"authority_status\":\"PRESENT_AND_VALID\",\"decision\":\"ALLOW\",\"evaluated_at\":\"2026-07-14T18:00:00Z\",\"evaluation_id\":\"vaig:gv_allow\",\"evaluator_id\":\"vaig:test\",\"evaluator_version\":\"0.2\",\"evidence_status\":\"PRESENT_AND_VALID\",\"policy_status\":\"PRESENT_AND_VALID\",\"purpose_status\":\"PRESENT_AND_VALID\",\"reason_codes\":[\"aarm.allow\"],\"risk_status\":\"PRESENT_AND_VALID\",\"state_status\":\"PRESENT_AND_VALID\",\"tenant_id\":\"tenant-test\",\"valid_until\":\"2026-07-14T18:05:00Z\"}",
+  "payload_digest": "sha256:58c8431515435642ee92d148a0636f2b20c5292c843fc8977a1fda3f5d94644c"
+}

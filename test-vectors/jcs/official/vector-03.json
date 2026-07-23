@@ -1,0 +1,26 @@
+{
+  "name": "nested objects with sorted keys, arrays, scalars",
+  "input": {
+    "b": [
+      true,
+      false,
+      null,
+      "s",
+      1.5,
+      -0.0,
+      1000000
+    ],
+    "a": {
+      "z": 1,
+      "a": 2,
+      "m": [
+        3,
+        2,
+        1
+      ]
+    },
+    "c": "k"
+  },
+  "expected_canonical": "{\"a\":{\"a\":2,\"m\":[3,2,1],\"z\":1},\"b\":[true,false,null,\"s\",1.5,0,1000000],\"c\":\"k\"}",
+  "expected_digest": "sha256:07a5438065de7868ebed10cc61c07641abdcdb477d263745ba872ea226868654"
+}

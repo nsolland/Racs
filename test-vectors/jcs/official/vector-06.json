@@ -1,0 +1,18 @@
+{
+  "name": "deep nesting and empty containers",
+  "input": {
+    "empty_obj": {},
+    "empty_arr": [],
+    "nested": {
+      "a": {
+        "b": {
+          "c": [
+            1
+          ]
+        }
+      }
+    }
+  },
+  "expected_canonical": "{\"empty_arr\":[],\"empty_obj\":{},\"nested\":{\"a\":{\"b\":{\"c\":[1]}}}}",
+  "expected_digest": "sha256:295a8f3aee83b19f0e76057417fff43039743824d0d2998ecf3ced6c7b6bbdef"
+}
