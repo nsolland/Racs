@@ -1,0 +1,108 @@
+{
+  "racs_jcs_1": "RFC 8785",
+  "digest_alg": "sha256",
+  "generated_by": "P0.2 golden-vector tooling (issue #991)",
+  "vectors": {
+    "action_envelope_v0.2": {
+      "payload": {
+        "action_id": "act-0001",
+        "tenant_id": "tenant-abc",
+        "action_type": "payment.transfer",
+        "actor_ref": "did:valo:actor-7",
+        "target_ref": "did:valo:vipps-acct-9",
+        "target_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "payload_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "authority_grant_ref": "ag-1",
+        "delegation_chain_ref": "dc-1",
+        "policy_ref": "pol-1",
+        "evidence_package_ref": "ep-1",
+        "purpose_ref": "purp-1",
+        "environment_state_ref": "env-1",
+        "risk_context_ref": "rc-1",
+        "connector_id": "connector-vipps",
+        "capability": "finance.pay",
+        "consequence_class": "HIGH",
+        "reversibility": "COMPENSATABLE",
+        "created_at": "2026-07-25T12:00:00Z",
+        "expires_at": "2026-07-25T12:05:00Z",
+        "replay_nonce": "abcdefghijklmnop",
+        "idempotency_key": "idem-0001"
+      },
+      "payload_digest": "sha256:7ede1ad1128d8c1ca0ad4391c44a2cb0625c28dce8354809badddb34c5959c0c",
+      "schema": "action-envelope-v0.2.schema.json"
+    },
+    "governance_evaluation_v0.2": {
+      "payload": {
+        "evaluation_id": "ge-1",
+        "action_id": "act-0001",
+        "action_envelope_digest": "sha256:7ede1ad1128d8c1ca0ad4391c44a2cb0625c28dce8354809badddb34c5959c0c",
+        "tenant_id": "tenant-abc",
+        "evaluator_id": "vaig-aarm",
+        "evaluator_version": "1.0.0",
+        "decision": "ALLOW",
+        "authority_status": "PRESENT_AND_VALID",
+        "policy_status": "PRESENT_AND_VALID",
+        "evidence_status": "PRESENT_AND_VALID",
+        "purpose_status": "PRESENT_AND_VALID",
+        "state_status": "PRESENT_AND_VALID",
+        "risk_status": "PRESENT_AND_VALID",
+        "evaluated_at": "2026-07-25T11:59:00Z",
+        "valid_until": "2026-07-25T12:04:00Z"
+      },
+      "payload_digest": "sha256:d22e4185faa93b641256613d49e19e58c861c272813185d29e0395b1fa6ded57",
+      "schema": "governance-evaluation-v0.2.schema.json"
+    },
+    "admissibility_determination_v0.2": {
+      "payload": {
+        "determination_id": "ad-1",
+        "action_id": "act-0001",
+        "action_envelope_digest": "sha256:7ede1ad1128d8c1ca0ad4391c44a2cb0625c28dce8354809badddb34c5959c0c",
+        "tenant_id": "tenant-abc",
+        "authority_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "delegation_chain_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "policy_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "evidence_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "purpose_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "state_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "evaluation_bindings": [
+          {
+            "evaluation_ref": "ge-1",
+            "evaluation_digest": "sha256:d22e4185faa93b641256613d49e19e58c861c272813185d29e0395b1fa6ded57"
+          }
+        ],
+        "state": "ADMISSIBLE",
+        "determined_at": "2026-07-25T12:00:00Z",
+        "valid_until": "2026-07-25T12:05:00Z",
+        "revocation_registry_ref": "rr-1"
+      },
+      "payload_digest": "sha256:580f53d31bf585f570f4eb67784912787e914771005240b2b91e6bf5b555509d",
+      "schema": "admissibility-determination-v0.2.schema.json"
+    },
+    "execution_receipt_v0.2": {
+      "payload": {
+        "execution_receipt_id": "er-1",
+        "execution_id": "ex-1",
+        "tenant_id": "tenant-abc",
+        "action_id": "act-0001",
+        "action_envelope_digest": "sha256:7ede1ad1128d8c1ca0ad4391c44a2cb0625c28dce8354809badddb34c5959c0c",
+        "clearance_id": "ad-1",
+        "clearance_digest": "sha256:580f53d31bf585f570f4eb67784912787e914771005240b2b91e6bf5b555509d",
+        "commit_token_id": "ct-1",
+        "commit_token_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "connector_id": "connector-vipps",
+        "capability": "finance.pay",
+        "target_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "payload_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "started_at": "2026-07-25T12:00:30Z",
+        "completed_at": "2026-07-25T12:00:31Z",
+        "technical_outcome": "SUCCEEDED",
+        "provider_reference": "vipps-txn-xyz",
+        "response_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "reversal_status": "NOT_APPLICABLE",
+        "previous_receipt_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "payload_digest": "sha256:57f1101755be1ea2d04760901b04d79146f08684ea3aeb18ac26971cd4e03c06",
+      "schema": "execution-receipt-v0.2.schema.json"
+    }
+  }
+}
