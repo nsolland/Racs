@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.2/governance-state.schema.json",
+  "title": "RACS GovernanceState Payload",
+  "description": "Runtime governance state referenced by Core before enforcing an action. Canonical contract #5 (issue #991).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tenant_id", "actor_ref", "active_policies", "delegation_chain_ref", "last_reviewed_at", "state_digest"],
+  "properties": {
+    "tenant_id": {"type": "string", "minLength": 1},
+    "actor_ref": {"type": "string", "minLength": 1},
+    "active_policies": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "delegation_chain_ref": {"type": "string", "minLength": 1},
+    "active_constraints": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "last_reviewed_at": {"type": "string", "format": "date-time"},
+    "state_digest": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {"digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}}
+}
