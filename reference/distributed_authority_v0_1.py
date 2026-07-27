@@ -464,10 +464,40 @@ def apply_authority_transition(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Atomically apply an allowed clearance using compare-and-set semantics."""
     _verify_record_digest(clearance_receipt, "receipt_digest", "GovernanceClearanceReceipt")
+    require_keys(
+        clearance_receipt,
+        (
+            "receipt_version",
+            "receipt_type",
+            "hierarchy_profile_digest",
+            "hierarchy_gate_results_digest",
+            "hierarchy_decision_digest",
+            "hierarchy_decisive_level",
+            "evaluated_gate_ids",
+            "authority_created_by_gate",
+            "human_authority_final",
+        ),
+        "GovernanceClearanceReceipt",
+    )
+    if clearance_receipt["receipt_version"] != "distributed-authority-0.2":
+        raise GovernanceError("unsupported governance clearance receipt")
     if clearance_receipt.get("receipt_type") != "GOVERNANCE_CLEARANCE":
         raise GovernanceError("receipt is not a governance clearance")
     if clearance_receipt.get("decision") != "ALLOW":
         raise GovernanceError("denied clearance cannot consume authority")
+    required_gates = {
+        "distributed-authority",
+        "distributed-evidence",
+        "distributed-consequence",
+    }
+    if not required_gates.issubset(set(clearance_receipt["evaluated_gate_ids"])):
+        raise GovernanceError("clearance bypassed required hierarchy gates")
+    if clearance_receipt["hierarchy_decisive_level"] is not None:
+        raise GovernanceError("allowed clearance cannot have a decisive failure level")
+    if clearance_receipt["authority_created_by_gate"] is not False:
+        raise GovernanceError("gate-created authority is forbidden")
+    if clearance_receipt["human_authority_final"] is not True:
+        raise GovernanceError("human authority finality is missing")
     if clearance_receipt["authority_id"] != state["authority_id"] or clearance_receipt["authority_version"] != state["authority_version"]:
         raise GovernanceError("clearance authority mismatch")
     if clearance_receipt["mandate_digest"] != state["mandate_digest"] or state["mandate_digest"] != grant["mandate_digest"]:
