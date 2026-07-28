@@ -3,10 +3,11 @@
   "stage": "runtime-continuity-stage2-v0.2",
   "base_sha": "cf9f14382a7c2b1e95b5f4c2ca70828b80ef3989",
   "branch": "build/runtime-continuity-stage2-v02",
+  "pr": "https://github.com/nsolland/Racs/pull/88",
   "owner": "ChatGPT",
   "scope": "cross-artifact verification for governed execution sessions and proof that runtime-bound modifications only narrow prior authorization",
   "claimed_paths": [
-    "spec/RUNTIME_CONTINUITY_V0_2.md",
+    "spec/RUNTIME_CONTINUITY_VERIFICATION_V0_2.md",
     "reference/bindings/v0.2/python/src/racs_v02/continuity_verification.py",
     "reference/bindings/v0.2/python/tests/test_continuity_verification.py",
     "reference/bindings/v0.2/rust/src/continuity_verification.rs",
@@ -14,7 +15,7 @@
     "reference/bindings/v0.2/typescript/src/continuity-verification.ts",
     "reference/bindings/v0.2/typescript/test/continuity-verification.test.ts",
     "test-vectors/0.2/runtime-continuity/verification-vectors.json",
-    ".github/workflows/bindings-canonical-gate.yml"
+    "reference/bindings/v0.2/typescript/package.json"
   ],
   "must_not_touch": [
     "v0.3 AgentBound contracts and governance_os reference implementation",
@@ -26,5 +27,12 @@
     "RACS-JCS-1 canonicalization",
     "GovernanceClearance and admissibility chain"
   ],
-  "status": "claimed"
+  "status": "merged",
+  "last_verified_head": "ca569577ba4337c558a734712d8cac8367bd3999",
+  "merge_commit": "2659660889297ca624a47ca9a8798738ff6cf539",
+  "tests": "RACS Conformance success; bindings-canonical-gate success; Rust release and TypeScript build success; cross-language Stage 3A/3B/3C success; Python, Rust and TypeScript unit/integration suites success",
+  "ci_runs": {
+    "racs_conformance": 30348005396,
+    "bindings_canonical_gate": 30348008390
+  }
 }
