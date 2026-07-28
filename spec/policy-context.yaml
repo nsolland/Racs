@@ -1,10 +1,11 @@
 # RACS Policy Context Specification
-# Version: Draft 0.1
+# Version: Draft 0.2
 #
 # Identifies the policy set and exact version used for evaluation.
 # Policy is data, not code — never bake policy into validators.
+# Regulatory applicability is an input and never grants execution authority.
 
-racs_spec_version: "0.1"
+racs_spec_version: "0.2"
 
 policy_context:
   type: object
@@ -20,6 +21,61 @@ policy_context:
     policy_set_version:
       type: string
       description: Exact version of the policy set used
+
+    regulatory_profiles:
+      type: array
+      description: Versioned legal or regulatory applicability profiles used as policy inputs
+      items:
+        type: object
+        additionalProperties: false
+        properties:
+          profile_id:
+            type: string
+            description: Stable profile identifier, for example EU_AI_ACT_OMNIBUS_2026
+          legal_act_ref:
+            type: string
+            description: Authoritative legal act or framework reference
+          version:
+            type: string
+            description: Immutable profile version
+          jurisdiction:
+            type: string
+            description: Jurisdiction in which the profile is evaluated
+          effective_at:
+            type: string
+            format: date-time
+            description: Time at which applicability was evaluated
+          classification:
+            type:
+              - string
+              - "null"
+            description: Explicit system classification, such as annex_iii, annex_i, or not_applicable
+          active_obligation_ids:
+            type: array
+            uniqueItems: true
+            items:
+              type: string
+          evidence_refs:
+            type: array
+            uniqueItems: true
+            items:
+              type: string
+          accountable_owner_ref:
+            type: string
+            description: Accountable legal or risk owner for the classification
+          profile_digest:
+            type: string
+            description: Digest of the exact regulatory profile used
+        required:
+          - profile_id
+          - legal_act_ref
+          - version
+          - jurisdiction
+          - effective_at
+          - active_obligation_ids
+          - evidence_refs
+          - accountable_owner_ref
+          - profile_digest
 
     rules:
       type: array
