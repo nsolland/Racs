@@ -1,41 +1,20 @@
-"""RACS v0.2 runtime conformance — Stage 3C, Port A (schema validation).
-
-This module turns the *pure* typed models from Stage 3B into *governed* types:
-
-    Raw[T]        — JSON parsed, NOT yet schema-conformant.
-    Validated[T]  — proven schema-conformant (Draft 2020-12) for its artifact type.
-    Verified[T]   — schema-conformant AND all external cross-artifact bindings
-                    resolved and checked (Stage 3C, Port B).
-
-The normative contract is the schema files under ``spec/*.schema.json``. Nothing
-may be promoted to ``Validated`` without passing ``Draft202012Validator``, and
-nothing may be promoted to ``Verified`` without passing the cross-artifact
-verifier in :mod:`racs_v02.verification`.
-
-All three bindings (Python/Rust/TypeScript) MUST emit byte-identical:
-
-    * accept/reject decision
-    * normalized reason code
-    * canonical bytes (for accepted objects)
-    * payload digest (for accepted objects)
-"""
-
+"""RACS v0.2 schema validation and typed conformance."""
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Generic, Optional, TypeVar
 
 from jsonschema import Draft202012Validator
+from pydantic import ValidationError as PydanticValidationError
 
+from .boundary_crossing import BoundaryCrossingAssessment
 from .models import (
     AdmissibilityDetermination,
     GovernanceClearance,
     GovernanceEvaluation,
 )
-
-# --- artifact type registry --------------------------------------------------
 
 ARTIFACT_TYPES = {
     "GovernanceEvaluation": (
@@ -50,9 +29,11 @@ ARTIFACT_TYPES = {
         "governance-clearance.schema.json",
         GovernanceClearance,
     ),
+    "BoundaryCrossingAssessment": (
+        "boundary-crossing-assessment-v0.2.schema.json",
+        BoundaryCrossingAssessment,
+    ),
 }
-
-# --- normalized reason codes (language-agnostic) -----------------------------
 
 REASON_ACCEPT = "ACCEPT"
 REASON_SCHEMA_INVALID = "SCHEMA_INVALID"
@@ -73,16 +54,11 @@ REASON_CLEARANCE_REVOKED = "CLEARANCE_REVOKED"
 
 EXPECTED_VALUES = {"ACCEPT", "REJECT"}
 
-
-# --- wrapper types ----------------------------------------------------------
-
 T = TypeVar("T")
 
 
 @dataclass
 class Raw(Generic[T]):
-    """Ingested JSON. Not yet proven schema-conformant."""
-
     data: Dict[str, Any]
 
     def into_validated(self, artifact_type: str) -> "Validated[T]":
@@ -91,8 +67,6 @@ class Raw(Generic[T]):
 
 @dataclass
 class Validated(Generic[T]):
-    """Schema-conformant (Draft 2020-12) typed model."""
-
     artifact_type: str
     model: T
     payload: Dict[str, Any]
@@ -100,8 +74,6 @@ class Validated(Generic[T]):
 
 @dataclass
 class Verified(Generic[T]):
-    """Schema-conformant AND cross-artifact bindings verified."""
-
     artifact_type: str
     model: T
     payload: Dict[str, Any]
@@ -109,7 +81,7 @@ class Verified(Generic[T]):
 
 @dataclass
 class ValidationResult:
-    decision: str  # "ACCEPT" | "REJECT"
+    decision: str
     reason_code: str
     canonical_bytes: Optional[bytes] = None
     payload_digest: Optional[str] = None
@@ -129,17 +101,14 @@ class ValidationResult:
         return json.dumps(out, sort_keys=True, separators=(",", ":"))
 
 
-# --- schema loading ---------------------------------------------------------
-
 _SCHEMA_CACHE: Dict[str, Draft202012Validator] = {}
-_ROOT_HINT = Path(__file__).resolve().parents[5]  # reference/bindings/v0.2/python
+_ROOT_HINT = Path(__file__).resolve().parents[5]
 
 
 def _repo_root() -> Path:
-    # candidates: from this file up to the dir that contains spec/
-    for cand in [_ROOT_HINT, *_ROOT_HINT.parents]:
-        if (cand / "spec" / "governance-clearance.schema.json").exists():
-            return cand
+    for candidate in [_ROOT_HINT, *_ROOT_HINT.parents]:
+        if (candidate / "spec" / "governance-clearance.schema.json").exists():
+            return candidate
     raise FileNotFoundError("could not locate RACS spec/ directory")
 
 
@@ -147,37 +116,20 @@ def _validator(artifact_type: str) -> Draft202012Validator:
     if artifact_type not in _SCHEMA_CACHE:
         if artifact_type not in ARTIFACT_TYPES:
             raise KeyError(f"unknown artifact_type: {artifact_type}")
-        fname, _ = ARTIFACT_TYPES[artifact_type]
-        path = _repo_root() / "spec" / fname
-        schema = json.loads(path.read_text(encoding="utf-8"))
+        filename, _ = ARTIFACT_TYPES[artifact_type]
+        schema = json.loads(
+            (_repo_root() / "spec" / filename).read_text(encoding="utf-8")
+        )
         _SCHEMA_CACHE[artifact_type] = Draft202012Validator(schema)
     return _SCHEMA_CACHE[artifact_type]
 
 
 def schema_sha256(artifact_type: str) -> str:
-    """SHA-256 over the raw bytes of the normative schema file (manifest pin)."""
     import hashlib
 
-    fname, _ = ARTIFACT_TYPES[artifact_type]
-    path = _repo_root() / "spec" / fname
-    raw = path.read_text(encoding="utf-8").encode("utf-8")
+    filename, _ = ARTIFACT_TYPES[artifact_type]
+    raw = (_repo_root() / "spec" / filename).read_bytes()
     return "sha256:" + hashlib.sha256(raw).hexdigest()
-
-
-# --- core validate entrypoint -----------------------------------------------
-
-def validate(artifact_type: str, raw: Dict[str, Any]) -> Validated:
-    """Validate raw JSON against the exact v0.2 schema and deserialize to the
-    typed 3B model. Raises :class:`SchemaValidationError` on any violation."""
-    validator = _validator(artifact_type)
-    errors = sorted(validator.iter_errors(raw), key=lambda e: list(e.absolute_path))
-    if errors:
-        first = errors[0]
-        path = "/".join(str(p) for p in first.absolute_path)
-        raise SchemaValidationError(first.message, path)
-    model_cls = ARTIFACT_TYPES[artifact_type][1]
-    model = model_cls.model_validate(raw)
-    return Validated(artifact_type=artifact_type, model=model, payload=raw)
 
 
 class SchemaValidationError(ValueError):
@@ -187,10 +139,31 @@ class SchemaValidationError(ValueError):
         super().__init__(f"{message} (at {path or '<root>'})")
 
 
+def validate(artifact_type: str, raw: Dict[str, Any]) -> Validated:
+    validator = _validator(artifact_type)
+    errors = sorted(
+        validator.iter_errors(raw),
+        key=lambda error: list(error.absolute_path),
+    )
+    if errors:
+        first = errors[0]
+        path = "/".join(str(item) for item in first.absolute_path)
+        raise SchemaValidationError(first.message, path)
+
+    model_class = ARTIFACT_TYPES[artifact_type][1]
+    try:
+        model = model_class.model_validate(raw)
+    except PydanticValidationError as exc:
+        first = exc.errors()[0]
+        path = "/".join(str(item) for item in first.get("loc", ()))
+        raise SchemaValidationError(
+            first.get("msg", "semantic validation failed"),
+            path,
+        ) from exc
+    return Validated(artifact_type=artifact_type, model=model, payload=raw)
+
+
 def check(artifact_type: str, raw: Dict[str, Any]) -> ValidationResult:
-    """Non-raising variant: returns an ACCEPT/REJECT :class:`ValidationResult`
-    with a normalized reason code. For ACCEPT, canonical bytes + digest are
-    attached (using the 3B model canonicalization)."""
     try:
         validated = validate(artifact_type, raw)
     except SchemaValidationError as exc:
@@ -199,19 +172,15 @@ def check(artifact_type: str, raw: Dict[str, Any]) -> ValidationResult:
             reason_code=REASON_SCHEMA_INVALID,
             error_path=exc.path,
         )
-    # Re-derive canonical + digest from the typed model (3B model_canonical()).
+
     model = validated.model
     canonical = model.model_canonical()
     digest = model.model_digest()
 
-    # For clearances, schema-ACCEPT is necessary but not sufficient: the
-    # intra-payload ALLOW/MODIFY <-> state/constraints rules must also hold.
-    # (Cross-artifact digest bindings are verified separately via
-    # verify_clearance_binding once the referenced artifacts are resolved.)
     if artifact_type == "GovernanceClearance":
-        sem = _clearance_intra_check(model)
-        if sem is not None:
-            return ValidationResult(decision="REJECT", reason_code=sem)
+        semantic_reason = _clearance_intra_check(model)
+        if semantic_reason is not None:
+            return ValidationResult(decision="REJECT", reason_code=semantic_reason)
 
     return ValidationResult(
         decision="ACCEPT",
@@ -221,9 +190,7 @@ def check(artifact_type: str, raw: Dict[str, Any]) -> ValidationResult:
     )
 
 
-def _clearance_intra_check(model: "GovernanceClearance") -> "Optional[str]":
-    """Intra-payload semantic rules for a schema-valid clearance.
-    Returns a normalized reason code if the clearance must be REJECTED, else None."""
+def _clearance_intra_check(model: GovernanceClearance) -> Optional[str]:
     if model.decision.value == "ALLOW":
         if model.admissibility_state.value != "ADMISSIBLE":
             return REASON_CLEARANCE_ALLOW_STATE_MISMATCH
@@ -243,8 +210,11 @@ def _enforceable(constraints: Dict[str, Any]) -> bool:
     rules = constraints.get("rules")
     if isinstance(rules, list) and len(rules) >= 1:
         return True
-    ref = constraints.get("constraint_set_ref")
+    reference = constraints.get("constraint_set_ref")
     digest = constraints.get("constraint_set_digest")
-    if isinstance(ref, str) and ref and isinstance(digest, str) and digest.startswith("sha256:"):
-        return True
-    return False
+    return (
+        isinstance(reference, str)
+        and bool(reference)
+        and isinstance(digest, str)
+        and digest.startswith("sha256:")
+    )
