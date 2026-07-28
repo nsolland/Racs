@@ -1,38 +1,15 @@
-"""RACS v0.2 runtime conformance — Stage 3C, Port B (cross-artifact verification).
-
-JSON Schema cannot prove that referenced artifacts *exist* or that the digests
-*match*. These functions enforce the binding rules between the three contract
-artifacts. They operate on already-``Validated`` payloads (i.e. schema-conformant
-typed models from :mod:`racs_v02.validation`).
-
-Binding rules enforced
------------------------
-``verify_evaluation_binding(determination, evaluation)``
-    * evaluation.payload_digest == evaluation_digest of every binding
-    * at least one evaluation_binding.evaluation_ref == evaluation.evaluation_id
-    * determination.action_id / action_envelope_digest MUST match evaluation
-
-``verify_clearance_binding(clearance, determination, action_envelope)``
-    * evaluation_digest == GovernanceEvaluation.payload_digest (delegated via
-      the determination's evaluation_bindings)
-    * determination-ref points at the correct determination
-    * admissibility_determination_digest matches the actual determination
-    * clearance and determination bind the same action_id + action_envelope_digest
-    * authority/delegation/policy/evidence/purpose/state digests match
-    * ALLOW only with ADMISSIBLE and WITHOUT constraints
-    * MODIFY only with CONDITIONALLY_ADMISSIBLE and WITH enforceable constraints
-    * negative admissibility state can never become a clearance
-    * validity window (valid_from/valid_until) and revocation status checked
-      before Verified[T] is produced
-
-Return value: a :class:`VerificationResult` (decision ACCEPT/REJECT, normalized
-reason code). On ACCEPT the caller may construct ``Verified[T]``.
-"""
+"""RACS v0.2 cross-artifact verification."""
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
+from .boundary_crossing import BoundaryCrossingAssessment
+from .boundary_validation import (
+    REASON_BOUNDARY_ASSESSMENT_UNRESOLVED,
+    verify_boundary_chain,
+    verify_determination_boundary_binding,
+)
 from .models import (
     AdmissibilityDetermination,
     GovernanceClearance,
@@ -57,7 +34,7 @@ from .validation import (
 
 @dataclass
 class VerificationResult:
-    decision: str  # ACCEPT | REJECT
+    decision: str
     reason_code: str
     detail: Optional[str] = None
 
@@ -75,8 +52,8 @@ _NON_CLEARABLE_STATES = {
 def verify_evaluation_binding(
     determination: AdmissibilityDetermination,
     evaluation: GovernanceEvaluation,
+    boundary_assessment: Optional[BoundaryCrossingAssessment] = None,
 ) -> VerificationResult:
-    """Verify a determination's evaluation bindings against a resolved evaluation."""
     if determination.action_id != evaluation.action_id:
         return VerificationResult(
             "REJECT",
@@ -90,19 +67,35 @@ def verify_evaluation_binding(
 
     expected = evaluation.model_digest()
     bindings = determination.evaluation_bindings
-    if not any(b.evaluation_ref == evaluation.evaluation_id for b in bindings):
+    if not any(binding.evaluation_ref == evaluation.evaluation_id for binding in bindings):
         return VerificationResult(
             "REJECT",
             REASON_EVALUATION_BINDING_REF_MISMATCH,
             f"no binding references {evaluation.evaluation_id}",
         )
-    for binding in bindings:
-        if binding.evaluation_digest != expected:
-            return VerificationResult(
-                "REJECT",
-                REASON_EVALUATION_BINDING_DIGEST_MISMATCH,
-                f"binding {binding.evaluation_ref}: digest mismatch",
-            )
+    matching = [
+        binding
+        for binding in bindings
+        if binding.evaluation_ref == evaluation.evaluation_id
+    ]
+    if any(binding.evaluation_digest != expected for binding in matching):
+        return VerificationResult(
+            "REJECT",
+            REASON_EVALUATION_BINDING_DIGEST_MISMATCH,
+            f"binding {evaluation.evaluation_id}: digest mismatch",
+        )
+
+    boundary = verify_determination_boundary_binding(
+        assessment=boundary_assessment,
+        evaluation=evaluation,
+        determination=determination,
+    )
+    if boundary.decision != "ACCEPT":
+        return VerificationResult(
+            boundary.decision,
+            boundary.reason_code,
+            boundary.detail,
+        )
     return VerificationResult("ACCEPT", REASON_ACCEPT)
 
 
@@ -111,13 +104,9 @@ def verify_clearance_binding(
     determination: AdmissibilityDetermination,
     action_envelope: Optional[Dict[str, Any]] = None,
     verification_time: Optional[str] = None,
+    governance_evaluation: Optional[GovernanceEvaluation] = None,
+    boundary_assessment: Optional[BoundaryCrossingAssessment] = None,
 ) -> VerificationResult:
-    """Verify a clearance against its determination and optional action envelope.
-
-    ``verification_time`` is an explicit RFC 3339 instant for deterministic
-    conformance and replay. Production callers normally omit it, in which case the
-    current UTC clock is used.
-    """
     if clearance.admissibility_determination_ref != determination.determination_id:
         return VerificationResult(
             "REJECT",
@@ -162,14 +151,14 @@ def verify_clearance_binding(
                 f"{name} mismatch",
             )
 
-    if determination.state in _NON_CLEARABLE_STATES:
+    if determination.state.value in _NON_CLEARABLE_STATES:
         return VerificationResult(
             "REJECT",
             REASON_CLEARANCE_NEGATIVE_STATE,
-            f"determination.state={determination.state} is not clearable",
+            f"determination.state={determination.state.value} is not clearable",
         )
-    if clearance.decision == "ALLOW":
-        if determination.state != "ADMISSIBLE":
+    if clearance.decision.value == "ALLOW":
+        if determination.state.value != "ADMISSIBLE":
             return VerificationResult(
                 "REJECT", REASON_CLEARANCE_ALLOW_STATE_MISMATCH, "ALLOW requires ADMISSIBLE"
             )
@@ -177,8 +166,8 @@ def verify_clearance_binding(
             return VerificationResult(
                 "REJECT", REASON_CLEARANCE_ALLOW_HAS_CONSTRAINTS, "ALLOW must not carry constraints"
             )
-    elif clearance.decision == "MODIFY":
-        if determination.state != "CONDITIONALLY_ADMISSIBLE":
+    elif clearance.decision.value == "MODIFY":
+        if determination.state.value != "CONDITIONALLY_ADMISSIBLE":
             return VerificationResult(
                 "REJECT",
                 REASON_CLEARANCE_MODIFY_STATE_MISMATCH,
@@ -210,20 +199,30 @@ def verify_clearance_binding(
             "REJECT", REASON_CLEARANCE_EXPIRED, "validity window expired"
         )
 
-    if action_envelope is not None:
-        envelope_digest = action_envelope.get("payload_digest") or action_envelope.get(
-            "action_envelope_digest"
+    if (
+        action_envelope is None
+        or governance_evaluation is None
+        or boundary_assessment is None
+    ):
+        return VerificationResult(
+            "REJECT",
+            REASON_BOUNDARY_ASSESSMENT_UNRESOLVED,
+            "clearance verification requires envelope, evaluation and assessment",
         )
-        if (
-            envelope_digest is not None
-            and envelope_digest != clearance.action_envelope_digest
-        ):
-            return VerificationResult(
-                "REJECT",
-                REASON_CLEARANCE_ENVELOPE_MISMATCH,
-                "resolved envelope digest mismatch",
-            )
 
+    boundary = verify_boundary_chain(
+        action_envelope=action_envelope,
+        assessment=boundary_assessment,
+        evaluation=governance_evaluation,
+        determination=determination,
+        verification_time=verification_time,
+    )
+    if boundary.decision != "ACCEPT":
+        return VerificationResult(
+            boundary.decision,
+            boundary.reason_code,
+            boundary.detail,
+        )
     return VerificationResult("ACCEPT", REASON_ACCEPT)
 
 
