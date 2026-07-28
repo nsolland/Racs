@@ -6,25 +6,22 @@ use std::process;
 
 use racs_v02::validation::check;
 use racs_v02::verification::{
-    verify_clearance_binding_at, verify_evaluation_binding,
+    verify_clearance_binding_with_boundary_at, verify_evaluation_binding,
 };
 use racs_v02::{
-    canonical_string, sha256_digest, AdmissibilityDetermination, GovernanceClearance,
-    GovernanceEvaluation,
+    canonical_string, sha256_digest, AdmissibilityDetermination,
+    BoundaryCrossingAssessment, GovernanceClearance, GovernanceEvaluation,
 };
 use serde_json::Value;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let mode = args.get(1).map(|value| value.as_str());
-    let path = args.get(2).map(|value| value.as_str());
+    let mode = args.get(1).map(String::as_str);
+    let path = args.get(2).map(String::as_str);
 
     match (mode, path) {
         (Some("--vector"), Some(path)) => {
-            let text = fs::read_to_string(path)
-                .unwrap_or_else(|error| die(&format!("read {path}: {error}")));
-            let vector: Value = serde_json::from_str(&text)
-                .unwrap_or_else(|error| die(&format!("parse {path}: {error}")));
+            let vector = read_json(path);
             let (subject, expected_canonical, expected_digest) =
                 if vector.get("input").is_some() {
                     (
@@ -47,68 +44,62 @@ fn main() {
             let expected_digest = expected_digest.as_str().unwrap_or("");
             let matches =
                 got_canonical == expected_canonical && got_digest == expected_digest;
-            let output = serde_json::json!({
-                "got_canonical": got_canonical,
-                "got_digest": got_digest,
-                "expected_canonical": expected_canonical,
-                "expected_digest": expected_digest,
-                "match": matches,
-            });
-            println!("{}", serde_json::to_string_pretty(&output).unwrap());
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "got_canonical": got_canonical,
+                    "got_digest": got_digest,
+                    "expected_canonical": expected_canonical,
+                    "expected_digest": expected_digest,
+                    "match": matches,
+                }))
+                .unwrap()
+            );
             if !matches {
                 process::exit(1);
             }
         }
         (Some("--file"), Some(path)) => {
-            let text = fs::read_to_string(path)
-                .unwrap_or_else(|error| die(&format!("read {path}: {error}")));
-            let value: Value = serde_json::from_str(&text)
-                .unwrap_or_else(|error| die(&format!("parse {path}: {error}")));
-            let canonical = canonical_string(&value).unwrap();
-            let digest = sha256_digest(&value).unwrap();
+            let value = read_json(path);
             println!(
                 "{}",
-                serde_json::json!({"canonical": canonical, "digest": digest})
+                serde_json::json!({
+                    "canonical": canonical_string(&value).unwrap(),
+                    "digest": sha256_digest(&value).unwrap(),
+                })
             );
         }
         (Some("--model-digest"), Some(path)) => {
-            let text = fs::read_to_string(path)
-                .unwrap_or_else(|error| die(&format!("read {path}: {error}")));
-            let vector: Value = serde_json::from_str(&text)
-                .unwrap_or_else(|error| die(&format!("parse {path}: {error}")));
-            let payload = vector
-                .get("payload")
-                .cloned()
-                .unwrap_or_else(|| die("golden has no 'payload'"));
-            let evaluation: GovernanceEvaluation = serde_json::from_value(payload)
-                .unwrap_or_else(|error| die(&format!("model: {error}")));
-            let digest = evaluation.digest().unwrap();
-            println!("{}", serde_json::json!({"digest": digest}));
+            let vector = read_json(path);
+            let evaluation: GovernanceEvaluation =
+                serde_json::from_value(vector["payload"].clone())
+                    .unwrap_or_else(|error| die(&format!("model: {error}")));
+            println!(
+                "{}",
+                serde_json::json!({"digest": evaluation.digest().unwrap()})
+            );
         }
         (Some("--check"), Some(path)) => {
-            let text = fs::read_to_string(path)
-                .unwrap_or_else(|error| die(&format!("read {path}: {error}")));
-            let vector: Value = serde_json::from_str(&text)
-                .unwrap_or_else(|error| die(&format!("parse {path}: {error}")));
+            let vector = read_json(path);
             let artifact_type = vector["artifact_type"]
                 .as_str()
                 .unwrap_or_else(|| die("runtime vector has no artifact_type"));
             let payload = &vector["payload"];
             let verification_time = vector
                 .get("verification_time")
-                .and_then(|value| value.as_str());
+                .and_then(Value::as_str);
             let port_a = check(artifact_type, payload);
-
             let mut decision = port_a.decision.clone();
             let mut reason_code = port_a.reason_code.clone();
 
             if decision == "ACCEPT" {
                 if let Some(resolved) = vector.get("resolved") {
                     if artifact_type == "GovernanceClearance" {
-                        let clearance: GovernanceClearance = serde_json::from_value(
-                            payload.clone(),
-                        )
-                        .unwrap_or_else(|error| die(&format!("clearance model: {error}")));
+                        let clearance: GovernanceClearance =
+                            serde_json::from_value(payload.clone())
+                                .unwrap_or_else(|error| {
+                                    die(&format!("clearance model: {error}"))
+                                });
                         let determination: AdmissibilityDetermination =
                             serde_json::from_value(resolved["determination"].clone())
                                 .unwrap_or_else(|error| {
@@ -119,15 +110,26 @@ fn main() {
                                 .unwrap_or_else(|error| {
                                     die(&format!("evaluation model: {error}"))
                                 });
+                        let action_envelope = resolved.get("action_envelope");
+                        let assessment: Option<BoundaryCrossingAssessment> = resolved
+                            .get("boundary_assessment")
+                            .cloned()
+                            .map(|value| {
+                                serde_json::from_value(value).unwrap_or_else(|error| {
+                                    die(&format!("boundary assessment model: {error}"))
+                                })
+                            });
 
                         let mut verification =
                             verify_evaluation_binding(&determination, &evaluation);
                         if verification.decision == "ACCEPT" {
-                            verification = verify_clearance_binding_at(
+                            verification = verify_clearance_binding_with_boundary_at(
                                 &clearance,
                                 &determination,
-                                None,
+                                action_envelope,
                                 verification_time,
+                                Some(&evaluation),
+                                assessment.as_ref(),
                             );
                         }
                         if verification.decision == "REJECT" {
@@ -194,6 +196,13 @@ fn main() {
             "usage: racs-v02-conformance (--vector <file> | --file <file> | --model-digest <golden-file> | --check <runtime-vector-file>)",
         ),
     }
+}
+
+fn read_json(path: &str) -> Value {
+    let text = fs::read_to_string(path)
+        .unwrap_or_else(|error| die(&format!("read {path}: {error}")));
+    serde_json::from_str(&text)
+        .unwrap_or_else(|error| die(&format!("parse {path}: {error}")))
 }
 
 fn die(message: &str) -> ! {
