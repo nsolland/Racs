@@ -91,6 +91,21 @@ class ConstitutionalHierarchyTests(unittest.TestCase):
         second = evaluate_hierarchy(PROFILE, reversed(results))
         self.assertEqual(first.decision_digest, second.decision_digest)
 
+    def test_independent_halt_dominates_passes(self):
+        decision = evaluate_hierarchy(
+            PROFILE,
+            self.baseline(),
+            halt_reason_codes=("OUT_OF_BAND_HALT",),
+            halt_level=Level.AUTHORITY_MANDATE,
+        )
+        self.assertEqual(Verdict.HALT, decision.verdict)
+        self.assertEqual(("OUT_OF_BAND_HALT",), decision.reason_codes)
+        self.assertEqual(Level.AUTHORITY_MANDATE, decision.decisive_level)
+
+    def test_duplicate_gate_id_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "duplicate gate_id"):
+            evaluate_hierarchy(PROFILE, self.baseline() + [passed("authority", Level.CONSEQUENCE)])
+
 
 if __name__ == "__main__":
     unittest.main()
