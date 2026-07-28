@@ -1,11 +1,14 @@
-//! RACS v0.2 runtime conformance — Stage 3C, Port B (cross-artifact verification).
-
 import {
   sha256Digest,
   type AdmissibilityDetermination,
   type GovernanceClearance,
   type GovernanceEvaluation,
 } from "./index.js";
+import type { BoundaryCrossingAssessment } from "./boundary-crossing.js";
+import {
+  REASON_BOUNDARY_ASSESSMENT_UNRESOLVED,
+  verifyBoundaryChain,
+} from "./boundary-validation.js";
 
 export interface VerificationResult {
   decision: "ACCEPT" | "REJECT";
@@ -46,19 +49,12 @@ export function verifyEvaluationBinding(
     return reject("CLEARANCE_ENVELOPE_MISMATCH", "envelope digest mismatch");
   }
 
-  let expected: string;
-  try {
-    expected = sha256Digest(evaluation);
-  } catch (error) {
-    return reject(
-      "EVALUATION_BINDING_DIGEST_MISMATCH",
-      (error as Error).message,
-    );
-  }
-  const referenceMatches = determination.evaluation_bindings.some(
-    (binding) => binding.evaluation_ref === evaluation.evaluation_id,
-  );
-  if (!referenceMatches) {
+  const expected = sha256Digest(evaluation);
+  if (
+    !determination.evaluation_bindings.some(
+      (binding) => binding.evaluation_ref === evaluation.evaluation_id,
+    )
+  ) {
     return reject(
       "EVALUATION_BINDING_REF_MISMATCH",
       `no binding references ${evaluation.evaluation_id}`,
@@ -78,8 +74,10 @@ export function verifyEvaluationBinding(
 export function verifyClearanceBinding(
   clearance: GovernanceClearance,
   determination: AdmissibilityDetermination,
-  actionEnvelope?: unknown,
+  actionEnvelope?: Record<string, unknown>,
   verificationTime?: string,
+  governanceEvaluation?: GovernanceEvaluation,
+  boundaryAssessment?: BoundaryCrossingAssessment,
 ): VerificationResult {
   if (
     clearance.admissibility_determination_ref !== determination.determination_id
@@ -89,17 +87,8 @@ export function verifyClearanceBinding(
       "determination_ref mismatch",
     );
   }
-  let determinationDigest: string;
-  try {
-    determinationDigest = sha256Digest(determination);
-  } catch (error) {
-    return reject(
-      "CLEARANCE_DETERMINATION_DIGEST_MISMATCH",
-      (error as Error).message,
-    );
-  }
   if (
-    clearance.admissibility_determination_digest !== determinationDigest
+    clearance.admissibility_determination_digest !== sha256Digest(determination)
   ) {
     return reject(
       "CLEARANCE_DETERMINATION_DIGEST_MISMATCH",
@@ -140,11 +129,10 @@ export function verifyClearanceBinding(
     }
   }
 
-  const state = String(determination.state).toUpperCase();
-  if (NON_CLEARABLE_STATES.has(state)) {
+  if (NON_CLEARABLE_STATES.has(determination.state)) {
     return reject(
       "CLEARANCE_NEGATIVE_STATE",
-      `determination.state=${state} is not clearable`,
+      `determination.state=${determination.state} is not clearable`,
     );
   }
   if (clearance.decision === "ALLOW") {
@@ -167,51 +155,52 @@ export function verifyClearanceBinding(
         "MODIFY requires CONDITIONALLY_ADMISSIBLE",
       );
     }
-    const constraints = clearance.constraints;
-    if (constraints === undefined || constraints === null) {
+    if (clearance.constraints === undefined || clearance.constraints === null) {
       return reject(
         "CLEARANCE_MODIFY_MISSING_CONSTRAINTS",
         "MODIFY requires constraints",
-      );
+     );
     }
-    if (!enforceable(constraints)) {
+    if (!enforceable(clearance.constraints)) {
       return reject(
         "CLEARANCE_MODIFY_MISSING_CONSTRAINTS",
         "constraints present but not enforceable",
-      );
+    );
     }
   }
 
-  if (
-    clearance.revocation_registry_ref === undefined ||
-    clearance.revocation_registry_ref === ""
-  ) {
+  if (!clearance.revocation_registry_ref) {
     return reject("CLEARANCE_REVOKED", "empty revocation_registry_ref");
   }
   if (isExpired(clearance.valid_until, verificationTime)) {
     return reject("CLEARANCE_EXPIRED", "validity window expired");
   }
 
-  if (actionEnvelope !== undefined) {
-    const envelope = actionEnvelope as Record<string, unknown>;
-    const envelopeDigest =
-      (typeof envelope["payload_digest"] === "string"
-        ? envelope["payload_digest"]
-        : undefined) ??
-      (typeof envelope["action_envelope_digest"] === "string"
-        ? envelope["action_envelope_digest"]
-        : undefined);
-    if (
-      typeof envelopeDigest === "string" &&
-      envelopeDigest !== clearance.action_envelope_digest
-    ) {
-      return reject(
-        "CLEARANCE_ENVELOPE_MISMATCH",
-        "resolved envelope digest mismatch",
-      );
-    }
+  if (
+    actionEnvelope === undefined ||
+    governanceEvaluation === undefined ||
+    boundaryAssessment === undefined
+  ) {
+    return reject(
+      REASON_BOUNDARY_ASSESSMENT_UNRESOLVED,
+      "clearance verification requires envelope, evaluation and assessment",
+    );
   }
 
+  const boundary = verifyBoundaryChain({
+    actionEnvelope,
+    assessment: boundaryAssessment,
+    evaluation: governanceEvaluation,
+    determination,
+    verificationTime,
+  });
+  if (boundary.decision !== "ACCEPT") {
+    return {
+      decision: boundary.decision,
+      reason_code: boundary.reason_code,
+      detail: boundary.detail,
+    };
+  }
   return accept();
 }
 
@@ -220,21 +209,17 @@ function enforceable(constraints: unknown): boolean {
   const values = constraints as Record<string, unknown>;
   const rules = values["rules"];
   if (Array.isArray(rules) && rules.length > 0) return true;
-  const referenceOk =
+  return (
     typeof values["constraint_set_ref"] === "string" &&
-    (values["constraint_set_ref"] as string).length > 0;
-  const digestOk =
+    values["constraint_set_ref"].length > 0 &&
     typeof values["constraint_set_digest"] === "string" &&
-    (values["constraint_set_digest"] as string).startsWith("sha256:");
-  return referenceOk && digestOk;
+    values["constraint_set_digest"].startsWith("sha256:")
+  );
 }
 
 function isExpired(validUntil: string, verificationTime?: string): boolean {
-  if (!validUntil || validUntil.length === 0) return false;
-  const until = Date.parse(validUntil.replace(/Z$/, "+00:00"));
-  const at = verificationTime
-    ? Date.parse(verificationTime.replace(/Z$/, "+00:00"))
-    : Date.now();
+  const until = Date.parse(validUntil);
+  const at = verificationTime ? Date.parse(verificationTime) : Date.now();
   if (Number.isNaN(until) || Number.isNaN(at)) return false;
   return until < at;
 }

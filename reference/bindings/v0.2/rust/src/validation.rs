@@ -1,26 +1,8 @@
-//! RACS v0.2 runtime conformance — Stage 3C, Port A (schema validation).
-//!
-//! Turns the pure typed models from Stage 3B into governed types:
-//!
-//! * `Raw<T>`      — JSON parsed, NOT yet schema-conformant.
-//! * `Validated<T>` — proven schema-conformant (Draft 2020-12) for its artifact type.
-//! * `Verified<T>`  — schema-conformant AND all external cross-artifact bindings
-//!                    resolved and checked (Stage 3C, Port B).
-//!
-//! The normative contract is the schema files under `spec/*.schema.json`. Nothing
-//! may be promoted to `Validated` without passing the jsonschema validator, and
-//! nothing may be promoted to `Verified` without passing the cross-artifact
-//! verifier in [`crate::verification`].
-//!
-//! All three bindings (Python/Rust/TypeScript) MUST emit byte-identical:
-//! * accept/reject decision
-//! * normalized reason code
-//! * canonical bytes (for accepted objects)
-//! * payload digest (for accepted objects)
+//! RACS v0.2 runtime conformance — Port A schema and typed validation.
 
 use crate::{
-    canonical_string, sha256_digest, AdmissibilityDetermination, GovernanceClearance,
-    GovernanceEvaluation,
+    canonical_string, sha256_digest, AdmissibilityDetermination,
+    BoundaryCrossingAssessment, GovernanceClearance, GovernanceEvaluation,
 };
 use jsonschema::JSONSchema;
 use serde_json::Value;
@@ -28,56 +10,61 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::path::PathBuf;
 
-// --- normalized reason codes (language-agnostic) -----------------------------
-
 pub const REASON_ACCEPT: &str = "ACCEPT";
 pub const REASON_SCHEMA_INVALID: &str = "SCHEMA_INVALID";
-pub const REASON_CLEARANCE_ALLOW_HAS_CONSTRAINTS: &str = "CLEARANCE_ALLOW_HAS_CONSTRAINTS";
+pub const REASON_CLEARANCE_ALLOW_HAS_CONSTRAINTS: &str =
+    "CLEARANCE_ALLOW_HAS_CONSTRAINTS";
 pub const REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS: &str =
     "CLEARANCE_MODIFY_MISSING_CONSTRAINTS";
-pub const REASON_CLEARANCE_ALLOW_STATE_MISMATCH: &str = "CLEARANCE_ALLOW_STATE_MISMATCH";
-pub const REASON_CLEARANCE_MODIFY_STATE_MISMATCH: &str = "CLEARANCE_MODIFY_STATE_MISMATCH";
+pub const REASON_CLEARANCE_ALLOW_STATE_MISMATCH: &str =
+    "CLEARANCE_ALLOW_STATE_MISMATCH";
+pub const REASON_CLEARANCE_MODIFY_STATE_MISMATCH: &str =
+    "CLEARANCE_MODIFY_STATE_MISMATCH";
 pub const REASON_EVALUATION_BINDING_DIGEST_MISMATCH: &str =
     "EVALUATION_BINDING_DIGEST_MISMATCH";
-pub const REASON_EVALUATION_BINDING_REF_MISMATCH: &str = "EVALUATION_BINDING_REF_MISMATCH";
+pub const REASON_EVALUATION_BINDING_REF_MISMATCH: &str =
+    "EVALUATION_BINDING_REF_MISMATCH";
 pub const REASON_CLEARANCE_DETERMINATION_DIGEST_MISMATCH: &str =
     "CLEARANCE_DETERMINATION_DIGEST_MISMATCH";
 pub const REASON_CLEARANCE_ACTION_MISMATCH: &str = "CLEARANCE_ACTION_MISMATCH";
-pub const REASON_CLEARANCE_ENVELOPE_MISMATCH: &str = "CLEARANCE_ENVELOPE_MISMATCH";
+pub const REASON_CLEARANCE_ENVELOPE_MISMATCH: &str =
+    "CLEARANCE_ENVELOPE_MISMATCH";
 pub const REASON_CLEARANCE_NEGATIVE_STATE: &str = "CLEARANCE_NEGATIVE_STATE";
 pub const REASON_CLEARANCE_EXPIRED: &str = "CLEARANCE_EXPIRED";
 pub const REASON_CLEARANCE_REVOKED: &str = "CLEARANCE_REVOKED";
-
-// --- artifact type registry --------------------------------------------------
 
 pub struct ArtifactType {
     pub schema_file: &'static str,
 }
 
 pub fn artifact_types() -> HashMap<&'static str, ArtifactType> {
-    let mut m = HashMap::new();
-    m.insert(
-        "GovernanceEvaluation",
-        ArtifactType {
-            schema_file: "governance-evaluation-v0.2.schema.json",
-        },
-    );
-    m.insert(
-        "AdmissibilityDetermination",
-        ArtifactType {
-            schema_file: "admissibility-determination-v0.2.schema.json",
-        },
-    );
-    m.insert(
-        "GovernanceClearance",
-        ArtifactType {
-            schema_file: "governance-clearance.schema.json",
-        },
-    );
-    m
+    HashMap::from([
+        (
+            "GovernanceEvaluation",
+            ArtifactType {
+                schema_file: "governance-evaluation-v0.2.schema.json",
+            },
+        ),
+        (
+            "AdmissibilityDetermination",
+            ArtifactType {
+                schema_file: "admissibility-determination-v0.2.schema.json",
+            },
+        ),
+        (
+            "GovernanceClearance",
+            ArtifactType {
+                schema_file: "governance-clearance.schema.json",
+            },
+        ),
+        (
+            "BoundaryCrossingAssessment",
+            ArtifactType {
+                schema_file: "boundary-crossing-assessment-v0.2.schema.json",
+            },
+        ),
+    ])
 }
-
-// --- wrapper types -----------------------------------------------------------
 
 pub struct Raw<T> {
     pub data: Value,
@@ -86,7 +73,7 @@ pub struct Raw<T> {
 
 impl<T> Raw<T> {
     pub fn new(data: Value) -> Self {
-        Raw {
+        Self {
             data,
             _marker: std::marker::PhantomData,
         }
@@ -116,19 +103,19 @@ pub struct ValidationResult {
 
 impl ValidationResult {
     pub fn to_json(&self) -> Result<String, Box<dyn Error>> {
-        let mut out = serde_json::Map::new();
-        out.insert("decision".into(), Value::String(self.decision.clone()));
-        out.insert("reason_code".into(), Value::String(self.reason_code.clone()));
-        if let Some(c) = &self.canonical {
-            out.insert("canonical".into(), Value::String(c.clone()));
+        let mut output = serde_json::Map::new();
+        output.insert("decision".into(), Value::String(self.decision.clone()));
+        output.insert("reason_code".into(), Value::String(self.reason_code.clone()));
+        if let Some(value) = &self.canonical {
+            output.insert("canonical".into(), Value::String(value.clone()));
         }
-        if let Some(d) = &self.payload_digest {
-            out.insert("payload_digest".into(), Value::String(d.clone()));
+        if let Some(value) = &self.payload_digest {
+            output.insert("payload_digest".into(), Value::String(value.clone()));
         }
-        if let Some(p) = &self.error_path {
-            out.insert("error_path".into(), Value::String(p.clone()));
+        if let Some(value) = &self.error_path {
+            output.insert("error_path".into(), Value::String(value.clone()));
         }
-        serde_json::to_string(&Value::Object(out)).map_err(|e| e.into())
+        serde_json::to_string(&Value::Object(output)).map_err(|error| error.into())
     }
 }
 
@@ -139,36 +126,43 @@ pub struct SchemaValidationError {
 }
 
 impl std::fmt::Display for SchemaValidationError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let loc = if self.path.is_empty() { "<root>" } else { &self.path };
-        write!(f, "{} (at {})", self.message, loc)
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let location = if self.path.is_empty() {
+            "<root>"
+        } else {
+            &self.path
+        };
+        write!(formatter, "{} (at {})", self.message, location)
     }
 }
 
 impl Error for SchemaValidationError {}
 
-// --- schema loading ----------------------------------------------------------
-
 fn repo_root() -> PathBuf {
     let start = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    for cand in std::iter::once(start.clone()).chain(start.ancestors().map(|p| p.to_path_buf())) {
-        if cand.join("spec").join("governance-clearance.schema.json").exists() {
-            return cand;
+    for candidate in
+        std::iter::once(start.clone()).chain(start.ancestors().map(|path| path.to_path_buf()))
+    {
+        if candidate
+            .join("spec")
+            .join("governance-clearance.schema.json")
+            .exists()
+        {
+            return candidate;
         }
     }
     panic!("could not locate RACS spec/ directory");
 }
 
-fn get_validator(artifact_type: &str) -> Result<JSONSchema, Box<dyn Error>> {
+fn validator(artifact_type: &str) -> Result<JSONSchema, Box<dyn Error>> {
     let types = artifact_types();
     let entry = types
         .get(artifact_type)
         .ok_or_else(|| format!("unknown artifact_type: {artifact_type}"))?;
-    let path = repo_root().join("spec").join(entry.schema_file);
-    let text = std::fs::read_to_string(&path)?;
+    let text = std::fs::read_to_string(repo_root().join("spec").join(entry.schema_file))?;
     let schema: Value = serde_json::from_str(&text)?;
-    let validator = JSONSchema::compile(&schema).map_err(|e| e.to_string())?;
-    Ok(validator)
+    JSONSchema::compile(&schema)
+        .map_err(|error| error.to_string().into())
 }
 
 pub fn schema_sha256(artifact_type: &str) -> Result<String, Box<dyn Error>> {
@@ -176,36 +170,43 @@ pub fn schema_sha256(artifact_type: &str) -> Result<String, Box<dyn Error>> {
     let entry = types
         .get(artifact_type)
         .ok_or_else(|| format!("unknown artifact_type: {artifact_type}"))?;
-    let path = repo_root().join("spec").join(entry.schema_file);
-    let raw = std::fs::read(&path)?;
+    let raw = std::fs::read(repo_root().join("spec").join(entry.schema_file))?;
     use sha2::{Digest, Sha256};
-    let mut h = Sha256::new();
-    h.update(&raw);
-    Ok(format!("sha256:{:x}", h.finalize()))
+    let mut hasher = Sha256::new();
+    hasher.update(raw);
+    Ok(format!("sha256:{:x}", hasher.finalize()))
 }
 
-// --- core validate entrypoint -----------------------------------------------
-
-/// Validate raw JSON against the exact v0.2 schema and deserialize to the typed
-/// 3B model. Returns [`SchemaValidationError`] on any violation.
 pub fn validate(
     artifact_type: &str,
     raw: &Value,
 ) -> Result<Validated<Value>, SchemaValidationError> {
-    let validator = get_validator(artifact_type).map_err(|e| SchemaValidationError {
-        message: e.to_string(),
+    let validator = validator(artifact_type).map_err(|error| SchemaValidationError {
+        message: error.to_string(),
         path: String::new(),
     })?;
     if let Err(mut errors) = validator.validate(raw) {
-        let (msg, path) = match errors.next() {
-            Some(e) => (e.to_string(), e.instance_path.to_string()),
-            None => ("validation failed".to_string(), String::new()),
-        };
-        return Err(SchemaValidationError {
-            message: msg,
-            path,
-        });
+        let (message, path) = errors
+            .next()
+            .map(|error| (error.to_string(), error.instance_path.to_string()))
+            .unwrap_or_else(|| ("validation failed".into(), String::new()));
+        return Err(SchemaValidationError { message, path });
     }
+
+    if artifact_type == "BoundaryCrossingAssessment" {
+        let assessment: BoundaryCrossingAssessment =
+            serde_json::from_value(raw.clone()).map_err(|error| SchemaValidationError {
+                message: error.to_string(),
+                path: String::new(),
+            })?;
+        assessment
+            .validate_semantics()
+            .map_err(|message| SchemaValidationError {
+                message,
+                path: String::new(),
+            })?;
+    }
+
     Ok(Validated {
         artifact_type: artifact_type.to_string(),
         model: raw.clone(),
@@ -213,41 +214,39 @@ pub fn validate(
     })
 }
 
-/// Non-raising variant: returns an ACCEPT/REJECT [`ValidationResult`] with a
-/// normalized reason code. For ACCEPT, canonical bytes + digest are attached.
 pub fn check(artifact_type: &str, raw: &Value) -> ValidationResult {
     let validated = match validate(artifact_type, raw) {
-        Ok(v) => v,
-        Err(e) => {
+        Ok(value) => value,
+        Err(error) => {
             return ValidationResult {
                 decision: "REJECT".into(),
                 reason_code: REASON_SCHEMA_INVALID.into(),
                 canonical: None,
                 payload_digest: None,
-                error_path: Some(e.path),
-            };
+                error_path: Some(error.path),
+            }
         }
     };
 
     let (canonical, digest) = match typed_digest(artifact_type, &validated.model) {
-        Ok(pair) => pair,
-        Err(e) => {
+        Ok(value) => value,
+        Err(error) => {
             return ValidationResult {
                 decision: "REJECT".into(),
                 reason_code: REASON_SCHEMA_INVALID.into(),
                 canonical: None,
                 payload_digest: None,
-                error_path: Some(e.to_string()),
-            };
+                error_path: Some(error.to_string()),
+            }
         }
     };
 
     if artifact_type == "GovernanceClearance" {
         if let Ok(model) = serde_json::from_value::<GovernanceClearance>(validated.model.clone()) {
-            if let Some(sem) = clearance_intra_check(&model) {
+            if let Some(reason) = clearance_intra_check(&model) {
                 return ValidationResult {
                     decision: "REJECT".into(),
-                    reason_code: sem,
+                    reason_code: reason,
                     canonical: None,
                     payload_digest: None,
                     error_path: None,
@@ -265,20 +264,23 @@ pub fn check(artifact_type: &str, raw: &Value) -> ValidationResult {
     }
 }
 
-/// Deserialize the typed model and compute canonical + digest via the 3B kernel.
 fn typed_digest(artifact_type: &str, raw: &Value) -> Result<(String, String), Box<dyn Error>> {
     match artifact_type {
         "GovernanceEvaluation" => {
-            let m: GovernanceEvaluation = serde_json::from_value(raw.clone())?;
-            Ok((canonical_string(&m)?, sha256_digest(&m)?))
+            let model: GovernanceEvaluation = serde_json::from_value(raw.clone())?;
+            Ok((canonical_string(&model)?, sha256_digest(&model)?))
         }
         "AdmissibilityDetermination" => {
-            let m: AdmissibilityDetermination = serde_json::from_value(raw.clone())?;
-            Ok((canonical_string(&m)?, sha256_digest(&m)?))
+            let model: AdmissibilityDetermination = serde_json::from_value(raw.clone())?;
+            Ok((canonical_string(&model)?, sha256_digest(&model)?))
         }
         "GovernanceClearance" => {
-            let m: GovernanceClearance = serde_json::from_value(raw.clone())?;
-            Ok((canonical_string(&m)?, sha256_digest(&m)?))
+            let model: GovernanceClearance = serde_json::from_value(raw.clone())?;
+            Ok((canonical_string(&model)?, sha256_digest(&model)?))
+        }
+        "BoundaryCrossingAssessment" => {
+            let model: BoundaryCrossingAssessment = serde_json::from_value(raw.clone())?;
+            Ok((canonical_string(&model)?, sha256_digest(&model)?))
         }
         _ => Err(format!("unknown artifact_type: {artifact_type}").into()),
     }
@@ -295,16 +297,19 @@ fn clearance_intra_check(model: &GovernanceClearance) -> Option<String> {
             }
         }
         crate::Decision::Modify => {
-            if model.admissibility_state != crate::AdmissibilityState::ConditionallyAdmissible {
+            if model.admissibility_state
+                != crate::AdmissibilityState::ConditionallyAdmissible
+            {
                 return Some(REASON_CLEARANCE_MODIFY_STATE_MISMATCH.into());
             }
-            match &model.constraints {
-                None => return Some(REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS.into()),
-                Some(c) => {
-                    if !enforceable(c) {
-                        return Some(REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS.into());
-                    }
-                }
+            if model
+                .constraints
+                .as_ref()
+                .map(enforceable)
+                .unwrap_or(false)
+                == false
+            {
+                return Some(REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS.into());
             }
         }
         _ => {}
@@ -314,19 +319,15 @@ fn clearance_intra_check(model: &GovernanceClearance) -> Option<String> {
 
 fn enforceable(constraints: &Value) -> bool {
     match constraints {
-        Value::Object(map) => {
-            if let Some(Value::Array(rules)) = map.get("rules") {
-                if !rules.is_empty() {
-                    return true;
-                }
+        Value::Object(values) => {
+            if matches!(values.get("rules"), Some(Value::Array(rules)) if !rules.is_empty()) {
+                return true;
             }
-            let ref_ok =
-                matches!(map.get("constraint_set_ref"), Some(Value::String(s)) if !s.is_empty());
-            let digest_ok = matches!(
-                map.get("constraint_set_digest"),
-                Some(Value::String(s)) if s.starts_with("sha256:")
-            );
-            ref_ok && digest_ok
+            matches!(values.get("constraint_set_ref"), Some(Value::String(value)) if !value.is_empty())
+                && matches!(
+                    values.get("constraint_set_digest"),
+                    Some(Value::String(value)) if value.starts_with("sha256:")
+                )
         }
         _ => false,
     }
