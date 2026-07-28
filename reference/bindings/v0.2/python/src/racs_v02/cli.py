@@ -45,7 +45,11 @@ def _runtime_check(vector: dict[str, Any]) -> dict[str, Any]:
             )
             action_envelope = resolved["action_envelope"]
 
-            verification = verify_evaluation_binding(determination, evaluation)
+            verification = verify_evaluation_binding(
+                determination,
+                evaluation,
+                boundary_assessment=assessment,
+            )
             if verification.decision == "ACCEPT":
                 verification = verify_clearance_binding(
                     clearance,
@@ -58,7 +62,17 @@ def _runtime_check(vector: dict[str, Any]) -> dict[str, Any]:
         elif artifact_type == "AdmissibilityDetermination":
             determination = AdmissibilityDetermination.model_validate(payload)
             evaluation = GovernanceEvaluation.model_validate(resolved["evaluation"])
-            verification = verify_evaluation_binding(determination, evaluation)
+            assessment_payload = resolved.get("boundary_assessment")
+            assessment = (
+                BoundaryCrossingAssessment.model_validate(assessment_payload)
+                if assessment_payload is not None
+                else None
+            )
+            verification = verify_evaluation_binding(
+                determination,
+                evaluation,
+                boundary_assessment=assessment,
+            )
 
         if verification is not None and verification.decision == "REJECT":
             decision = verification.decision
