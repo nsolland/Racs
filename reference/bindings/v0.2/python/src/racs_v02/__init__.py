@@ -1,15 +1,10 @@
 """RACS v0.2 canonical contract bindings.
 
 Stage 3A — canonicalization kernel (RFC 8785 + sha256 digests).
-Stage 3B — typed model bindings for the three v0.2 payload schemas.
-Stage 3C — runtime conformance: schema validation (Port A) + cross-artifact
-           verification (Port B) with Raw/Validated/Verified wrappers.
-
-The canonical output of the kernel MUST be byte-for-byte identical across the
-Python, Rust, and TypeScript bindings, verified by the shared JCS test vectors
-under test-vectors/jcs/.
+Stage 3B — typed model bindings for the v0.2 payload schemas.
+Stage 3C — runtime conformance: schema validation and cross-artifact verification.
+Runtime continuity — active execution, observation, intervention and recovery payloads.
 """
-
 from .canonical import canonical_bytes, canonical_str
 from .digest import sha256_digest, verify_payload_digest
 from .models import (
@@ -23,6 +18,32 @@ from .models import (
     Reversibility,
     Status,
 )
+from .continuity import (
+    CompletionContract,
+    ContinuityDecision,
+    ContinuityDecisionType,
+    EnvironmentGovernanceProfile,
+    ExecutorBinding,
+    ExecutorType,
+    FailClosedPolicy,
+    GovernedCapabilityManifest,
+    GovernedExecutionSession,
+    HumanPresenceMode,
+    InterventionReceipt,
+    InterventionResult,
+    InterventionType,
+    ObservationQuality,
+    ObservationSourceType,
+    ProgressContract,
+    RecoveryBudget,
+    RecoveryNextState,
+    RecoveryPlan,
+    RecoveryReceipt,
+    RecoveryResult,
+    RuntimeObservation,
+    SessionState,
+    SignalClass,
+)
 from .validation import (
     ARTIFACT_TYPES,
     REASON_ACCEPT,
@@ -34,6 +55,7 @@ from .validation import (
     schema_sha256,
     validate,
 )
+from .continuity_validation import CONTINUITY_ARTIFACT_TYPES
 from .verification import (
     VerificationResult,
     verify_clearance_binding,
@@ -54,8 +76,32 @@ __all__ = [
     "AdmissibilityState",
     "ConsequenceClass",
     "Reversibility",
-    # 3C
+    "GovernedCapabilityManifest",
+    "EnvironmentGovernanceProfile",
+    "GovernedExecutionSession",
+    "RuntimeObservation",
+    "ContinuityDecision",
+    "InterventionReceipt",
+    "RecoveryPlan",
+    "RecoveryReceipt",
+    "ProgressContract",
+    "CompletionContract",
+    "ExecutorBinding",
+    "RecoveryBudget",
+    "ExecutorType",
+    "HumanPresenceMode",
+    "FailClosedPolicy",
+    "SessionState",
+    "ObservationSourceType",
+    "SignalClass",
+    "ObservationQuality",
+    "ContinuityDecisionType",
+    "InterventionType",
+    "InterventionResult",
+    "RecoveryResult",
+    "RecoveryNextState",
     "ARTIFACT_TYPES",
+    "CONTINUITY_ARTIFACT_TYPES",
     "REASON_ACCEPT",
     "Raw",
     "Validated",

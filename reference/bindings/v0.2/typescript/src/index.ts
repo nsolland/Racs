@@ -6,14 +6,6 @@ export interface Canonicalizable {
   digest(): string;
 }
 
-/**
- * RACS v0.2 canonical contract bindings — canonicalization kernel (3A) + typed
- * model bindings (3B).
- *
- * Uses `json-canonicalize` (RFC 8785 / JCS). The canonical output MUST be
- * byte-for-byte identical across the Python, Rust, and TypeScript bindings.
- */
-
 export function canonicalString(value: unknown): string {
   return jcs.canonicalize(value);
 }
@@ -23,31 +15,21 @@ export function sha256Digest(value: unknown): string {
   return "sha256:" + createHash("sha256").update(Buffer.from(canon, "utf-8")).digest("hex");
 }
 
-// --- Enums (mirror schema `enum` constraints exactly) ----------------------
-
 export type Decision =
   | "ALLOW" | "MODIFY" | "DEFER" | "DENY" | "STEP_UP" | "HALT";
-
 export type Status =
   | "PRESENT_AND_VALID" | "PRESENT_BUT_INVALID" | "MISSING" | "UNKNOWN"
   | "UNAVAILABLE" | "STALE" | "REVOKED" | "CONFLICTING";
-
 export type AdmissibilityState =
   | "ADMISSIBLE" | "CONDITIONALLY_ADMISSIBLE" | "NOT_ADMISSIBLE"
   | "INDETERMINATE" | "STALE" | "REVOKED" | "HALTED" | "REQUIRES_STEP_UP";
-
 export type ConsequenceClass = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
-
 export type Reversibility = "REVERSIBLE" | "COMPENSATABLE" | "IRREVERSIBLE";
-
-// --- Shared sub-types -------------------------------------------------------
 
 export interface EvaluationBinding {
   evaluation_ref: string;
-  evaluation_digest: string; // sha256:<64 hex>
+  evaluation_digest: string;
 }
-
-// --- Typed model classes (pure data + canonical helpers) --------------------
 
 export class GovernanceEvaluation implements Canonicalizable {
   evaluation_id!: string;
@@ -67,13 +49,8 @@ export class GovernanceEvaluation implements Canonicalizable {
   constraints?: unknown;
   evaluated_at!: string;
   valid_until!: string;
-
-  canonical(): string {
-    return jcs.canonicalize(this);
-  }
-  digest(): string {
-    return sha256Digest(this);
-  }
+  canonical(): string { return jcs.canonicalize(this); }
+  digest(): string { return sha256Digest(this); }
 }
 
 export class AdmissibilityDetermination implements Canonicalizable {
@@ -94,13 +71,8 @@ export class AdmissibilityDetermination implements Canonicalizable {
   determined_at!: string;
   valid_until!: string;
   revocation_registry_ref!: string;
-
-  canonical(): string {
-    return jcs.canonicalize(this);
-  }
-  digest(): string {
-    return sha256Digest(this);
-  }
+  canonical(): string { return jcs.canonicalize(this); }
+  digest(): string { return sha256Digest(this); }
 }
 
 export class GovernanceClearance implements Canonicalizable {
@@ -131,16 +103,10 @@ export class GovernanceClearance implements Canonicalizable {
   evaluator_refs!: string[];
   admissibility_determination_ref!: string;
   admissibility_determination_digest!: string;
-
-  canonical(): string {
-    return jcs.canonicalize(this);
-  }
-  digest(): string {
-    return sha256Digest(this);
-  }
+  canonical(): string { return jcs.canonicalize(this); }
+  digest(): string { return sha256Digest(this); }
 }
 
-// --- Stage 3C: runtime conformance (Port A schema + Port B cross-artifact) ---
-
+export * from "./continuity.js";
 export * from "./validation.js";
 export * from "./verification.js";

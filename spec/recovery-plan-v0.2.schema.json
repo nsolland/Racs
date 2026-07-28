@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/recovery-plan-v0.2.schema.json",
+  "title": "RecoveryPlanV0_2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "recovery_plan_id",
+    "source_session_id",
+    "source_incident_or_intervention_ref",
+    "recovery_capability_manifest_digest",
+    "recovery_action_envelope_digest",
+    "rollback_authority_digest",
+    "safe_target_state_digest",
+    "recovery_budget",
+    "termination_conditions",
+    "fallback_halt_condition",
+    "required_human_roles",
+    "carries_execution_authority"
+  ],
+  "properties": {
+    "schema_version": {"const": "racs.recovery-plan.v0.2"},
+    "recovery_plan_id": {"type": "string", "minLength": 1},
+    "source_session_id": {"type": "string", "minLength": 1},
+    "source_incident_or_intervention_ref": {"type": "string", "minLength": 1},
+    "recovery_capability_manifest_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "recovery_action_envelope_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "rollback_authority_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "safe_target_state_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "recovery_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_duration_ms", "max_attempts"],
+      "properties": {
+        "max_duration_ms": {"type": "integer", "minimum": 1},
+        "max_attempts": {"type": "integer", "minimum": 1}
+      }
+    },
+    "termination_conditions": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+    "fallback_halt_condition": {"type": "string", "minLength": 1},
+    "required_human_roles": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "carries_execution_authority": {"const": false}
+  }
+}

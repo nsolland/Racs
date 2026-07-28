@@ -1,17 +1,13 @@
 //! Conformance binary for canonicalization and Stage 3C runtime vectors.
-//!
-//! Usage:
-//!   racs-v02-conformance --vector <jcs-vector-file>
-//!   racs-v02-conformance --file <json-file>
-//!   racs-v02-conformance --model-digest <golden-file>
-//!   racs-v02-conformance --check <runtime-vector-file>
 
 use std::env;
 use std::fs;
 use std::process;
 
 use racs_v02::validation::check;
-use racs_v02::verification::{verify_clearance_binding, verify_evaluation_binding};
+use racs_v02::verification::{
+    verify_clearance_binding_at, verify_evaluation_binding,
+};
 use racs_v02::{
     canonical_string, sha256_digest, AdmissibilityDetermination, GovernanceClearance,
     GovernanceEvaluation,
@@ -20,102 +16,119 @@ use serde_json::Value;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let mode = args.get(1).map(|s| s.as_str());
-    let path = args.get(2).map(|s| s.as_str());
+    let mode = args.get(1).map(|value| value.as_str());
+    let path = args.get(2).map(|value| value.as_str());
 
     match (mode, path) {
-        (Some("--vector"), Some(p)) => {
-            let text = fs::read_to_string(p).unwrap_or_else(|e| die(&format!("read {p}: {e}")));
-            let vec: Value =
-                serde_json::from_str(&text).unwrap_or_else(|e| die(&format!("parse {p}: {e}")));
-            let (subject, exp_canon, exp_digest) = if vec.get("input").is_some() {
-                (
-                    vec["input"].clone(),
-                    vec["expected_canonical"].clone(),
-                    vec["expected_digest"].clone(),
-                )
-            } else if vec.get("payload").is_some() {
-                (
-                    vec["payload"].clone(),
-                    vec["canonical_payload"].clone(),
-                    vec["payload_digest"].clone(),
-                )
-            } else {
-                die("vector has neither 'input' nor 'payload'");
-            };
-            let got_canon = canonical_string(&subject).unwrap();
+        (Some("--vector"), Some(path)) => {
+            let text = fs::read_to_string(path)
+                .unwrap_or_else(|error| die(&format!("read {path}: {error}")));
+            let vector: Value = serde_json::from_str(&text)
+                .unwrap_or_else(|error| die(&format!("parse {path}: {error}")));
+            let (subject, expected_canonical, expected_digest) =
+                if vector.get("input").is_some() {
+                    (
+                        vector["input"].clone(),
+                        vector["expected_canonical"].clone(),
+                        vector["expected_digest"].clone(),
+                    )
+                } else if vector.get("payload").is_some() {
+                    (
+                        vector["payload"].clone(),
+                        vector["canonical_payload"].clone(),
+                        vector["payload_digest"].clone(),
+                    )
+                } else {
+                    die("vector has neither 'input' nor 'payload'");
+                };
+            let got_canonical = canonical_string(&subject).unwrap();
             let got_digest = sha256_digest(&subject).unwrap();
-            let exp_canon = exp_canon.as_str().unwrap_or("");
-            let exp_digest = exp_digest.as_str().unwrap_or("");
-            let ok = got_canon == exp_canon && got_digest == exp_digest;
-            let out = serde_json::json!({
-                "got_canonical": got_canon,
+            let expected_canonical = expected_canonical.as_str().unwrap_or("");
+            let expected_digest = expected_digest.as_str().unwrap_or("");
+            let matches =
+                got_canonical == expected_canonical && got_digest == expected_digest;
+            let output = serde_json::json!({
+                "got_canonical": got_canonical,
                 "got_digest": got_digest,
-                "expected_canonical": exp_canon,
-                "expected_digest": exp_digest,
-                "match": ok,
+                "expected_canonical": expected_canonical,
+                "expected_digest": expected_digest,
+                "match": matches,
             });
-            println!("{}", serde_json::to_string_pretty(&out).unwrap());
-            if !ok {
+            println!("{}", serde_json::to_string_pretty(&output).unwrap());
+            if !matches {
                 process::exit(1);
             }
         }
-        (Some("--file"), Some(p)) => {
-            let text = fs::read_to_string(p).unwrap_or_else(|e| die(&format!("read {p}: {e}")));
-            let val: Value =
-                serde_json::from_str(&text).unwrap_or_else(|e| die(&format!("parse {p}: {e}")));
-            let canon = canonical_string(&val).unwrap();
-            let digest = sha256_digest(&val).unwrap();
+        (Some("--file"), Some(path)) => {
+            let text = fs::read_to_string(path)
+                .unwrap_or_else(|error| die(&format!("read {path}: {error}")));
+            let value: Value = serde_json::from_str(&text)
+                .unwrap_or_else(|error| die(&format!("parse {path}: {error}")));
+            let canonical = canonical_string(&value).unwrap();
+            let digest = sha256_digest(&value).unwrap();
             println!(
                 "{}",
-                serde_json::json!({"canonical": canon, "digest": digest})
+                serde_json::json!({"canonical": canonical, "digest": digest})
             );
         }
-        (Some("--model-digest"), Some(p)) => {
-            let text = fs::read_to_string(p).unwrap_or_else(|e| die(&format!("read {p}: {e}")));
-            let vec: Value =
-                serde_json::from_str(&text).unwrap_or_else(|e| die(&format!("parse {p}: {e}")));
-            let payload = vec
+        (Some("--model-digest"), Some(path)) => {
+            let text = fs::read_to_string(path)
+                .unwrap_or_else(|error| die(&format!("read {path}: {error}")));
+            let vector: Value = serde_json::from_str(&text)
+                .unwrap_or_else(|error| die(&format!("parse {path}: {error}")));
+            let payload = vector
                 .get("payload")
                 .cloned()
                 .unwrap_or_else(|| die("golden has no 'payload'"));
-            let ev: GovernanceEvaluation =
-                serde_json::from_value(payload).unwrap_or_else(|e| die(&format!("model: {e}")));
-            let digest = ev.digest().unwrap();
+            let evaluation: GovernanceEvaluation = serde_json::from_value(payload)
+                .unwrap_or_else(|error| die(&format!("model: {error}")));
+            let digest = evaluation.digest().unwrap();
             println!("{}", serde_json::json!({"digest": digest}));
         }
-        (Some("--check"), Some(p)) => {
-            let text = fs::read_to_string(p).unwrap_or_else(|e| die(&format!("read {p}: {e}")));
-            let vec: Value =
-                serde_json::from_str(&text).unwrap_or_else(|e| die(&format!("parse {p}: {e}")));
-            let artifact_type = vec["artifact_type"]
+        (Some("--check"), Some(path)) => {
+            let text = fs::read_to_string(path)
+                .unwrap_or_else(|error| die(&format!("read {path}: {error}")));
+            let vector: Value = serde_json::from_str(&text)
+                .unwrap_or_else(|error| die(&format!("parse {path}: {error}")));
+            let artifact_type = vector["artifact_type"]
                 .as_str()
                 .unwrap_or_else(|| die("runtime vector has no artifact_type"));
-            let payload = &vec["payload"];
+            let payload = &vector["payload"];
+            let verification_time = vector
+                .get("verification_time")
+                .and_then(|value| value.as_str());
             let port_a = check(artifact_type, payload);
 
             let mut decision = port_a.decision.clone();
             let mut reason_code = port_a.reason_code.clone();
 
             if decision == "ACCEPT" {
-                if let Some(resolved) = vec.get("resolved") {
+                if let Some(resolved) = vector.get("resolved") {
                     if artifact_type == "GovernanceClearance" {
-                        let clearance: GovernanceClearance = serde_json::from_value(payload.clone())
-                            .unwrap_or_else(|e| die(&format!("clearance model: {e}")));
-                        let determination: AdmissibilityDetermination = serde_json::from_value(
-                            resolved["determination"].clone(),
+                        let clearance: GovernanceClearance = serde_json::from_value(
+                            payload.clone(),
                         )
-                        .unwrap_or_else(|e| die(&format!("determination model: {e}")));
-                        let evaluation: GovernanceEvaluation = serde_json::from_value(
-                            resolved["evaluation"].clone(),
-                        )
-                        .unwrap_or_else(|e| die(&format!("evaluation model: {e}")));
+                        .unwrap_or_else(|error| die(&format!("clearance model: {error}")));
+                        let determination: AdmissibilityDetermination =
+                            serde_json::from_value(resolved["determination"].clone())
+                                .unwrap_or_else(|error| {
+                                    die(&format!("determination model: {error}"))
+                                });
+                        let evaluation: GovernanceEvaluation =
+                            serde_json::from_value(resolved["evaluation"].clone())
+                                .unwrap_or_else(|error| {
+                                    die(&format!("evaluation model: {error}"))
+                                });
 
                         let mut verification =
                             verify_evaluation_binding(&determination, &evaluation);
                         if verification.decision == "ACCEPT" {
-                            verification =
-                                verify_clearance_binding(&clearance, &determination, None);
+                            verification = verify_clearance_binding_at(
+                                &clearance,
+                                &determination,
+                                None,
+                                verification_time,
+                            );
                         }
                         if verification.decision == "REJECT" {
                             decision = verification.decision;
@@ -124,11 +137,14 @@ fn main() {
                     } else if artifact_type == "AdmissibilityDetermination" {
                         let determination: AdmissibilityDetermination =
                             serde_json::from_value(payload.clone())
-                                .unwrap_or_else(|e| die(&format!("determination model: {e}")));
-                        let evaluation: GovernanceEvaluation = serde_json::from_value(
-                            resolved["evaluation"].clone(),
-                        )
-                        .unwrap_or_else(|e| die(&format!("evaluation model: {e}")));
+                                .unwrap_or_else(|error| {
+                                    die(&format!("determination model: {error}"))
+                                });
+                        let evaluation: GovernanceEvaluation =
+                            serde_json::from_value(resolved["evaluation"].clone())
+                                .unwrap_or_else(|error| {
+                                    die(&format!("evaluation model: {error}"))
+                                });
                         let verification =
                             verify_evaluation_binding(&determination, &evaluation);
                         if verification.decision == "REJECT" {
@@ -139,42 +155,48 @@ fn main() {
                 }
             }
 
-            let mut out = serde_json::Map::new();
-            out.insert("id".into(), vec.get("id").cloned().unwrap_or(Value::Null));
-            out.insert("decision".into(), Value::String(decision.clone()));
-            out.insert("reason_code".into(), Value::String(reason_code.clone()));
+            let mut output = serde_json::Map::new();
+            output.insert(
+                "id".into(),
+                vector.get("id").cloned().unwrap_or(Value::Null),
+            );
+            output.insert("decision".into(), Value::String(decision.clone()));
+            output.insert("reason_code".into(), Value::String(reason_code.clone()));
             if decision == "ACCEPT" {
                 if let Some(canonical) = port_a.canonical {
-                    out.insert("canonical".into(), Value::String(canonical));
+                    output.insert("canonical".into(), Value::String(canonical));
                 }
                 if let Some(digest) = port_a.payload_digest {
-                    out.insert("payload_digest".into(), Value::String(digest));
+                    output.insert("payload_digest".into(), Value::String(digest));
                 }
             }
 
-            let expected = vec.get("expected").cloned().unwrap_or(Value::Null);
-            let expected_reason = vec.get("reason_code").cloned().unwrap_or(Value::Null);
+            let expected = vector.get("expected").cloned().unwrap_or(Value::Null);
+            let expected_reason = vector
+                .get("reason_code")
+                .cloned()
+                .unwrap_or(Value::Null);
             let matches = expected.as_str() == Some(decision.as_str())
                 && expected_reason.as_str() == Some(reason_code.as_str());
-            out.insert("expected".into(), expected);
-            out.insert("expected_reason_code".into(), expected_reason);
-            out.insert("match".into(), Value::Bool(matches));
+            output.insert("expected".into(), expected);
+            output.insert("expected_reason_code".into(), expected_reason);
+            output.insert("match".into(), Value::Bool(matches));
 
             println!(
                 "{}",
-                serde_json::to_string_pretty(&Value::Object(out)).unwrap()
+                serde_json::to_string_pretty(&Value::Object(output)).unwrap()
             );
             if !matches {
                 process::exit(1);
             }
         }
-        _ => {
-            die("usage: racs-v02-conformance (--vector <file> | --file <file> | --model-digest <golden-file> | --check <runtime-vector-file>)");
-        }
+        _ => die(
+            "usage: racs-v02-conformance (--vector <file> | --file <file> | --model-digest <golden-file> | --check <runtime-vector-file>)",
+        ),
     }
 }
 
-fn die(msg: &str) -> ! {
-    eprintln!("error: {msg}");
+fn die(message: &str) -> ! {
+    eprintln!("error: {message}");
     process::exit(2);
 }

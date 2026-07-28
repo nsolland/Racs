@@ -3,6 +3,7 @@
   "artifact_type": "GovernanceClearance",
   "expected": "ACCEPT",
   "reason_code": "ACCEPT",
+  "verification_time": "2026-07-23T12:15:00Z",
   "payload": {
     "clearance_id": "clr-001",
     "action_id": "act-001",

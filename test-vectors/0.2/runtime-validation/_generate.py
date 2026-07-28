@@ -3,50 +3,29 @@
 Run from repo root:
     python test-vectors/0.2/runtime-validation/_generate.py
 
-Produces, under test-vectors/0.2/runtime-validation/:
-    governance-evaluation/      positive + negative vectors
-    admissibility-determination/ positive + negative vectors
-    governance-clearance/        positive + negative vectors
-    cross-artifact-bindings/     a coherent positive chain + negative binding tests
-
-Each vector is a JSON document:
-    {
-      "id": "<stable id>",
-      "artifact_type": "GovernanceEvaluation" | "AdmissibilityDetermination" | "GovernanceClearance",
-      "expected": "ACCEPT" | "REJECT",
-      "reason_code": "<NORMALIZED_REASON_CODE>",
-      "payload": { ... }
-    }
-
-All three bindings (Python/Rust/TypeScript) MUST emit the same `expected`
-decision and `reason_code`, and (for ACCEPT) the same canonical bytes + digest.
+Cross-artifact vectors may include ``verification_time``. This pins validity-window
+checks to a deterministic RFC 3339 instant instead of the machine wall clock.
 """
-
 from __future__ import annotations
 
 import json
-import subprocess
 import sys
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[3]  # test-vectors/0.2/runtime-validation -> repo (Racs)
+REPO = Path(__file__).resolve().parents[3]
 VEC = REPO / "test-vectors" / "0.2" / "runtime-validation"
 
-# Import the Python binding so we can compute the *true* payload_digest for the
-# positive chain (the canonical chain must be reproducible in all 3 languages).
 sys.path.insert(0, str(REPO / "reference" / "bindings" / "v0.2" / "python"))
 from racs_v02 import (  # noqa: E402
     AdmissibilityDetermination,
     GovernanceClearance,
     GovernanceEvaluation,
-    verify_clearance_binding,
-    verify_evaluation_binding,
 )
 
-
-D = "sha256:" + "a" * 64  # shared placeholder digest for non-binding fields
+D = "sha256:" + "a" * 64
 EV_DIGEST = "sha256:" + "e" * 64
 DET_DIGEST = "sha256:" + "d" * 64
+VERIFICATION_TIME = "2026-07-23T12:15:00Z"
 
 
 def ev_payload() -> dict:
@@ -124,13 +103,14 @@ def clr_payload() -> dict:
     }
 
 
-def write(artifact_dir: str, name: str, doc: dict):
-    p = VEC / artifact_dir / name
-    p.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print("wrote", p.relative_to(REPO))
+def write(artifact_dir: str, name: str, document: dict) -> None:
+    path = VEC / artifact_dir / name
+    path.write_text(
+        json.dumps(document, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    print("wrote", path.relative_to(REPO))
 
-
-# --- governance-evaluation vectors ------------------------------------------
 
 write(
     "governance-evaluation",
@@ -186,8 +166,6 @@ write(
     },
 )
 
-# --- admissibility-determination vectors ------------------------------------
-
 write(
     "admissibility-determination",
     "det_accept.json",
@@ -201,7 +179,7 @@ write(
 )
 
 det_bad = det_payload()
-det_bad["evaluation_bindings"] = []  # minItems:1
+det_bad["evaluation_bindings"] = []
 write(
     "admissibility-determination",
     "det_reject_empty_bindings.json",
@@ -228,10 +206,6 @@ write(
     },
 )
 
-# --- governance-clearance vectors -------------------------------------------
-
-# First compute the REAL payload_digest for the ALLOW clearance payload so that
-# the positive vector is internally consistent (digest == canonical digest).
 _clr = clr_payload()
 _clr_model = GovernanceClearance.model_validate(_clr)
 _clr["payload_digest"] = _clr_model.model_digest()
@@ -248,9 +222,11 @@ write(
 )
 
 clr_bad = clr_payload()
-clr_bad["constraints"] = {"machine_readable": True, "binds_exact_action": True,
-                          "rules": [{"id": "r1", "predicate": "max", "target": "x", "value": 5}]}
-# Valid digest for this payload (so the rejection is purely semantic, not schema).
+clr_bad["constraints"] = {
+    "machine_readable": True,
+    "binds_exact_action": True,
+    "rules": [{"id": "r1", "predicate": "max", "target": "x", "value": 5}],
+}
 clr_bad_model = GovernanceClearance.model_validate(clr_bad)
 clr_bad["payload_digest"] = clr_bad_model.model_digest()
 write(
@@ -268,7 +244,6 @@ write(
 clr_bad2 = clr_payload()
 clr_bad2["decision"] = "MODIFY"
 clr_bad2["admissibility_state"] = "CONDITIONALLY_ADMISSIBLE"
-# missing constraints -> MODIFY requires constraints (valid digest otherwise)
 clr_bad2_model = GovernanceClearance.model_validate(clr_bad2)
 clr_bad2["payload_digest"] = clr_bad2_model.model_digest()
 write(
@@ -284,7 +259,7 @@ write(
 )
 
 clr_bad3 = clr_payload()
-clr_bad3["admissibility_state"] = "CONDITIONALLY_ADMISSIBLE"  # ALLOW but wrong state
+clr_bad3["admissibility_state"] = "CONDITIONALLY_ADMISSIBLE"
 clr_bad3_model = GovernanceClearance.model_validate(clr_bad3)
 clr_bad3["payload_digest"] = clr_bad3_model.model_digest()
 write(
@@ -300,7 +275,7 @@ write(
 )
 
 clr_bad4 = clr_payload()
-clr_bad4["replay_nonce"] = "short"  # minLength 16
+clr_bad4["replay_nonce"] = "short"
 write(
     "governance-clearance",
     "clr_reject_short_nonce.json",
@@ -313,9 +288,6 @@ write(
     },
 )
 
-# --- cross-artifact-bindings ------------------------------------------------
-
-# Positive chain: evaluation -> determination -> clearance, all digests coherent.
 _ev_actual = GovernanceEvaluation.model_validate(ev_payload()).model_digest()
 _det_chain = det_payload()
 _det_chain["evaluation_bindings"] = [
@@ -335,6 +307,7 @@ write(
         "artifact_type": "GovernanceClearance",
         "expected": "ACCEPT",
         "reason_code": "ACCEPT",
+        "verification_time": VERIFICATION_TIME,
         "payload": _clr_chain,
         "resolved": {
             "evaluation": ev_payload(),
@@ -343,9 +316,8 @@ write(
     },
 )
 
-# Negative: determination digest mismatch
 _clr_m = clr_payload()
-_clr_m["admissibility_determination_digest"] = DET_DIGEST  # wrong vs actual
+_clr_m["admissibility_determination_digest"] = DET_DIGEST
 _clr_m_model = GovernanceClearance.model_validate(_clr_m)
 _clr_m["payload_digest"] = _clr_m_model.model_digest()
 write(
@@ -361,7 +333,6 @@ write(
     },
 )
 
-# Negative: evaluation binding digest mismatch
 _det_badbind = det_payload()
 _det_badbind["evaluation_bindings"] = [
     {"evaluation_ref": "ev-001", "evaluation_digest": "sha256:" + "0" * 64}
