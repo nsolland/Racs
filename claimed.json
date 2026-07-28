@@ -153,7 +153,9 @@
       "runtime-continuity files and bindings owned by Racs #78",
       "shared documentation"
     ],
-    "status": "claimed",
+    "status": "ready",
+    "last_verified_head": "7b5bb462bb6a9ec51168da17056132147c6fec38",
+    "tests": "6 local harness tests pass; isolated GitHub Actions integration run 30342856278 success; 18 scenarios, 17 prohibited, 14 hard gates, zero escapes; result digest sha256:48ca88997f0fb321e3e7e33a48ec52a5abceab8db68de714a4b45cb1557e4ad3",
     "dependencies": "Racs #77, #79, #81 and #83 merged; no file overlap with open Racs #78"
   }
 }
