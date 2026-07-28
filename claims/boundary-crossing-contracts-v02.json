@@ -43,13 +43,40 @@
         "governance_evaluation_golden_digest": "sha256:532d2a571f8536890bf9b79994703c63a44c01ba40f71b4733d045674bdb3273",
         "verification_mode": "local replay against exact UTF-8 contents fetched from branch head"
       }
+    },
+    {
+      "stage": "stage-3-rust-and-typescript-contract-conformance",
+      "evidence": {
+        "commit": "6e6bf7f1710f3d9f51ec8715233ce45f875d90b3",
+        "rust": [
+          "typed BoundaryCrossingAssessment and binding models",
+          "semantic boundary validation",
+          "full boundary-chain verification",
+          "canonical ActionEnvelope digest binding",
+          "runtime CLI and conformance tests"
+        ],
+        "typescript": [
+          "typed BoundaryCrossingAssessment and binding models",
+          "semantic boundary validation",
+          "full boundary-chain verification",
+          "canonical ActionEnvelope digest binding",
+          "runtime CLI and active test script"
+        ],
+        "continuity_fixture": {
+          "evaluation_binding_added": true,
+          "governance_evaluation_digest": "sha256:a652db723e35f8dee009134b356aa6d3f4889b676bbb261247c1280132c40560"
+        },
+        "local_verification": {
+          "typescript_compile": "passed",
+          "rust_compile": "not locally available; hosted conformance required"
+        }
+      }
     }
   ],
   "hosted_ci": {
-    "status": "infrastructure-blocked",
-    "observation": "GitHub reports failed jobs with no step payload and no workflow artifacts; job log download returns BlobNotFound",
-    "merge_effect": "PR remains draft and must not merge until cross-language Stage 3 is complete"
+    "status": "pending-stage-3-run",
+    "merge_effect": "PR remains draft until Python, Rust and TypeScript produce identical canonical bytes, digests, decisions and reason codes"
   },
-  "next_stage": "stage-3-rust-and-typescript-contract-conformance",
-  "status": "stage-2-complete-pr-remains-draft"
+  "next_stage": "stage-3-hosted-conformance-fix-and-close",
+  "status": "stage-3-code-complete-ci-pending"
 }
