@@ -1,18 +1,8 @@
 """Typed model bindings for the RACS v0.2 contract schemas (stage 3B).
 
-These are faithful, typed representations of the three v0.2 payload schemas:
-  - GovernanceEvaluation        (spec/governance-evaluation-v0.2.schema.json)
-  - AdmissibilityDetermination  (spec/admissibility-determination-v0.2.schema.json)
-  - GovernanceClearance         (spec/governance-clearance.schema.json)
-
-They are *pure data types + canonicalization helpers*. They do NOT perform
-JSON-Schema validation (that is a later stage). Each model can canonicalize
-itself to RFC 8785 (JCS) bytes and compute its sha256 digest, reusing the
-stage-3A kernel, so that `payload_digest` fields can be derived and verified.
-
-Enums mirror the schema `enum` constraints exactly.
+These are faithful, typed representations of the core v0.2 payload schemas.
+They are pure data types plus canonicalization helpers and do not create authority.
 """
-
 from __future__ import annotations
 
 from enum import Enum
@@ -20,6 +10,7 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from .boundary_crossing import BoundaryAssessmentBinding
 from .canonical import canonical_bytes
 from .digest import sha256_digest
 
@@ -68,24 +59,13 @@ class Reversibility(str, Enum):
     IRREVERSIBLE = "IRREVERSIBLE"
 
 
-# Shared digest / binding sub-types -------------------------------------------
-
-
 class EvaluationBinding(BaseModel):
-    """Cryptographic binding to a signed GovernanceEvaluation artifact.
-
-    `evaluation_digest` is the PAYLOAD DIGEST of the referenced, signature
-    verified GovernanceEvaluation: SHA-256 over its RACS-JCS-1 canonicalized
-    payload — i.e. MUST equal that artifact's `payload_digest`.
-    """
+    """Cryptographic binding to a signed GovernanceEvaluation payload."""
 
     model_config = ConfigDict(extra="forbid")
 
     evaluation_ref: str
-    evaluation_digest: str  # sha256:<64 hex>
-
-
-# GovernanceEvaluation ---------------------------------------------------------
+    evaluation_digest: str
 
 
 class GovernanceEvaluation(BaseModel):
@@ -106,19 +86,15 @@ class GovernanceEvaluation(BaseModel):
     risk_status: Status
     reason_codes: List[str] = Field(default_factory=list)
     constraints: Optional[Dict[str, Any]] = None
-    evaluated_at: str  # date-time
-    valid_until: str  # date-time
+    boundary_assessment_binding: Optional[BoundaryAssessmentBinding] = None
+    evaluated_at: str
+    valid_until: str
 
     def model_canonical(self) -> bytes:
-        """RFC 8785 canonical UTF-8 bytes of this payload."""
         return canonical_bytes(self.model_dump(mode="json", exclude_none=True))
 
     def model_digest(self) -> str:
-        """sha256: digest over the canonical payload bytes."""
         return sha256_digest(self.model_dump(mode="json", exclude_none=True))
-
-
-# AdmissibilityDetermination ---------------------------------------------------
 
 
 class AdmissibilityDetermination(BaseModel):
@@ -135,11 +111,12 @@ class AdmissibilityDetermination(BaseModel):
     purpose_digest: str
     state_digest: str
     evaluation_bindings: List[EvaluationBinding]
+    boundary_assessment_binding: Optional[BoundaryAssessmentBinding] = None
     state: AdmissibilityState
     conditions: Optional[Dict[str, Any]] = None
     reason_codes: List[str] = Field(default_factory=list)
-    determined_at: str  # date-time
-    valid_until: str  # date-time
+    determined_at: str
+    valid_until: str
     revocation_registry_ref: str
 
     def model_canonical(self) -> bytes:
@@ -147,9 +124,6 @@ class AdmissibilityDetermination(BaseModel):
 
     def model_digest(self) -> str:
         return sha256_digest(self.model_dump(mode="json", exclude_none=True))
-
-
-# GovernanceClearance ----------------------------------------------------------
 
 
 class GovernanceClearance(BaseModel):
@@ -174,8 +148,8 @@ class GovernanceClearance(BaseModel):
     consequence_class: ConsequenceClass
     reversibility: Reversibility
     constraints: Optional[Dict[str, Any]] = None
-    valid_from: str  # date-time
-    valid_until: str  # date-time
+    valid_from: str
+    valid_until: str
     replay_nonce: str
     idempotency_key: str
     revocation_registry_ref: str
