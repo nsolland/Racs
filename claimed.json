@@ -142,6 +142,7 @@
     "stage": "agentbound-track-f",
     "base_sha": "3067d5fae91e4f454af7dcbd0037e7484d260740",
     "branch": "test/agentbound-delta-benchmark",
+    "pr": "https://github.com/nsolland/Racs/pull/86",
     "owner": "ChatGPT",
     "scope": "deterministic AgentBound-delta benchmark, security metrics, ablations and machine-readable results; no production logic changes",
     "claimed_paths": [
@@ -153,9 +154,11 @@
       "runtime-continuity files and bindings owned by Racs #78",
       "shared documentation"
     ],
-    "status": "ready",
-    "last_verified_head": "7b5bb462bb6a9ec51168da17056132147c6fec38",
-    "tests": "6 local harness tests pass; isolated GitHub Actions integration run 30342856278 success; 18 scenarios, 17 prohibited, 14 hard gates, zero escapes; result digest sha256:48ca88997f0fb321e3e7e33a48ec52a5abceab8db68de714a4b45cb1557e4ad3",
-    "dependencies": "Racs #77, #79, #81 and #83 merged; no file overlap with open Racs #78"
+    "status": "merged",
+    "last_verified_head": "0f0743048882a5a778801c93df0afcd0d9c5c10f",
+    "merge_commit": "fcd4e6b2ce46570cd99168a6c9ce7d6f7c1005c2",
+    "tests": "6 local harness tests pass; isolated GitHub Actions integration run 30342856278 success; 18 scenarios, 17 prohibited, 14 hard gates, zero escapes; canonical conformance and repo-profile success; result digest sha256:48ca88997f0fb321e3e7e33a48ec52a5abceab8db68de714a4b45cb1557e4ad3",
+    "dependencies": "Racs #77, #79, #81 and #83 merged; no file overlap with open Racs #78",
+    "merged": true
   }
 }
