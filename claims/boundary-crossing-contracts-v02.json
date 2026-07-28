@@ -15,6 +15,7 @@
     "reference/bindings/v0.2/python/src/racs_v02/boundary_crossing.py",
     "reference/bindings/v0.2/python/src/racs_v02/boundary_validation.py",
     "reference/bindings/v0.2/python/src/racs_v02/models.py",
+    "reference/bindings/v0.2/python/src/racs_v02/verification.py",
     "reference/bindings/v0.2/python/src/racs_v02/__init__.py",
     "reference/bindings/v0.2/python/tests/test_boundary_crossing.py",
     "reference/bindings/v0.2/rust/src/boundary_crossing.rs",
@@ -40,5 +41,18 @@
     "valo-platform BoundaryCrossing detector merged at 532f559c881e2b124b899f082e53abbc29a238d6",
     "valo-platform AuthorizationBinding merged at bacc75ce3912aa2481b1cf1e76ced2970c3647ce"
   ],
-  "status": "claimed"
+  "completed_stage": "stage-1-python-contract-and-verification",
+  "stage_1_evidence": {
+    "focused_tests": "22 passed",
+    "validation_mode": "isolated local pytest against exact committed schema and Python contract content",
+    "p0_defects_closed": [
+      "boundary_requirements omission bypass",
+      "payload_digest confused with ActionEnvelope digest",
+      "boundary binding dropped between evaluation and determination",
+      "clearance verification accepted without resolved boundary chain",
+      "evaluation or determination outliving bound assessment evidence"
+    ]
+  },
+  "next_stage": "stage-2-golden-vectors-and-existing-fixture-migration",
+  "status": "stage-1-complete-pr-remains-draft"
 }
