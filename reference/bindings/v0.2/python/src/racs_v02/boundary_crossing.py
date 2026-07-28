@@ -1,8 +1,8 @@
 """RACS v0.2 typed boundary-crossing assessment contracts.
 
-Boundary assessments are evidence artifacts. They cannot authorize, clear, or execute
-an action. Cross-artifact verification binds their exact payload digest into the
-existing ActionEnvelope -> GovernanceEvaluation -> AdmissibilityDetermination chain.
+Boundary assessments are signed evidence artifacts. They cannot authorize, clear,
+or execute an action. Their exact payload digest is carried through the existing
+ActionEnvelope -> GovernanceEvaluation -> AdmissibilityDetermination chain.
 """
 from __future__ import annotations
 
@@ -109,6 +109,8 @@ class BoundaryRequirementSet(BoundaryModel):
             raise ValueError("required_types must be unique")
         if values != sorted(values, key=_BOUNDARY_ORDER.__getitem__):
             raise ValueError("required_types must use canonical boundary order")
+        if BoundaryType.EXECUTION not in self.required_types:
+            raise ValueError("EXECUTION boundary is mandatory for every ActionEnvelope")
         if self.fail_closed is not True:
             raise ValueError("boundary requirements must be fail_closed")
         return self
@@ -159,39 +161,33 @@ class BoundaryCrossing(BoundaryModel):
 
         if self.state is BoundaryState.NO_CROSSING:
             raise ValueError("detected crossing cannot use NO_CROSSING")
-        if self.state in {BoundaryState.AUTHORIZED, BoundaryState.CONDITIONALLY_AUTHORIZED}:
-            if self.authority_binding is None:
-                raise ValueError("authorized crossing requires authority_binding")
-        if (
-            self.state is BoundaryState.AUTHORIZED
-            and self.required_response_floor is not BoundaryResponseFloor.NONE
+        if self.state in {
+            BoundaryState.AUTHORIZED,
+            BoundaryState.CONDITIONALLY_AUTHORIZED,
+        } and self.authority_binding is None:
+            raise ValueError("authorized crossing requires authority_binding")
+
+        minimum_by_state = {
+            BoundaryState.AUTHORIZED: BoundaryResponseFloor.NONE,
+            BoundaryState.CONDITIONALLY_AUTHORIZED: BoundaryResponseFloor.MODIFY,
+            BoundaryState.INDETERMINATE: BoundaryResponseFloor.DEFER,
+            BoundaryState.UNAUTHORIZED: BoundaryResponseFloor.DENY,
+            BoundaryState.STALE: BoundaryResponseFloor.DEFER,
+            BoundaryState.REVOKED: BoundaryResponseFloor.DENY,
+        }
+        minimum = minimum_by_state[self.state]
+        if _RESPONSE_RANK[self.required_response_floor.value] < _RESPONSE_RANK[minimum.value]:
+            raise ValueError(
+                f"{self.state.value} requires {minimum.value} or stronger response"
+            )
+        if self.state is BoundaryState.AUTHORIZED and (
+            self.required_response_floor is not BoundaryResponseFloor.NONE
         ):
             raise ValueError("AUTHORIZED crossing must use NONE response")
-        if (
-            self.state is BoundaryState.CONDITIONALLY_AUTHORIZED
-            and self.required_response_floor is not BoundaryResponseFloor.MODIFY
+        if self.state is BoundaryState.CONDITIONALLY_AUTHORIZED and (
+            self.required_response_floor is not BoundaryResponseFloor.MODIFY
         ):
             raise ValueError("CONDITIONALLY_AUTHORIZED crossing must use MODIFY response")
-        if (
-            self.state is BoundaryState.INDETERMINATE
-            and _RESPONSE_RANK[self.required_response_floor.value] < _RESPONSE_RANK["DEFER"]
-        ):
-            raise ValueError("INDETERMINATE crossing requires DEFER or stronger")
-        if (
-            self.state is BoundaryState.UNAUTHORIZED
-            and _RESPONSE_RANK[self.required_response_floor.value] < _RESPONSE_RANK["DENY"]
-        ):
-            raise ValueError("UNAUTHORIZED crossing requires DENY or HALT")
-        if (
-            self.state is BoundaryState.STALE
-            and _RESPONSE_RANK[self.required_response_floor.value] < _RESPONSE_RANK["DEFER"]
-        ):
-            raise ValueError("STALE crossing requires DEFER or stronger")
-        if (
-            self.state is BoundaryState.REVOKED
-            and _RESPONSE_RANK[self.required_response_floor.value] < _RESPONSE_RANK["DENY"]
-        ):
-            raise ValueError("REVOKED crossing requires DENY or HALT")
 
         reasons = set(self.reason_codes)
         if "TECHNICAL_ACCESS_ONLY" in reasons:
@@ -202,14 +198,12 @@ class BoundaryCrossing(BoundaryModel):
                 BoundaryResponseFloor.HALT,
             }:
                 raise ValueError("technical access alone requires DENY or HALT")
-        if (
-            "UNAUTHORIZED_DISCOVERABILITY" in reasons
-            and self.state is not BoundaryState.UNAUTHORIZED
+        if "UNAUTHORIZED_DISCOVERABILITY" in reasons and (
+            self.state is not BoundaryState.UNAUTHORIZED
         ):
             raise ValueError("unauthorized discoverability must be UNAUTHORIZED")
-        if (
-            "RESOURCE_LIMIT_EXCEEDED" in reasons
-            and self.state is not BoundaryState.UNAUTHORIZED
+        if "RESOURCE_LIMIT_EXCEEDED" in reasons and (
+            self.state is not BoundaryState.UNAUTHORIZED
         ):
             raise ValueError("resource limit exceeded must be UNAUTHORIZED")
         if (
@@ -259,9 +253,22 @@ class BoundaryCrossingAssessment(BoundaryModel):
             raise ValueError("assessment cannot repeat boundary types")
         if types != sorted(types, key=_BOUNDARY_ORDER.__getitem__):
             raise ValueError("crossings must use canonical boundary order")
+        if BoundaryType.EXECUTION.value not in types:
+            raise ValueError("assessment must include EXECUTION boundary")
+
         ids = [item.crossing_id for item in self.crossings]
         if len(ids) != len(set(ids)):
             raise ValueError("crossing_id values must be unique")
+
+        for crossing in self.crossings:
+            if crossing.policy_binding.ref != self.requirement_policy_ref:
+                raise ValueError("crossing policy ref must match requirement policy")
+            if crossing.policy_binding.digest != self.requirement_policy_digest:
+                raise ValueError("crossing policy digest must match requirement policy")
+            if _parse_time(crossing.observed_at) > assessed:
+                raise ValueError("crossing cannot be observed after assessment")
+            if _parse_time(crossing.valid_until) < valid_until:
+                raise ValueError("assessment cannot outlive crossing evidence")
 
         expected_state = max(
             (item.state for item in self.crossings),
