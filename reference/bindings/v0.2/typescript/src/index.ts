@@ -1,5 +1,6 @@
 import * as jcs from "json-canonicalize";
 import { createHash } from "node:crypto";
+import type { BoundaryAssessmentBinding } from "./boundary-crossing.js";
 
 export interface Canonicalizable {
   canonical(): string;
@@ -47,6 +48,7 @@ export class GovernanceEvaluation implements Canonicalizable {
   risk_status!: Status;
   reason_codes?: string[];
   constraints?: unknown;
+  boundary_assessment_binding!: BoundaryAssessmentBinding;
   evaluated_at!: string;
   valid_until!: string;
   canonical(): string { return jcs.canonicalize(this); }
@@ -65,6 +67,7 @@ export class AdmissibilityDetermination implements Canonicalizable {
   purpose_digest!: string;
   state_digest!: string;
   evaluation_bindings!: EvaluationBinding[];
+  boundary_assessment_binding!: BoundaryAssessmentBinding;
   state!: AdmissibilityState;
   conditions?: unknown;
   reason_codes?: string[];
@@ -107,6 +110,8 @@ export class GovernanceClearance implements Canonicalizable {
   digest(): string { return sha256Digest(this); }
 }
 
+export * from "./boundary-crossing.js";
+export * from "./boundary-validation.js";
 export * from "./continuity.js";
 export {
   REASON_SESSION_TERMINAL,

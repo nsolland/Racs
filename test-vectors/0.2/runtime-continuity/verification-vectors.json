@@ -10,27 +10,46 @@
       "interface_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "input_schema_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "output_schema_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "preconditions": ["invoice_validated"],
-      "postconditions": ["payment_recorded"],
-      "permissions": ["payments.submit"],
-      "consequence_classes": ["HIGH"],
+      "preconditions": [
+        "invoice_validated"
+      ],
+      "postconditions": [
+        "payment_recorded"
+      ],
+      "permissions": [
+        "payments.submit"
+      ],
+      "consequence_classes": [
+        "HIGH"
+      ],
       "risk_class": "HIGH",
       "reversibility": "COMPENSATABLE",
-      "environment_profile_refs": ["env-prod"],
+      "environment_profile_refs": [
+        "env-prod"
+      ],
       "telemetry_contract_ref": "telemetry-1",
       "progress_contract": {
-        "phases": ["prepare", "submit", "confirm"],
+        "phases": [
+          "prepare",
+          "submit",
+          "confirm"
+        ],
         "heartbeat_required": true
       },
       "completion_contract": {
-        "terminal_states": ["COMPLETED", "FAILED"],
+        "terminal_states": [
+          "COMPLETED",
+          "FAILED"
+        ],
         "postcondition_evidence_required": true
       },
       "timeout_ms": 3600000,
       "retry_budget": 2,
       "executor_binding": {
         "executor_type": "WORKFLOW",
-        "allowed_executor_ids": ["executor-1"]
+        "allowed_executor_ids": [
+          "executor-1"
+        ]
       },
       "controller_or_model_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "supply_chain_attestation_ref": "attestation-1",
@@ -46,18 +65,35 @@
       "legal_entity_id": "entity-1",
       "zone": "zone-a",
       "human_presence_mode": "REQUIRED",
-      "allowed_consequence_classes": ["HIGH"],
+      "allowed_consequence_classes": [
+        "HIGH"
+      ],
       "runtime_limits": {
         "max_duration_ms": 3600000,
         "max_cost": 10000,
-        "allowed_zones": ["zone-a", "zone-b"],
-        "allowed_resources": ["ledger", "payments-api"],
+        "allowed_zones": [
+          "zone-a",
+          "zone-b"
+        ],
+        "allowed_resources": [
+          "ledger",
+          "payments-api"
+        ],
         "deadline": "2026-07-28T16:00:00Z"
       },
-      "forbidden_zones_or_resources": ["zone-x"],
-      "required_telemetry": ["heartbeat", "side_effect"],
-      "required_interlocks": ["payment_limit"],
-      "required_human_roles": ["approver"],
+      "forbidden_zones_or_resources": [
+        "zone-x"
+      ],
+      "required_telemetry": [
+        "heartbeat",
+        "side_effect"
+      ],
+      "required_interlocks": [
+        "payment_limit"
+      ],
+      "required_human_roles": [
+        "approver"
+      ],
       "fail_closed_policy": "HALT",
       "valid_from": "2026-07-28T08:00:00Z",
       "expires_at": "2026-07-28T17:00:00Z"
@@ -76,7 +112,13 @@
       "purpose_status": "PRESENT_AND_VALID",
       "state_status": "PRESENT_AND_VALID",
       "risk_status": "PRESENT_AND_VALID",
-      "reason_codes": ["OK"],
+      "reason_codes": [
+        "OK"
+      ],
+      "boundary_assessment_binding": {
+        "assessment_ref": "bca-continuity-1",
+        "assessment_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
       "evaluated_at": "2026-07-28T08:30:00Z",
       "valid_until": "2026-07-28T16:00:00Z"
     },
@@ -104,7 +146,9 @@
       "replay_nonce": "0123456789abcdef0123",
       "idempotency_key": "idem-1",
       "revocation_registry_ref": "revreg-1",
-      "evaluator_refs": ["eval-engine-1"],
+      "evaluator_refs": [
+        "eval-engine-1"
+      ],
       "admissibility_determination_ref": "det-1",
       "admissibility_determination_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     },
@@ -115,7 +159,7 @@
       "authority_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
       "capability_manifest_digest": "sha256:eef5539c2eb2d3b803459bcc0f2edbc20c577beb70cd231732047d1a2cb4fc99",
       "environment_profile_digest": "sha256:b8fde3e39115b3d10589951117ffdfb1213699ca54c8414e232956c064f08562",
-      "governance_evaluation_digest": "sha256:36526b910f69111d27139d2f4a210aa1624ef718e7a5f00c921a416d196a5148",
+      "governance_evaluation_digest": "sha256:a652db723e35f8dee009134b356aa6d3f4889b676bbb261247c1280132c40560",
       "reht_clearance_digest": "sha256:15d1393c1c21ce810b3237410d21a3404fcdfb937ddcc20ca84ec30e8fa4f148",
       "racs_decision_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "execution_permit_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -145,34 +189,244 @@
       "constraints": {
         "max_duration_ms": 1800000,
         "max_cost": 5000,
-        "allowed_zones": ["zone-a"],
-        "allowed_resources": ["payments-api"],
+        "allowed_zones": [
+          "zone-a"
+        ],
+        "allowed_resources": [
+          "payments-api"
+        ],
         "deadline": "2026-07-28T15:00:00Z"
       },
-      "reason_codes": ["RUNTIME_RISK_REDUCED"],
+      "reason_codes": [
+        "RUNTIME_RISK_REDUCED"
+      ],
       "valid_until": "2026-07-28T11:00:00Z",
       "next_review_at": "2026-07-28T10:30:00Z",
       "racs_contract_version": "0.2"
     }
   },
   "session_cases": [
-    {"id":"session_accept","mutations":{},"expected":"ACCEPT","reason_code":"ACCEPT"},
-    {"id":"session_manifest_digest_mismatch","mutations":{"session.capability_manifest_digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},"expected":"REJECT","reason_code":"SESSION_CAPABILITY_MANIFEST_MISMATCH"},
-    {"id":"session_executor_not_allowed","mutations":{"session.executor_id":"executor-2"},"expected":"REJECT","reason_code":"SESSION_EXECUTOR_NOT_ALLOWED"},
-    {"id":"session_deadline_exceeds_authorization","mutations":{"session.must_complete_by":"2026-07-28T16:30:00Z"},"expected":"REJECT","reason_code":"SESSION_DEADLINE_EXCEEDS_AUTHORIZATION"},
-    {"id":"session_terminal","mutations":{"session.session_state":"COMPLETED"},"expected":"REJECT","reason_code":"SESSION_TERMINAL"}
+    {
+      "id": "session_accept",
+      "mutations": {},
+      "expected": "ACCEPT",
+      "reason_code": "ACCEPT"
+    },
+    {
+      "id": "session_manifest_digest_mismatch",
+      "mutations": {
+        "session.capability_manifest_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expected": "REJECT",
+      "reason_code": "SESSION_CAPABILITY_MANIFEST_MISMATCH"
+    },
+    {
+      "id": "session_executor_not_allowed",
+      "mutations": {
+        "session.executor_id": "executor-2"
+      },
+      "expected": "REJECT",
+      "reason_code": "SESSION_EXECUTOR_NOT_ALLOWED"
+    },
+    {
+      "id": "session_deadline_exceeds_authorization",
+      "mutations": {
+        "session.must_complete_by": "2026-07-28T16:30:00Z"
+      },
+      "expected": "REJECT",
+      "reason_code": "SESSION_DEADLINE_EXCEEDS_AUTHORIZATION"
+    },
+    {
+      "id": "session_terminal",
+      "mutations": {
+        "session.session_state": "COMPLETED"
+      },
+      "expected": "REJECT",
+      "reason_code": "SESSION_TERMINAL"
+    }
   ],
   "bounds_cases": [
-    {"id":"bounds_narrow","current":{"max_duration_ms":3600000,"max_cost":10000,"allowed_zones":["zone-a","zone-b"],"allowed_resources":["ledger","payments-api"],"deadline":"2026-07-28T16:00:00Z"},"proposed":{"max_duration_ms":1800000,"max_cost":5000,"allowed_zones":["zone-a"],"allowed_resources":["payments-api"],"deadline":"2026-07-28T15:00:00Z"},"expected":"ACCEPT","reason_code":"BOUNDS_NARROWED"},
-    {"id":"bounds_widen_number","current":{"max_duration_ms":3600000,"max_cost":10000,"allowed_zones":["zone-a","zone-b"],"allowed_resources":["ledger","payments-api"],"deadline":"2026-07-28T16:00:00Z"},"proposed":{"max_duration_ms":1800000,"max_cost":20000,"allowed_zones":["zone-a"],"allowed_resources":["payments-api"],"deadline":"2026-07-28T15:00:00Z"},"expected":"REJECT","reason_code":"BOUNDS_WIDENED"},
-    {"id":"bounds_widen_set","current":{"max_duration_ms":3600000,"max_cost":10000,"allowed_zones":["zone-a","zone-b"],"allowed_resources":["ledger","payments-api"],"deadline":"2026-07-28T16:00:00Z"},"proposed":{"max_duration_ms":1800000,"max_cost":5000,"allowed_zones":["zone-a","zone-c"],"allowed_resources":["payments-api"],"deadline":"2026-07-28T15:00:00Z"},"expected":"REJECT","reason_code":"BOUNDS_WIDENED"},
-    {"id":"bounds_unknown_dimension","current":{"max_duration_ms":3600000,"max_cost":10000,"allowed_zones":["zone-a","zone-b"],"allowed_resources":["ledger","payments-api"],"deadline":"2026-07-28T16:00:00Z"},"proposed":{"max_duration_ms":1800000,"max_cost":5000,"allowed_zones":["zone-a"],"allowed_resources":["payments-api"],"deadline":"2026-07-28T15:00:00Z","unknown_dimension":1},"expected":"REJECT","reason_code":"BOUNDS_UNPROVABLE"},
-    {"id":"bounds_noop","current":{"max_duration_ms":3600000,"max_cost":10000,"allowed_zones":["zone-a","zone-b"],"allowed_resources":["ledger","payments-api"],"deadline":"2026-07-28T16:00:00Z"},"proposed":{"max_duration_ms":3600000,"max_cost":10000,"allowed_zones":["zone-a","zone-b"],"allowed_resources":["ledger","payments-api"],"deadline":"2026-07-28T16:00:00Z"},"expected":"REJECT","reason_code":"BOUNDS_NOT_NARROWER"}
+    {
+      "id": "bounds_narrow",
+      "current": {
+        "max_duration_ms": 3600000,
+        "max_cost": 10000,
+        "allowed_zones": [
+          "zone-a",
+          "zone-b"
+        ],
+        "allowed_resources": [
+          "ledger",
+          "payments-api"
+        ],
+        "deadline": "2026-07-28T16:00:00Z"
+      },
+      "proposed": {
+        "max_duration_ms": 1800000,
+        "max_cost": 5000,
+        "allowed_zones": [
+          "zone-a"
+        ],
+        "allowed_resources": [
+          "payments-api"
+        ],
+        "deadline": "2026-07-28T15:00:00Z"
+      },
+      "expected": "ACCEPT",
+      "reason_code": "BOUNDS_NARROWED"
+    },
+    {
+      "id": "bounds_widen_number",
+      "current": {
+        "max_duration_ms": 3600000,
+        "max_cost": 10000,
+        "allowed_zones": [
+          "zone-a",
+          "zone-b"
+        ],
+        "allowed_resources": [
+          "ledger",
+          "payments-api"
+        ],
+        "deadline": "2026-07-28T16:00:00Z"
+      },
+      "proposed": {
+        "max_duration_ms": 1800000,
+        "max_cost": 20000,
+        "allowed_zones": [
+          "zone-a"
+        ],
+        "allowed_resources": [
+          "payments-api"
+        ],
+        "deadline": "2026-07-28T15:00:00Z"
+      },
+      "expected": "REJECT",
+      "reason_code": "BOUNDS_WIDENED"
+    },
+    {
+      "id": "bounds_widen_set",
+      "current": {
+        "max_duration_ms": 3600000,
+        "max_cost": 10000,
+        "allowed_zones": [
+          "zone-a",
+          "zone-b"
+        ],
+        "allowed_resources": [
+          "ledger",
+          "payments-api"
+        ],
+        "deadline": "2026-07-28T16:00:00Z"
+      },
+      "proposed": {
+        "max_duration_ms": 1800000,
+        "max_cost": 5000,
+        "allowed_zones": [
+          "zone-a",
+          "zone-c"
+        ],
+        "allowed_resources": [
+          "payments-api"
+        ],
+        "deadline": "2026-07-28T15:00:00Z"
+      },
+      "expected": "REJECT",
+      "reason_code": "BOUNDS_WIDENED"
+    },
+    {
+      "id": "bounds_unknown_dimension",
+      "current": {
+        "max_duration_ms": 3600000,
+        "max_cost": 10000,
+        "allowed_zones": [
+          "zone-a",
+          "zone-b"
+        ],
+        "allowed_resources": [
+          "ledger",
+          "payments-api"
+        ],
+        "deadline": "2026-07-28T16:00:00Z"
+      },
+      "proposed": {
+        "max_duration_ms": 1800000,
+        "max_cost": 5000,
+        "allowed_zones": [
+          "zone-a"
+        ],
+        "allowed_resources": [
+          "payments-api"
+        ],
+        "deadline": "2026-07-28T15:00:00Z",
+        "unknown_dimension": 1
+      },
+      "expected": "REJECT",
+      "reason_code": "BOUNDS_UNPROVABLE"
+    },
+    {
+      "id": "bounds_noop",
+      "current": {
+        "max_duration_ms": 3600000,
+        "max_cost": 10000,
+        "allowed_zones": [
+          "zone-a",
+          "zone-b"
+        ],
+        "allowed_resources": [
+          "ledger",
+          "payments-api"
+        ],
+        "deadline": "2026-07-28T16:00:00Z"
+      },
+      "proposed": {
+        "max_duration_ms": 3600000,
+        "max_cost": 10000,
+        "allowed_zones": [
+          "zone-a",
+          "zone-b"
+        ],
+        "allowed_resources": [
+          "ledger",
+          "payments-api"
+        ],
+        "deadline": "2026-07-28T16:00:00Z"
+      },
+      "expected": "REJECT",
+      "reason_code": "BOUNDS_NOT_NARROWER"
+    }
   ],
   "decision_cases": [
-    {"id":"decision_accept","mutations":{},"expected":"ACCEPT","reason_code":"BOUNDS_NARROWED"},
-    {"id":"decision_sequence_mismatch","mutations":{"decision.continuity_sequence":2},"expected":"REJECT","reason_code":"DECISION_SEQUENCE_MISMATCH"},
-    {"id":"decision_capability_mismatch","mutations":{"decision.capability_manifest_digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},"expected":"REJECT","reason_code":"DECISION_CAPABILITY_MISMATCH"},
-    {"id":"decision_expired","mutations":{"decision.valid_until":"2026-07-28T09:30:00Z","decision.next_review_at":"2026-07-28T09:15:00Z"},"expected":"REJECT","reason_code":"DECISION_EXPIRED"}
+    {
+      "id": "decision_accept",
+      "mutations": {},
+      "expected": "ACCEPT",
+      "reason_code": "BOUNDS_NARROWED"
+    },
+    {
+      "id": "decision_sequence_mismatch",
+      "mutations": {
+        "decision.continuity_sequence": 2
+      },
+      "expected": "REJECT",
+      "reason_code": "DECISION_SEQUENCE_MISMATCH"
+    },
+    {
+      "id": "decision_capability_mismatch",
+      "mutations": {
+        "decision.capability_manifest_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expected": "REJECT",
+      "reason_code": "DECISION_CAPABILITY_MISMATCH"
+    },
+    {
+      "id": "decision_expired",
+      "mutations": {
+        "decision.valid_until": "2026-07-28T09:30:00Z",
+        "decision.next_review_at": "2026-07-28T09:15:00Z"
+      },
+      "expected": "REJECT",
+      "reason_code": "DECISION_EXPIRED"
+    }
   ]
 }
