@@ -79,7 +79,29 @@ jobs:
         run: exit 1
 
       - name: Per-language unit/integration tests
+        id: language_tests
+        continue-on-error: true
+        shell: bash
         run: |
-          cd reference/bindings/v0.2/python && . .venv/bin/activate && python -m pytest tests/ -q
-          cd ../../rust && cargo test --release
-          cd ../typescript && npm test
+          set -o pipefail
+          {
+            cd reference/bindings/v0.2/python
+            . .venv/bin/activate
+            python -m pytest tests/ -q
+            cd ../../rust
+            cargo test --release
+            cd ../typescript
+            npm test
+          } 2>&1 | tee /tmp/racs-language-tests.log
+
+      - name: Upload language-test diagnostics
+        if: steps.language_tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-language-test-diagnostics
+          path: /tmp/racs-language-tests.log
+          if-no-files-found: error
+
+      - name: Fail on language-test failure
+        if: steps.language_tests.outcome == 'failure'
+        run: exit 1
