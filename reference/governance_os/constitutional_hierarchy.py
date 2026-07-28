@@ -2,6 +2,7 @@
 
 Hard gates are evaluated in canonical precedence order. Lower levels cannot
 compensate for a failed higher-level gate. Unknown mandatory state fails closed.
+Independent HALT conditions dominate every other result.
 """
 from __future__ import annotations
 
@@ -67,6 +68,10 @@ class GateResult:
     def validate(self) -> None:
         if not self.gate_id.strip():
             raise ValueError("gate_id is required")
+        if not isinstance(self.level, Level):
+            raise ValueError("gate level is invalid")
+        if not isinstance(self.state, GateState):
+            raise ValueError("gate state is invalid")
         if self.state in {GateState.FAIL, GateState.UNKNOWN, GateState.CONFLICT} and not self.reason_code:
             raise ValueError("non-pass gate requires reason_code")
 
@@ -77,7 +82,19 @@ class HierarchyProfile:
     version: str
     required_gates: Mapping[Level, tuple[str, ...]] = field(default_factory=dict)
 
+    def validate(self) -> None:
+        if not self.profile_id.strip() or not self.version.strip():
+            raise ValueError("hierarchy profile id and version are required")
+        for level, gate_ids in self.required_gates.items():
+            if not isinstance(level, Level):
+                raise ValueError("hierarchy profile contains an invalid level")
+            if len(gate_ids) != len(set(gate_ids)):
+                raise ValueError(f"duplicate required gate at {level.value}")
+            if any(not gate_id.strip() for gate_id in gate_ids):
+                raise ValueError(f"blank required gate at {level.value}")
+
     def digest(self) -> str:
+        self.validate()
         payload = {
             "profile_id": self.profile_id,
             "version": self.version,
@@ -102,24 +119,51 @@ def _decision_digest(payload: Mapping[str, object]) -> str:
     return sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
+def _ordered_gate_ids(items: Sequence[GateResult]) -> list[str]:
+    by_level: dict[Level, list[GateResult]] = {level: [] for level in PRECEDENCE}
+    for item in items:
+        by_level[item.level].append(item)
+    return [
+        item.gate_id
+        for level in PRECEDENCE
+        for item in sorted(by_level[level], key=lambda value: value.gate_id)
+    ]
+
+
 def evaluate_hierarchy(
     profile: HierarchyProfile,
     results: Iterable[GateResult],
     *,
     legitimate_conflict_levels: Sequence[Level] = (),
+    halt_reason_codes: Sequence[str] = (),
+    halt_level: Level | None = None,
 ) -> HierarchyDecision:
     """Evaluate gates in strict precedence order.
 
     Rules:
+    - Independent HALT conditions dominate every gate result.
     - FAIL at a hard level => DENY.
     - UNKNOWN mandatory state at a hard level => STEP_UP.
     - CONFLICT at a hard level => STEP_UP when legitimate, otherwise DENY.
     - Missing required hard gate => STEP_UP.
     - Soft/scheduling failures may produce MODIFY or DEFER, never override hard gates.
     """
+    profile.validate()
     items = tuple(results)
     for item in items:
         item.validate()
+    gate_ids = [item.gate_id for item in items]
+    if len(gate_ids) != len(set(gate_ids)):
+        raise ValueError("duplicate gate_id is forbidden")
+
+    ordered_ids = _ordered_gate_ids(items)
+    halt_reasons = tuple(sorted(set(halt_reason_codes)))
+    if any(not reason.strip() for reason in halt_reasons):
+        raise ValueError("halt reason codes must be non-empty")
+    if halt_reasons:
+        if halt_level is not None and not isinstance(halt_level, Level):
+            raise ValueError("halt_level is invalid")
+        return _build(Verdict.HALT, halt_level, halt_reasons, ordered_ids, profile)
 
     by_level: dict[Level, list[GateResult]] = {level: [] for level in PRECEDENCE}
     for item in items:
