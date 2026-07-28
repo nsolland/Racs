@@ -34,7 +34,7 @@ fn load_vectors(directory: &str) -> Vec<Value> {
         .join("0.2")
         .join("runtime-validation")
         .join(directory);
-    let mut vectors = Vec::new();
+    let mut vectors: Vec<Value> = Vec::new();
     for entry in std::fs::read_dir(base).expect("dir exists") {
         let path = entry.expect("directory entry").path();
         if path.extension().and_then(|value| value.to_str()) == Some("json") {
