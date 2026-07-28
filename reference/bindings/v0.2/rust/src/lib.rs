@@ -1,31 +1,20 @@
-//! RACS v0.2 canonical contract bindings — canonicalization kernel (3A) + typed
-//! model bindings (3B).
-//!
-//! 3A exposes RFC 8785 (JCS) canonicalization via `serde_jcs`, plus SHA-256
-//! payload digests.
-//! 3B adds faithful, typed representations of the three v0.2 payload schemas:
-//!   - GovernanceEvaluation
-//!   - AdmissibilityDetermination
-//!   - GovernanceClearance
-//! These are pure data types + canonicalization helpers (no JSON-Schema
-//! validation). Each model can canonicalize itself and compute its sha256 digest.
-//!
-//! 3C (runtime conformance) is provided by the `validation` and `verification`
-//! modules, layered on top of these pure types.
+//! RACS v0.2 canonical contract bindings — canonicalization kernel, typed
+//! model bindings, runtime conformance and runtime-continuity payloads.
 
+pub mod continuity;
 pub mod validation;
 pub mod verification;
+pub use continuity::*;
+
 use serde::{Deserialize, Serialize};
 use serde_jcs::to_string as canonicalize;
 use sha2::{Digest, Sha256};
 use std::error::Error;
 
-/// Canonicalize any Serialize value to RFC 8785 UTF-8 bytes.
 pub fn canonical_bytes<T: Serialize>(value: &T) -> Result<Vec<u8>, Box<dyn Error>> {
     Ok(canonicalize(value)?.into_bytes())
 }
 
-/// SHA-256 digest over the RFC 8785 canonical bytes, as `sha256:<hex>`.
 pub fn sha256_digest<T: Serialize>(value: &T) -> Result<String, Box<dyn Error>> {
     let canon = canonical_bytes(value)?;
     let mut h = Sha256::new();
@@ -33,7 +22,6 @@ pub fn sha256_digest<T: Serialize>(value: &T) -> Result<String, Box<dyn Error>> 
     Ok(format!("sha256:{:x}", h.finalize()))
 }
 
-/// Convenience: canonical bytes as a UTF-8 String.
 pub fn canonical_string<T: Serialize>(value: &T) -> Result<String, Box<dyn Error>> {
     let bytes = canonical_bytes(value)?;
     let s = String::from_utf8(bytes)
@@ -41,72 +29,38 @@ pub fn canonical_string<T: Serialize>(value: &T) -> Result<String, Box<dyn Error
     Ok(s)
 }
 
-// --- Shared sub-types --------------------------------------------------------
-
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "UPPERCASE")]
-pub enum Decision {
-    Allow,
-    Modify,
-    Defer,
-    Deny,
-    StepUp,
-    Halt,
-}
+pub enum Decision { Allow, Modify, Defer, Deny, StepUp, Halt }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Status {
-    PresentAndValid,
-    PresentButInvalid,
-    Missing,
-    Unknown,
-    Unavailable,
-    Stale,
-    Revoked,
-    Conflicting,
+    PresentAndValid, PresentButInvalid, Missing, Unknown, Unavailable, Stale,
+    Revoked, Conflicting,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AdmissibilityState {
-    Admissible,
-    ConditionallyAdmissible,
-    NotAdmissible,
-    Indeterminate,
-    Stale,
-    Revoked,
-    Halted,
-    RequiresStepUp,
+    Admissible, ConditionallyAdmissible, NotAdmissible, Indeterminate, Stale,
+    Revoked, Halted, RequiresStepUp,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "UPPERCASE")]
-pub enum ConsequenceClass {
-    Low,
-    Medium,
-    High,
-    Critical,
-}
+pub enum ConsequenceClass { Low, Medium, High, Critical }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "UPPERCASE")]
-pub enum Reversibility {
-    Reversible,
-    Compensatable,
-    Irreversible,
-}
-
-// --- Shared sub-types --------------------------------------------------------
+pub enum Reversibility { Reversible, Compensatable, Irreversible }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct EvaluationBinding {
     pub evaluation_ref: String,
-    pub evaluation_digest: String, // sha256:<64 hex>
+    pub evaluation_digest: String,
 }
-
-// --- GovernanceEvaluation ----------------------------------------------------
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -132,8 +86,6 @@ pub struct GovernanceEvaluation {
     pub valid_until: String,
 }
 
-// --- AdmissibilityDetermination ----------------------------------------------
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct AdmissibilityDetermination {
@@ -157,8 +109,6 @@ pub struct AdmissibilityDetermination {
     pub valid_until: String,
     pub revocation_registry_ref: String,
 }
-
-// --- GovernanceClearance -----------------------------------------------------
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -193,31 +143,17 @@ pub struct GovernanceClearance {
     pub admissibility_determination_digest: String,
 }
 
-// --- Typed model helpers (canonical + digest via the 3A kernel) -------------
-
 impl GovernanceEvaluation {
-    pub fn canonical(&self) -> Result<String, Box<dyn Error>> {
-        canonical_string(self)
-    }
-    pub fn digest(&self) -> Result<String, Box<dyn Error>> {
-        sha256_digest(self)
-    }
+    pub fn canonical(&self) -> Result<String, Box<dyn Error>> { canonical_string(self) }
+    pub fn digest(&self) -> Result<String, Box<dyn Error>> { sha256_digest(self) }
 }
 
 impl AdmissibilityDetermination {
-    pub fn canonical(&self) -> Result<String, Box<dyn Error>> {
-        canonical_string(self)
-    }
-    pub fn digest(&self) -> Result<String, Box<dyn Error>> {
-        sha256_digest(self)
-    }
+    pub fn canonical(&self) -> Result<String, Box<dyn Error>> { canonical_string(self) }
+    pub fn digest(&self) -> Result<String, Box<dyn Error>> { sha256_digest(self) }
 }
 
 impl GovernanceClearance {
-    pub fn canonical(&self) -> Result<String, Box<dyn Error>> {
-        canonical_string(self)
-    }
-    pub fn digest(&self) -> Result<String, Box<dyn Error>> {
-        sha256_digest(self)
-    }
+    pub fn canonical(&self) -> Result<String, Box<dyn Error>> { canonical_string(self) }
+    pub fn digest(&self) -> Result<String, Box<dyn Error>> { sha256_digest(self) }
 }
