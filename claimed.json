@@ -61,6 +61,7 @@
     "stage": "agentbound-track-c",
     "base_sha": "1223e5ae8e5d410106580f893d1c3b7ab751c188",
     "branch": "feat/agentbound-task-materialization-runtime",
+    "pr": "https://github.com/nsolland/Racs/pull/79",
     "owner": "ChatGPT",
     "scope": "reference validation for task-authority materialization and target-action contracts; no execution or clearance authority",
     "claimed_paths": [
@@ -75,7 +76,9 @@
       "reference/distributed_authority_v0_1.py",
       "shared documentation and bindings"
     ],
-    "status": "claimed",
+    "status": "ready",
+    "last_verified_head": "7b896be7717a870fabe4d3e3ca044588e573ee9c",
+    "tests": "Python compileall pass; 29 focused unittest cases pass",
     "dependencies": "Racs #77 merged as 1223e5ae8e5d410106580f893d1c3b7ab751c188"
   }
 }
