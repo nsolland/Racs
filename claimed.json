@@ -55,5 +55,30 @@
     "merge_commit": "30160d4ea685936249648972473a54afcbf99620",
     "ci": "repo-profile validate: PASS",
     "dependencies": "nsolland/Index#338 (canonical profile definition)"
+  },
+  "feat/agentbound-task-materialization-runtime": {
+    "repo": "nsolland/Racs",
+    "stage": "agentbound-track-c",
+    "base_sha": "1223e5ae8e5d410106580f893d1c3b7ab751c188",
+    "branch": "feat/agentbound-task-materialization-runtime",
+    "pr": "https://github.com/nsolland/Racs/pull/79",
+    "owner": "ChatGPT",
+    "scope": "reference validation for task-authority materialization and target-action contracts; no execution or clearance authority",
+    "claimed_paths": [
+      "reference/governance_os/task_authority.py",
+      "reference/governance_os/target_action_contract.py",
+      "reference/governance_os/test_task_authority.py",
+      "reference/governance_os/test_target_action_contract.py"
+    ],
+    "must_not_touch": [
+      "spec/ v0.3 contracts frozen by Racs #77",
+      "reference/governance_os/constitutional_hierarchy.py",
+      "reference/distributed_authority_v0_1.py",
+      "shared documentation and bindings"
+    ],
+    "status": "ready",
+    "last_verified_head": "7b896be7717a870fabe4d3e3ca044588e573ee9c",
+    "tests": "Python compileall pass; 29 focused unittest cases pass",
+    "dependencies": "Racs #77 merged as 1223e5ae8e5d410106580f893d1c3b7ab751c188"
   }
 }
