@@ -88,23 +88,25 @@
     "stage": "agentbound-track-d",
     "base_sha": "7afb6bb361a4d49798c839f44a395089f8119b3f",
     "branch": "feat/agentbound-monotone-composition",
+    "pr": "https://github.com/nsolland/Racs/pull/81",
     "owner": "ChatGPT",
-    "scope": "typed evaluation fragments, monotone restriction composition and binding into the canonical hierarchy and distributed clearance",
+    "scope": "typed evaluation fragments, monotone restriction composition and binding into the canonical hierarchy and an existing GovernanceClearance",
     "claimed_paths": [
       "reference/governance_os/evaluation_fragments.py",
       "reference/governance_os/composition.py",
       "reference/governance_os/constitutional_hierarchy.py",
       "reference/governance_os/test_constitutional_hierarchy.py",
-      "reference/governance_os/test_monotone_composition.py",
-      "reference/distributed_authority_v0_1.py",
-      "reference/test_distributed_authority_v0_1.py"
+      "reference/governance_os/test_monotone_composition.py"
     ],
     "must_not_touch": [
       "spec/ v0.3 contracts frozen by Racs #77",
       "runtime-continuity files owned by Racs #78",
+      "distributed authority reference and tests",
       "shared documentation and bindings"
     ],
-    "status": "claimed",
+    "status": "ready",
+    "last_verified_head": "41b00e751b480bf1e694d0ec21897dd71421c0f1",
+    "tests": "Python compileall pass; 25 focused unittest cases pass",
     "dependencies": "Racs #77 and #79 merged; no file overlap with open Racs #78"
   }
 }
