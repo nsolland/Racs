@@ -11,18 +11,18 @@ use serde_jcs::to_string as canonicalize;
 use sha2::{Digest, Sha256};
 use std::error::Error;
 
-pub fn canonical_bytes<T: Serialize>(value: &T) -> Result<Vec<u8>, Box<dyn Error>> {
+pub fn canonical_bytes<T: Serialize + ?Sized>(value: &T) -> Result<Vec<u8>, Box<dyn Error>> {
     Ok(canonicalize(value)?.into_bytes())
 }
 
-pub fn sha256_digest<T: Serialize>(value: &T) -> Result<String, Box<dyn Error>> {
+pub fn sha256_digest<T: Serialize + ?Sized>(value: &T) -> Result<String, Box<dyn Error>> {
     let canon = canonical_bytes(value)?;
     let mut h = Sha256::new();
     h.update(&canon);
     Ok(format!("sha256:{:x}", h.finalize()))
 }
 
-pub fn canonical_string<T: Serialize>(value: &T) -> Result<String, Box<dyn Error>> {
+pub fn canonical_string<T: Serialize + ?Sized>(value: &T) -> Result<String, Box<dyn Error>> {
     let bytes = canonical_bytes(value)?;
     let s = String::from_utf8(bytes)
         .map_err(|e| Box::new(std::io::Error::new(std::io::ErrorKind::InvalidData, e)) as Box<dyn Error>)?;
