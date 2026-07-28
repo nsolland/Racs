@@ -38,7 +38,7 @@
   "dependencies": [
     "RACS v0.2 canonicalization and signed artifact conventions",
     "runtime continuity Stage 2 merged at 2659660889297ca624a47ca9a8798738ff6cf539",
-    "valo-platform BoundaryCrossing detector merged at 532f559c881e2b124b899f082e53abbc29a238d6",
+    "valo-platform BoundaryCrossing detector merged at 532f559c8812aa2481b1cf1e76ced2970c3647ce",
     "valo-platform AuthorizationBinding merged at bacc75ce3912aa2481b1cf1e76ced2970c3647ce"
   ],
   "completed_stage": "stage-1-python-contract-and-verification",
