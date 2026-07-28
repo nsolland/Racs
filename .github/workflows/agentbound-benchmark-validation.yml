@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - verify/agentbound-delta-benchmark-ci
+  pull_request:
+    branches:
+      - test/agentbound-delta-benchmark
 
 jobs:
   benchmark:
