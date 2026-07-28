@@ -76,9 +76,11 @@
       "reference/distributed_authority_v0_1.py",
       "shared documentation and bindings"
     ],
-    "status": "ready",
-    "last_verified_head": "7b896be7717a870fabe4d3e3ca044588e573ee9c",
+    "status": "merged",
+    "last_verified_head": "9f9a7e670378e8607a895c2229e6ec2fb63c8773",
+    "merge_commit": "764b4b63be09938233fb44845b3dccadbfca615f",
     "tests": "Python compileall pass; 29 focused unittest cases pass",
-    "dependencies": "Racs #77 merged as 1223e5ae8e5d410106580f893d1c3b7ab751c188"
+    "dependencies": "Racs #77 merged as 1223e5ae8e5d410106580f893d1c3b7ab751c188",
+    "merged": true
   }
 }
