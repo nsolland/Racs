@@ -104,9 +104,11 @@
       "distributed authority reference and tests",
       "shared documentation and bindings"
     ],
-    "status": "ready",
-    "last_verified_head": "41b00e751b480bf1e694d0ec21897dd71421c0f1",
+    "status": "merged",
+    "last_verified_head": "8503eda432cdd0dc7634b5f8f508c5f322945cb2",
+    "merge_commit": "f04d7bfd9370f9430d02b9cf2172c9e3aad74e19",
     "tests": "Python compileall pass; 25 focused unittest cases pass",
-    "dependencies": "Racs #77 and #79 merged; no file overlap with open Racs #78"
+    "dependencies": "Racs #77 and #79 merged; no file overlap with open Racs #78",
+    "merged": true
   }
 }
