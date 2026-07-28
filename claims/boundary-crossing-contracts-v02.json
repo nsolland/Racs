@@ -27,7 +27,11 @@
     {
       "stage": "stage-2-golden-vectors-and-fixture-migration",
       "evidence": {
-        "runtime_vectors": 18,
+        "canonical_contract_tests": "30 passed",
+        "changed_schemas": "5 valid Draft 2020-12 schemas",
+        "runtime_vector_schema_expectations": "18 of 18 matched",
+        "boundary_canonical_vectors": "3 of 3 valid",
+        "sidecars": "2 of 2 SHA-256 sidecars matched",
         "positive_full_chain": "ActionEnvelope -> BoundaryCrossingAssessment -> GovernanceEvaluation -> AdmissibilityDetermination -> GovernanceClearance",
         "negative_vectors": [
           "missing evaluation boundary binding",
@@ -36,10 +40,16 @@
           "evaluation digest mismatch",
           "determination digest mismatch"
         ],
-        "governance_evaluation_golden_digest": "sha256:532d2a571f8536890bf9b79994703c63a44c01ba40f71b4733d045674bdb3273"
+        "governance_evaluation_golden_digest": "sha256:532d2a571f8536890bf9b79994703c63a44c01ba40f71b4733d045674bdb3273",
+        "verification_mode": "local replay against exact UTF-8 contents fetched from branch head"
       }
     }
   ],
+  "hosted_ci": {
+    "status": "infrastructure-blocked",
+    "observation": "GitHub reports failed jobs with no step payload and no workflow artifacts; job log download returns BlobNotFound",
+    "merge_effect": "PR remains draft and must not merge until cross-language Stage 3 is complete"
+  },
   "next_stage": "stage-3-rust-and-typescript-contract-conformance",
   "status": "stage-2-complete-pr-remains-draft"
 }
