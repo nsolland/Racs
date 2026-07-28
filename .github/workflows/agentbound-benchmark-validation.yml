@@ -1,0 +1,29 @@
+name: AgentBound Benchmark Validation
+
+on:
+  push:
+    branches:
+      - verify/agentbound-delta-benchmark-ci
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run benchmark harness tests
+        run: python -m unittest -v benchmarks/agentbound_delta/test_benchmark.py
+      - name: Run integrated benchmark
+        run: |
+          python benchmarks/agentbound_delta/benchmark.py \
+            --check \
+            --repetitions 20 \
+            --output benchmarks/agentbound_delta/results-ci.json
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentbound-delta-results
+          path: benchmarks/agentbound_delta/results-ci.json
+          if-no-files-found: error
