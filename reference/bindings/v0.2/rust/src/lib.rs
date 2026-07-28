@@ -11,6 +11,8 @@ pub use boundary_crossing::*;
 pub use boundary_validation::*;
 pub use continuity::*;
 pub use continuity_verification::*;
+pub use validation::*;
+pub use verification::*;
 
 use serde::{Deserialize, Serialize};
 use serde_jcs::to_string as canonicalize;
