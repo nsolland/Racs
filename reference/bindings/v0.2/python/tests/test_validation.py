@@ -47,7 +47,11 @@ def _resolved_models(vector: dict):
 
 def _verify_clearance(vector: dict, clearance: GovernanceClearance):
     action_envelope, assessment, evaluation, determination = _resolved_models(vector)
-    evaluation_result = verify_evaluation_binding(determination, evaluation)
+    evaluation_result = verify_evaluation_binding(
+        determination,
+        evaluation,
+        boundary_assessment=assessment,
+    )
     if evaluation_result.decision == "REJECT":
         return evaluation_result
     return verify_clearance_binding(
