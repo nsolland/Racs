@@ -85,13 +85,17 @@ jobs:
         run: |
           set -o pipefail
           {
-            cd reference/bindings/v0.2/python
-            . .venv/bin/activate
-            python -m pytest tests/ -q
-            cd ../../rust
-            cargo test --release
-            cd ../typescript
-            npm test
+            (
+              cd reference/bindings/v0.2/python
+              . .venv/bin/activate
+              python -m pytest tests/ -q
+            ) && (
+              cd reference/bindings/v0.2/rust
+              cargo test --release
+            ) && (
+              cd reference/bindings/v0.2/typescript
+              npm test
+            )
           } 2>&1 | tee /tmp/racs-language-tests.log
 
       - name: Upload language-test diagnostics
