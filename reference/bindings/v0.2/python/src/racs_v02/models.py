@@ -86,7 +86,7 @@ class GovernanceEvaluation(BaseModel):
     risk_status: Status
     reason_codes: List[str] = Field(default_factory=list)
     constraints: Optional[Dict[str, Any]] = None
-    boundary_assessment_binding: Optional[BoundaryAssessmentBinding] = None
+    boundary_assessment_binding: BoundaryAssessmentBinding
     evaluated_at: str
     valid_until: str
 
@@ -111,7 +111,7 @@ class AdmissibilityDetermination(BaseModel):
     purpose_digest: str
     state_digest: str
     evaluation_bindings: List[EvaluationBinding]
-    boundary_assessment_binding: Optional[BoundaryAssessmentBinding] = None
+    boundary_assessment_binding: BoundaryAssessmentBinding
     state: AdmissibilityState
     conditions: Optional[Dict[str, Any]] = None
     reason_codes: List[str] = Field(default_factory=list)
