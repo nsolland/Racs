@@ -2,9 +2,11 @@
 //! model bindings, runtime conformance and runtime-continuity payloads.
 
 pub mod continuity;
+pub mod continuity_verification;
 pub mod validation;
 pub mod verification;
 pub use continuity::*;
+pub use continuity_verification::*;
 
 use serde::{Deserialize, Serialize};
 use serde_jcs::to_string as canonicalize;

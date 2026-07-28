@@ -1,0 +1,30 @@
+{
+  "repo": "nsolland/Racs",
+  "stage": "runtime-continuity-stage2-v0.2",
+  "base_sha": "cf9f14382a7c2b1e95b5f4c2ca70828b80ef3989",
+  "branch": "build/runtime-continuity-stage2-v02",
+  "owner": "ChatGPT",
+  "scope": "cross-artifact verification for governed execution sessions and proof that runtime-bound modifications only narrow prior authorization",
+  "claimed_paths": [
+    "spec/RUNTIME_CONTINUITY_V0_2.md",
+    "reference/bindings/v0.2/python/src/racs_v02/continuity_verification.py",
+    "reference/bindings/v0.2/python/tests/test_continuity_verification.py",
+    "reference/bindings/v0.2/rust/src/continuity_verification.rs",
+    "reference/bindings/v0.2/rust/tests/continuity_verification.rs",
+    "reference/bindings/v0.2/typescript/src/continuity-verification.ts",
+    "reference/bindings/v0.2/typescript/test/continuity-verification.test.ts",
+    "test-vectors/0.2/runtime-continuity/verification-vectors.json",
+    ".github/workflows/bindings-canonical-gate.yml"
+  ],
+  "must_not_touch": [
+    "v0.3 AgentBound contracts and governance_os reference implementation",
+    "Core enforcement code in other repositories",
+    "valo-platform adapters until the RACS contract is green"
+  ],
+  "dependencies": [
+    "RACS v0.2 runtime continuity Stage 0-1 merged as cf9f14382a7c2b1e95b5f4c2ca70828b80ef3989",
+    "RACS-JCS-1 canonicalization",
+    "GovernanceClearance and admissibility chain"
+  ],
+  "status": "claimed"
+}

@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "tsc && node --test dist/test/conformance.test.js dist/test/models.test.js dist/test/runtime-conformance.test.js dist/test/continuity.test.js"
+    "test": "tsc && node --test dist/test/conformance.test.js dist/test/models.test.js dist/test/runtime-conformance.test.js dist/test/continuity.test.js dist/test/continuity-verification.test.js"
   },
   "dependencies": {
     "json-canonicalize": "^2.0.0",

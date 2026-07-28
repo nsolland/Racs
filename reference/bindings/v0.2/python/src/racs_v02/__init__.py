@@ -61,6 +61,12 @@ from .verification import (
     verify_clearance_binding,
     verify_evaluation_binding,
 )
+from .continuity_verification import (
+    ContinuityVerificationResult,
+    prove_runtime_bounds_narrowing,
+    verify_continuity_decision,
+    verify_execution_session,
+)
 
 __all__ = [
     "canonical_bytes",
@@ -113,4 +119,8 @@ __all__ = [
     "VerificationResult",
     "verify_clearance_binding",
     "verify_evaluation_binding",
+    "ContinuityVerificationResult",
+    "verify_execution_session",
+    "prove_runtime_bounds_narrowing",
+    "verify_continuity_decision",
 ]
