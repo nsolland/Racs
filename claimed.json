@@ -110,5 +110,29 @@
     "tests": "Python compileall pass; 25 focused unittest cases pass",
     "dependencies": "Racs #77 and #79 merged; no file overlap with open Racs #78",
     "merged": true
+  },
+  "feat/agentbound-governance-replay": {
+    "repo": "nsolland/Racs",
+    "stage": "agentbound-track-e",
+    "base_sha": "42cf0b46755b198114fa4267049df22e91d75d10",
+    "branch": "feat/agentbound-governance-replay",
+    "pr": "https://github.com/nsolland/Racs/pull/83",
+    "owner": "ChatGPT",
+    "scope": "offline governance replay verification with deterministic MATCH, MISMATCH, INCOMPLETE and UNVERIFIABLE outcomes; no execution authority",
+    "claimed_paths": [
+      "reference/governance_os/replay_bundle.py",
+      "reference/governance_os/replay_verifier.py",
+      "reference/governance_os/test_replay_verifier.py",
+      "test-vectors/0.3/agentbound-delta/replay/**"
+    ],
+    "must_not_touch": [
+      "spec/ v0.3 contracts frozen by Racs #77",
+      "runtime-continuity files and bindings owned by Racs #78",
+      "existing hierarchy, composition, distributed authority and shared documentation"
+    ],
+    "status": "ready",
+    "last_verified_head": "e469361fee6fff825713f5a8e041776c5795eaab",
+    "tests": "Python compileall pass; 19 focused unittest cases pass",
+    "dependencies": "Racs #77, #79 and #81 merged; no file overlap with open Racs #78"
   }
 }
