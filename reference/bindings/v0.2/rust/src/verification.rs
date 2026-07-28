@@ -1,19 +1,23 @@
-//! RACS v0.2 runtime conformance — Stage 3C, Port B (cross-artifact verification).
-//!
-//! JSON Schema cannot prove that referenced artifacts *exist* or that the digests
-//! *match*. These functions enforce the binding rules between the three contract
-//! artifacts. They operate on already-`Validated` payloads (schema-conformant
-//! typed models from [`crate::validation`]).
+//! RACS v0.2 runtime conformance — Port B cross-artifact verification.
 
-use crate::validation::{
-    REASON_ACCEPT, REASON_CLEARANCE_ACTION_MISMATCH, REASON_CLEARANCE_ALLOW_HAS_CONSTRAINTS,
-    REASON_CLEARANCE_ALLOW_STATE_MISMATCH, REASON_CLEARANCE_DETERMINATION_DIGEST_MISMATCH,
-    REASON_CLEARANCE_ENVELOPE_MISMATCH, REASON_CLEARANCE_EXPIRED,
-    REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS, REASON_CLEARANCE_MODIFY_STATE_MISMATCH,
-    REASON_CLEARANCE_NEGATIVE_STATE, REASON_CLEARANCE_REVOKED,
-    REASON_EVALUATION_BINDING_DIGEST_MISMATCH, REASON_EVALUATION_BINDING_REF_MISMATCH,
+use crate::boundary_crossing::BoundaryCrossingAssessment;
+use crate::boundary_validation::{
+    verify_boundary_chain, REASON_BOUNDARY_ASSESSMENT_UNRESOLVED,
 };
-use crate::{AdmissibilityDetermination, GovernanceClearance, GovernanceEvaluation};
+use crate::validation::{
+    REASON_ACCEPT, REASON_CLEARANCE_ACTION_MISMATCH,
+    REASON_CLEARANCE_ALLOW_HAS_CONSTRAINTS,
+    REASON_CLEARANCE_ALLOW_STATE_MISMATCH,
+    REASON_CLEARANCE_DETERMINATION_DIGEST_MISMATCH,
+    REASON_CLEARANCE_ENVELOPE_MISMATCH, REASON_CLEARANCE_EXPIRED,
+    REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS,
+    REASON_CLEARANCE_MODIFY_STATE_MISMATCH, REASON_CLEARANCE_NEGATIVE_STATE,
+    REASON_CLEARANCE_REVOKED, REASON_EVALUATION_BINDING_DIGEST_MISMATCH,
+    REASON_EVALUATION_BINDING_REF_MISMATCH,
+};
+use crate::{
+    AdmissibilityDetermination, GovernanceClearance, GovernanceEvaluation,
+};
 use serde_json::Value;
 
 #[derive(Debug, Clone)]
@@ -25,31 +29,20 @@ pub struct VerificationResult {
 
 impl VerificationResult {
     pub fn accept() -> Self {
-        VerificationResult {
+        Self {
             decision: "ACCEPT".into(),
             reason_code: REASON_ACCEPT.into(),
             detail: None,
         }
     }
 
-    pub fn reject(reason: &'static str, detail: &str) -> Self {
-        VerificationResult {
+    pub fn reject(reason: &str, detail: impl Into<String>) -> Self {
+        Self {
             decision: "REJECT".into(),
             reason_code: reason.into(),
             detail: Some(detail.into()),
         }
     }
-}
-
-fn non_clearable_states() -> &'static [&'static str; 6] {
-    &[
-        "NOT_ADMISSIBLE",
-        "INDETERMINATE",
-        "STALE",
-        "REVOKED",
-        "HALTED",
-        "REQUIRES_STEP_UP",
-    ]
 }
 
 pub fn verify_evaluation_binding(
@@ -70,11 +63,11 @@ pub fn verify_evaluation_binding(
     }
 
     let expected = match evaluation.digest() {
-        Ok(digest) => digest,
+        Ok(value) => value,
         Err(error) => {
             return VerificationResult::reject(
                 REASON_EVALUATION_BINDING_DIGEST_MISMATCH,
-                &error.to_string(),
+                error.to_string(),
             )
         }
     };
@@ -85,20 +78,22 @@ pub fn verify_evaluation_binding(
     {
         return VerificationResult::reject(
             REASON_EVALUATION_BINDING_REF_MISMATCH,
-            &format!("no binding references {}", evaluation.evaluation_id),
+            format!("no binding references {}", evaluation.evaluation_id),
         );
     }
     for binding in &determination.evaluation_bindings {
         if binding.evaluation_digest != expected {
             return VerificationResult::reject(
                 REASON_EVALUATION_BINDING_DIGEST_MISMATCH,
-                &format!("binding {}: digest mismatch", binding.evaluation_ref),
+                format!("binding {}: digest mismatch", binding.evaluation_ref),
             );
         }
     }
     VerificationResult::accept()
 }
 
+/// Backward-compatible entrypoint. Boundary material is now mandatory, so callers
+/// using this legacy signature fail closed.
 pub fn verify_clearance_binding(
     clearance: &GovernanceClearance,
     determination: &AdmissibilityDetermination,
@@ -107,11 +102,31 @@ pub fn verify_clearance_binding(
     verify_clearance_binding_at(clearance, determination, action_envelope, None)
 }
 
+/// Backward-compatible timed entrypoint. It intentionally fails closed because
+/// GovernanceEvaluation and BoundaryCrossingAssessment are unresolved.
 pub fn verify_clearance_binding_at(
     clearance: &GovernanceClearance,
     determination: &AdmissibilityDetermination,
     action_envelope: Option<&Value>,
     verification_time: Option<&str>,
+) -> VerificationResult {
+    verify_clearance_binding_with_boundary_at(
+        clearance,
+        determination,
+        action_envelope,
+        verification_time,
+        None,
+        None,
+    )
+}
+
+pub fn verify_clearance_binding_with_boundary_at(
+    clearance: &GovernanceClearance,
+    determination: &AdmissibilityDetermination,
+    action_envelope: Option<&Value>,
+    verification_time: Option<&str>,
+    governance_evaluation: Option<&GovernanceEvaluation>,
+    boundary_assessment: Option<&BoundaryCrossingAssessment>,
 ) -> VerificationResult {
     if clearance.admissibility_determination_ref != determination.determination_id {
         return VerificationResult::reject(
@@ -120,11 +135,11 @@ pub fn verify_clearance_binding_at(
         );
     }
     let determination_digest = match determination.digest() {
-        Ok(digest) => digest,
+        Ok(value) => value,
         Err(error) => {
             return VerificationResult::reject(
                 REASON_CLEARANCE_DETERMINATION_DIGEST_MISMATCH,
-                &error.to_string(),
+                error.to_string(),
             )
         }
     };
@@ -148,7 +163,7 @@ pub fn verify_clearance_binding_at(
         );
     }
 
-    let digest_pairs: &[(&str, &String, &String)] = &[
+    let digest_pairs = [
         (
             "authority_digest",
             &clearance.authority_digest,
@@ -184,18 +199,26 @@ pub fn verify_clearance_binding_at(
         if clearance_value != determination_value {
             return VerificationResult::reject(
                 REASON_CLEARANCE_DETERMINATION_DIGEST_MISMATCH,
-                &format!("{name} mismatch"),
+                format!("{name} mismatch"),
             );
         }
     }
 
-    let state = format!("{:?}", determination.state).to_uppercase();
-    if non_clearable_states().contains(&state.as_str()) {
+    if matches!(
+        determination.state,
+        crate::AdmissibilityState::NotAdmissible
+            | crate::AdmissibilityState::Indeterminate
+            | crate::AdmissibilityState::Stale
+            | crate::AdmissibilityState::Revoked
+            | crate::AdmissibilityState::Halted
+            | crate::AdmissibilityState::RequiresStepUp
+    ) {
         return VerificationResult::reject(
             REASON_CLEARANCE_NEGATIVE_STATE,
-            &format!("determination.state={state} is not clearable"),
+            "determination state is not clearable",
         );
     }
+
     match clearance.decision {
         crate::Decision::Allow => {
             if determination.state != crate::AdmissibilityState::Admissible {
@@ -212,27 +235,28 @@ pub fn verify_clearance_binding_at(
             }
         }
         crate::Decision::Modify => {
-            if determination.state != crate::AdmissibilityState::ConditionallyAdmissible {
+            if determination.state
+                != crate::AdmissibilityState::ConditionallyAdmissible
+            {
                 return VerificationResult::reject(
                     REASON_CLEARANCE_MODIFY_STATE_MISMATCH,
                     "MODIFY requires CONDITIONALLY_ADMISSIBLE",
                 );
             }
-            match &clearance.constraints {
+            let constraints = match &clearance.constraints {
+                Some(value) => value,
                 None => {
                     return VerificationResult::reject(
                         REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS,
                         "MODIFY requires constraints",
                     )
                 }
-                Some(constraints) => {
-                    if !enforceable(constraints) {
-                        return VerificationResult::reject(
-                            REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS,
-                            "constraints present but not enforceable",
-                        );
-                    }
-                }
+            };
+            if !enforceable(constraints) {
+                return VerificationResult::reject(
+                    REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS,
+                    "constraints present but not enforceable",
+                );
             }
         }
         _ => {}
@@ -244,72 +268,73 @@ pub fn verify_clearance_binding_at(
             "empty revocation_registry_ref",
         );
     }
-    if is_expired(
-        &clearance.valid_from,
-        &clearance.valid_until,
-        verification_time,
-    ) {
+    if is_expired(&clearance.valid_until, verification_time) {
         return VerificationResult::reject(
             REASON_CLEARANCE_EXPIRED,
             "validity window expired",
         );
     }
 
-    if let Some(envelope) = action_envelope {
-        let envelope_digest = envelope
-            .get("payload_digest")
-            .or_else(|| envelope.get("action_envelope_digest"))
-            .and_then(|value| value.as_str());
-        if let Some(digest) = envelope_digest {
-            if digest != clearance.action_envelope_digest {
-                return VerificationResult::reject(
-                    REASON_CLEARANCE_ENVELOPE_MISMATCH,
-                    "resolved envelope digest mismatch",
-                );
+    let (action_envelope, governance_evaluation, boundary_assessment) =
+        match (action_envelope, governance_evaluation, boundary_assessment) {
+            (Some(envelope), Some(evaluation), Some(assessment)) => {
+                (envelope, evaluation, assessment)
             }
-        }
-    }
+            _ => {
+                return VerificationResult::reject(
+                    REASON_BOUNDARY_ASSESSMENT_UNRESOLVED,
+                    "clearance verification requires envelope, evaluation and assessment",
+                )
+            }
+        };
 
+    let boundary = verify_boundary_chain(
+        action_envelope,
+        Some(boundary_assessment),
+        governance_evaluation,
+        determination,
+        verification_time,
+    );
+    if boundary.decision != "ACCEPT" {
+        return VerificationResult {
+            decision: boundary.decision,
+            reason_code: boundary.reason_code,
+            detail: boundary.detail,
+        };
+    }
     VerificationResult::accept()
 }
 
 fn enforceable(constraints: &Value) -> bool {
     match constraints {
-        Value::Object(map) => {
-            if let Some(Value::Array(rules)) = map.get("rules") {
-                if !rules.is_empty() {
-                    return true;
-                }
+        Value::Object(values) => {
+            if matches!(values.get("rules"), Some(Value::Array(rules)) if !rules.is_empty()) {
+                return true;
             }
-            let reference_ok =
-                matches!(map.get("constraint_set_ref"), Some(Value::String(value)) if !value.is_empty());
-            let digest_ok = matches!(
-                map.get("constraint_set_digest"),
-                Some(Value::String(value)) if value.starts_with("sha256:")
-            );
-            reference_ok && digest_ok
+            matches!(values.get("constraint_set_ref"), Some(Value::String(value)) if !value.is_empty())
+                && matches!(
+                    values.get("constraint_set_digest"),
+                    Some(Value::String(value)) if value.starts_with("sha256:")
+                )
         }
         _ => false,
     }
 }
 
-fn is_expired(valid_from: &str, valid_until: &str, verification_time: Option<&str>) -> bool {
-    if valid_until.is_empty() {
-        return false;
-    }
-    let normalized_until = valid_until.replace('Z', "+00:00");
-    let until = match chrono::DateTime::parse_from_rfc3339(&normalized_until) {
+fn is_expired(valid_until: &str, verification_time: Option<&str>) -> bool {
+    let until = match chrono::DateTime::parse_from_rfc3339(
+        &valid_until.replace('Z', "+00:00"),
+    ) {
         Ok(value) => value,
         Err(_) => return false,
     };
     let at = match verification_time {
-        Some(raw) => {
-            let normalized = raw.replace('Z', "+00:00");
-            match chrono::DateTime::parse_from_rfc3339(&normalized) {
-                Ok(value) => value,
-                Err(_) => return false,
-            }
-        }
+        Some(raw) => match chrono::DateTime::parse_from_rfc3339(
+            &raw.replace('Z', "+00:00"),
+        ) {
+            Ok(value) => value,
+            Err(_) => return false,
+        },
         None => chrono::Utc::now().fixed_offset(),
     };
     until < at

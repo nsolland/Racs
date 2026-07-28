@@ -11,18 +11,14 @@ import {
 } from "../src/index.js";
 import type {
   AdmissibilityDetermination,
+  BoundaryCrossingAssessment,
   GovernanceClearance,
   GovernanceEvaluation,
 } from "../src/index.js";
 
 const repoRoot = join(
   dirname(fileURLToPath(import.meta.url)),
-  "..",
-  "..",
-  "..",
-  "..",
-  "..",
-  "..",
+  "..", "..", "..", "..", "..", "..",
 );
 
 function loadVectors(directory: string): any[] {
@@ -44,14 +40,13 @@ function loadVectors(directory: string): any[] {
   return vectors;
 }
 
-test("RACS 3C conformance matrix (shared vectors)", () => {
-  const directories = [
+test("RACS 3C conformance matrix includes boundary chain", () => {
+  for (const directory of [
     "governance-evaluation",
     "admissibility-determination",
     "governance-clearance",
     "cross-artifact-bindings",
-  ];
-  for (const directory of directories) {
+  ]) {
     for (const vector of loadVectors(directory)) {
       const artifactType = vector["artifact_type"] as string;
       const expected = vector["expected"] as string;
@@ -59,92 +54,66 @@ test("RACS 3C conformance matrix (shared vectors)", () => {
       const payload = vector["payload"];
       const vectorId = vector["id"] as string;
       const verificationTime = vector["verification_time"] as string | undefined;
+      const portA = check(artifactType, payload);
 
-      if (vectorId.startsWith("chain_reject_")) continue;
-
-      const result = check(artifactType, payload);
-      assert.equal(
-        result.decision,
-        expected,
-        `Port A decision mismatch for ${vectorId}`,
-      );
-
-      if (expected === "ACCEPT" && artifactType !== "GovernanceClearance") {
-        assert.equal(result.reason_code, "ACCEPT");
-        assert.ok(
-          (result.payload_digest || "").startsWith("sha256:"),
-          `digest missing for ${vectorId}`,
+      if (!vector["resolved"]) {
+        assert.equal(
+          portA.decision,
+          expected,
+          `Port A decision mismatch for ${vectorId}`,
         );
-        continue;
-      }
-
-      const resolved = vector["resolved"];
-      if (resolved) {
-        if (artifactType === "GovernanceClearance") {
-          const clearance = payload as GovernanceClearance;
-          const determination =
-            resolved["determination"] as AdmissibilityDetermination;
-          const evaluation = resolved["evaluation"] as GovernanceEvaluation;
-          const evaluationBinding = verifyEvaluationBinding(
-            determination,
-            evaluation,
-          );
-          const clearanceBinding = verifyClearanceBinding(
-            clearance,
-            determination,
-            undefined,
-            verificationTime,
-          );
-          if (expected === "ACCEPT") {
-            assert.equal(
-              evaluationBinding.decision,
-              "ACCEPT",
-              `eval binding: ${evaluationBinding.detail}`,
-            );
-            assert.equal(
-              clearanceBinding.decision,
-              "ACCEPT",
-              `clearance binding: ${clearanceBinding.detail}`,
-            );
-            assert.equal(clearanceBinding.reason_code, "ACCEPT");
-          } else {
-            const decided =
-              evaluationBinding.decision === "REJECT"
-                ? evaluationBinding
-                : clearanceBinding;
-            assert.equal(decided.decision, expected, `${decided.detail}`);
-            assert.equal(decided.reason_code, reason, "reason mismatch");
-          }
-        } else if (artifactType === "AdmissibilityDetermination") {
-          const determination = payload as AdmissibilityDetermination;
-          const evaluation = resolved["evaluation"] as GovernanceEvaluation;
-          const evaluationBinding = verifyEvaluationBinding(
-            determination,
-            evaluation,
-          );
-          assert.equal(
-            evaluationBinding.decision,
-            expected,
-            `${evaluationBinding.detail}`,
-          );
-          assert.equal(evaluationBinding.reason_code, reason, "reason mismatch");
+        assert.equal(portA.reason_code, reason);
+        if (expected === "ACCEPT") {
+          assert.ok((portA.payload_digest || "").startsWith("sha256:"));
         }
         continue;
       }
 
-      if (expected === "ACCEPT") {
-        assert.equal(result.reason_code, "ACCEPT");
-        assert.ok((result.payload_digest || "").startsWith("sha256:"));
-        continue;
-      }
-
       assert.equal(
-        result.reason_code,
-        reason,
-        `reason mismatch for ${vectorId}`,
+        portA.decision,
+        "ACCEPT",
+        `resolved vector must pass Port A: ${vectorId}`,
       );
+      const resolved = vector["resolved"];
+
+      if (artifactType === "GovernanceClearance") {
+        const clearance = payload as GovernanceClearance;
+        const determination =
+          resolved["determination"] as AdmissibilityDetermination;
+        const evaluation = resolved["evaluation"] as GovernanceEvaluation;
+        const assessment =
+          resolved["boundary_assessment"] as BoundaryCrossingAssessment;
+        const actionEnvelope =
+          resolved["action_envelope"] as Record<string, unknown>;
+
+        const evaluationBinding = verifyEvaluationBinding(
+          determination,
+          evaluation,
+        );
+        const decided =
+          evaluationBinding.decision === "REJECT"
+            ? evaluationBinding
+            : verifyClearanceBinding(
+                clearance,
+                determination,
+                actionEnvelope,
+                verificationTime,
+                evaluation,
+                assessment,
+              );
+
+        assert.equal(decided.decision, expected, `${vectorId}: ${decided.detail}`);
+        assert.equal(decided.reason_code, reason, `reason mismatch for ${vectorId}`);
+      } else if (artifactType === "AdmissibilityDetermination") {
+        const determination = payload as AdmissibilityDetermination;
+        const evaluation = resolved["evaluation"] as GovernanceEvaluation;
+        const decided = verifyEvaluationBinding(determination, evaluation);
+        assert.equal(decided.decision, expected);
+        assert.equal(decided.reason_code, reason);
+      }
     }
   }
 
   schemaSha256("GovernanceEvaluation");
+  schemaSha256("BoundaryCrossingAssessment");
 });

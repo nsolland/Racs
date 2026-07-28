@@ -1,10 +1,14 @@
-//! RACS v0.2 canonical contract bindings — canonicalization kernel, typed
-//! model bindings, runtime conformance and runtime-continuity payloads.
+//! RACS v0.2 canonical contract bindings.
 
+pub mod boundary_crossing;
+pub mod boundary_validation;
 pub mod continuity;
 pub mod continuity_verification;
 pub mod validation;
 pub mod verification;
+
+pub use boundary_crossing::*;
+pub use boundary_validation::*;
 pub use continuity::*;
 pub use continuity_verification::*;
 
@@ -19,45 +23,73 @@ pub fn canonical_bytes<T: Serialize + ?Sized>(value: &T) -> Result<Vec<u8>, Box<
 
 pub fn sha256_digest<T: Serialize + ?Sized>(value: &T) -> Result<String, Box<dyn Error>> {
     let canon = canonical_bytes(value)?;
-    let mut h = Sha256::new();
-    h.update(&canon);
-    Ok(format!("sha256:{:x}", h.finalize()))
+    let mut hasher = Sha256::new();
+    hasher.update(&canon);
+    Ok(format!("sha256:{:x}", hasher.finalize()))
 }
 
 pub fn canonical_string<T: Serialize + ?Sized>(value: &T) -> Result<String, Box<dyn Error>> {
     let bytes = canonical_bytes(value)?;
-    let s = String::from_utf8(bytes)
-        .map_err(|e| Box::new(std::io::Error::new(std::io::ErrorKind::InvalidData, e)) as Box<dyn Error>)?;
-    Ok(s)
+    String::from_utf8(bytes)
+        .map_err(|error| Box::new(std::io::Error::new(std::io::ErrorKind::InvalidData, error)) as Box<dyn Error>)
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "UPPERCASE")]
-pub enum Decision { Allow, Modify, Defer, Deny, StepUp, Halt }
+pub enum Decision {
+    Allow,
+    Modify,
+    Defer,
+    Deny,
+    #[serde(rename = "STEP_UP")]
+    StepUp,
+    Halt,
+}
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Status {
-    PresentAndValid, PresentButInvalid, Missing, Unknown, Unavailable, Stale,
-    Revoked, Conflicting,
+    PresentAndValid,
+    PresentButInvalid,
+    Missing,
+    Unknown,
+    Unavailable,
+    Stale,
+    Revoked,
+    Conflicting,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AdmissibilityState {
-    Admissible, ConditionallyAdmissible, NotAdmissible, Indeterminate, Stale,
-    Revoked, Halted, RequiresStepUp,
+    Admissible,
+    ConditionallyAdmissible,
+    NotAdmissible,
+    Indeterminate,
+    Stale,
+    Revoked,
+    Halted,
+    RequiresStepUp,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "UPPERCASE")]
-pub enum ConsequenceClass { Low, Medium, High, Critical }
+pub enum ConsequenceClass {
+    Low,
+    Medium,
+    High,
+    Critical,
+}
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "UPPERCASE")]
-pub enum Reversibility { Reversible, Compensatable, Irreversible }
+pub enum Reversibility {
+    Reversible,
+    Compensatable,
+    Irreversible,
+}
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct EvaluationBinding {
     pub evaluation_ref: String,
@@ -84,6 +116,7 @@ pub struct GovernanceEvaluation {
     pub reason_codes: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub constraints: Option<serde_json::Value>,
+    pub boundary_assessment_binding: BoundaryAssessmentBinding,
     pub evaluated_at: String,
     pub valid_until: String,
 }
@@ -102,6 +135,7 @@ pub struct AdmissibilityDetermination {
     pub purpose_digest: String,
     pub state_digest: String,
     pub evaluation_bindings: Vec<EvaluationBinding>,
+    pub boundary_assessment_binding: BoundaryAssessmentBinding,
     pub state: AdmissibilityState,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub conditions: Option<serde_json::Value>,
@@ -146,16 +180,31 @@ pub struct GovernanceClearance {
 }
 
 impl GovernanceEvaluation {
-    pub fn canonical(&self) -> Result<String, Box<dyn Error>> { canonical_string(self) }
-    pub fn digest(&self) -> Result<String, Box<dyn Error>> { sha256_digest(self) }
+    pub fn canonical(&self) -> Result<String, Box<dyn Error>> {
+        canonical_string(self)
+    }
+
+    pub fn digest(&self) -> Result<String, Box<dyn Error>> {
+        sha256_digest(self)
+    }
 }
 
 impl AdmissibilityDetermination {
-    pub fn canonical(&self) -> Result<String, Box<dyn Error>> { canonical_string(self) }
-    pub fn digest(&self) -> Result<String, Box<dyn Error>> { sha256_digest(self) }
+    pub fn canonical(&self) -> Result<String, Box<dyn Error>> {
+        canonical_string(self)
+    }
+
+    pub fn digest(&self) -> Result<String, Box<dyn Error>> {
+        sha256_digest(self)
+    }
 }
 
 impl GovernanceClearance {
-    pub fn canonical(&self) -> Result<String, Box<dyn Error>> { canonical_string(self) }
-    pub fn digest(&self) -> Result<String, Box<dyn Error>> { sha256_digest(self) }
+    pub fn canonical(&self) -> Result<String, Box<dyn Error>> {
+        canonical_string(self)
+    }
+
+    pub fn digest(&self) -> Result<String, Box<dyn Error>> {
+        sha256_digest(self)
+    }
 }
