@@ -108,5 +108,6 @@ export class GovernanceClearance implements Canonicalizable {
 }
 
 export * from "./continuity.js";
+export * from "./continuity-verification.js";
 export * from "./validation.js";
 export * from "./verification.js";
