@@ -1,5 +1,5 @@
 {
-  "id": "det_reject_bad_state_enum",
+  "id": "det_reject_missing_boundary_binding",
   "artifact_type": "AdmissibilityDetermination",
   "expected": "REJECT",
   "reason_code": "SCHEMA_INVALID",
@@ -20,11 +20,7 @@
         "evaluation_digest": "sha256:75519ad51c047a299e8cf20c46d59e4229a8317067713723f290e34ece7481a2"
       }
     ],
-    "boundary_assessment_binding": {
-      "assessment_ref": "bca-001",
-      "assessment_digest": "sha256:c145792a7b8c608370f8d4cd80af39cd91052107196fece2994edc06113f4174"
-    },
-    "state": "WRONG_STATE",
+    "state": "ADMISSIBLE",
     "reason_codes": [
       "OK"
     ],

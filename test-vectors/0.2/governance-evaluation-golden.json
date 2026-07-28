@@ -1,10 +1,14 @@
 {
-  "canonical_payload": "{\"action_envelope_digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"action_id\":\"act_test_001\",\"authority_status\":\"PRESENT_AND_VALID\",\"decision\":\"ALLOW\",\"evaluated_at\":\"2026-07-14T18:00:00Z\",\"evaluation_id\":\"vaig:gv_allow\",\"evaluator_id\":\"vaig:test\",\"evaluator_version\":\"0.2\",\"evidence_status\":\"PRESENT_AND_VALID\",\"policy_status\":\"PRESENT_AND_VALID\",\"purpose_status\":\"PRESENT_AND_VALID\",\"reason_codes\":[\"aarm.allow\"],\"risk_status\":\"PRESENT_AND_VALID\",\"state_status\":\"PRESENT_AND_VALID\",\"tenant_id\":\"tenant-test\",\"valid_until\":\"2026-07-14T18:05:00Z\"}",
-  "description": "Golden GovernanceEvaluation (ALLOW) with RI2-computed payload_digest and canonical_payload for conformance testing of evaluation_digest.",
+  "canonical_payload": "{\"action_envelope_digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"action_id\":\"act_test_001\",\"authority_status\":\"PRESENT_AND_VALID\",\"boundary_assessment_binding\":{\"assessment_digest\":\"sha256:5d36da17502fa57ae20824561e55befb40a36bef7d8ca7efbbeb28d9c8b3f6b3\",\"assessment_ref\":\"bca:gv_allow\"},\"decision\":\"ALLOW\",\"evaluated_at\":\"2026-07-14T18:00:00Z\",\"evaluation_id\":\"vaig:gv_allow\",\"evaluator_id\":\"vaig:test\",\"evaluator_version\":\"0.2\",\"evidence_status\":\"PRESENT_AND_VALID\",\"policy_status\":\"PRESENT_AND_VALID\",\"purpose_status\":\"PRESENT_AND_VALID\",\"reason_codes\":[\"aarm.allow\"],\"risk_status\":\"PRESENT_AND_VALID\",\"state_status\":\"PRESENT_AND_VALID\",\"tenant_id\":\"tenant-test\",\"valid_until\":\"2026-07-14T18:05:00Z\"}",
+  "description": "Golden GovernanceEvaluation (ALLOW) bound to the exact BoundaryCrossingAssessment digest.",
   "payload": {
     "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "action_id": "act_test_001",
     "authority_status": "PRESENT_AND_VALID",
+    "boundary_assessment_binding": {
+      "assessment_ref": "bca:gv_allow",
+      "assessment_digest": "sha256:5d36da17502fa57ae20824561e55befb40a36bef7d8ca7efbbeb28d9c8b3f6b3"
+    },
     "decision": "ALLOW",
     "evaluated_at": "2026-07-14T18:00:00Z",
     "evaluation_id": "vaig:gv_allow",
@@ -21,6 +25,6 @@
     "tenant_id": "tenant-test",
     "valid_until": "2026-07-14T18:05:00Z"
   },
-  "payload_digest": "sha256:58c8431515435642ee92d148a0636f2b20c5292c843fc8977a1fda3f5d94644c",
+  "payload_digest": "sha256:532d2a571f8536890bf9b79994703c63a44c01ba40f71b4733d045674bdb3273",
   "vector_id": "gev_allow"
 }

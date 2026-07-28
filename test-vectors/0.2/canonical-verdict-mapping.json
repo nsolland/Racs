@@ -1,6 +1,6 @@
 {
   "title": "Canonical VALO Verdict Mapping — golden vectors",
-  "base_commit": "valo-platform d99d2f96",
+  "base_commit": "RACS boundary crossing v0.2",
   "schema_version": "0.2",
   "vectors": [
     {
@@ -10,10 +10,17 @@
       "clearance_decision": "ALLOW",
       "clearance_admissibility_state": "ADMISSIBLE",
       "clearance_issued": true,
+      "boundary_assessment_binding": {
+        "assessment_ref": "bca:gv_allow",
+        "assessment_digest": "sha256:5d36da17502fa57ae20824561e55befb40a36bef7d8ca7efbbeb28d9c8b3f6b3"
+      },
       "evaluation_bindings": [
-        {"evaluation_ref": "vaig:gv_allow", "evaluation_digest": "sha256:58c8431515435642ee92d148a0636f2b20c5292c843fc8977a1fda3f5d94644c"}
+        {
+          "evaluation_ref": "vaig:gv_allow",
+          "evaluation_digest": "sha256:532d2a571f8536890bf9b79994703c63a44c01ba40f71b4733d045674bdb3273"
+        }
       ],
-      "note": "Positive path: full ALLOW with no constraints."
+      "note": "Positive path: full ALLOW with no constraints; exact boundary assessment is preserved."
     },
     {
       "id": "gv_modify",
@@ -22,19 +29,41 @@
       "clearance_decision": "MODIFY",
       "clearance_admissibility_state": "CONDITIONALLY_ADMISSIBLE",
       "clearance_issued": true,
+      "boundary_assessment_binding": {
+        "assessment_ref": "bca:gv_modify",
+        "assessment_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+      },
       "evaluation_bindings": [
-        {"evaluation_ref": "vaig:gv_modify", "evaluation_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"}
+        {
+          "evaluation_ref": "vaig:gv_modify",
+          "evaluation_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+        }
       ],
       "constraints": {
         "machine_readable": true,
         "binds_exact_action": true,
         "rules": [
-          {"id": "r1", "predicate": "capability_eq", "target": "net.send", "value": "net.send"},
-          {"id": "r2", "predicate": "target_eq", "target": "host:10.0.0.5", "value": "host:10.0.0.5"},
-          {"id": "r3", "predicate": "payload_unchanged", "target": "payload", "value": true}
+          {
+            "id": "r1",
+            "predicate": "capability_eq",
+            "target": "net.send",
+            "value": "net.send"
+          },
+          {
+            "id": "r2",
+            "predicate": "target_eq",
+            "target": "host:10.0.0.5",
+            "value": "host:10.0.0.5"
+          },
+          {
+            "id": "r3",
+            "predicate": "payload_unchanged",
+            "target": "payload",
+            "value": true
+          }
         ]
       },
-      "note": "Positive path: MODIFY only with an explicit machine-readable, action-binding constraint SET (rules list with minItems 1)."
+      "note": "Positive path: MODIFY only with an explicit machine-readable, action-binding constraint set."
     },
     {
       "id": "gv_defer",
@@ -43,10 +72,17 @@
       "clearance_decision": null,
       "clearance_admissibility_state": null,
       "clearance_issued": false,
+      "boundary_assessment_binding": {
+        "assessment_ref": "bca:gv_defer",
+        "assessment_digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+      },
       "evaluation_bindings": [
-        {"evaluation_ref": "vaig:gv_defer", "evaluation_digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333"}
+        {
+          "evaluation_ref": "vaig:gv_defer",
+          "evaluation_digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+        }
       ],
-      "note": "Negative path: no clearance emitted."
+      "note": "Negative path: no clearance emitted; boundary evidence remains bound to the determination."
     },
     {
       "id": "gv_deny",
@@ -55,10 +91,17 @@
       "clearance_decision": null,
       "clearance_admissibility_state": null,
       "clearance_issued": false,
+      "boundary_assessment_binding": {
+        "assessment_ref": "bca:gv_deny",
+        "assessment_digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+      },
       "evaluation_bindings": [
-        {"evaluation_ref": "vaig:gv_deny", "evaluation_digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444"}
+        {
+          "evaluation_ref": "vaig:gv_deny",
+          "evaluation_digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+        }
       ],
-      "note": "Negative path: terminal for this ActionEnvelope version; no clearance."
+      "note": "Negative path: no clearance emitted; boundary evidence remains bound to the determination."
     },
     {
       "id": "gv_step_up",
@@ -67,10 +110,17 @@
       "clearance_decision": null,
       "clearance_admissibility_state": null,
       "clearance_issued": false,
+      "boundary_assessment_binding": {
+        "assessment_ref": "bca:gv_step_up",
+        "assessment_digest": "sha256:5555555555555555555555555555555555555555555555555555555555555555"
+      },
       "evaluation_bindings": [
-        {"evaluation_ref": "vaig:gv_step_up", "evaluation_digest": "sha256:5555555555555555555555555555555555555555555555555555555555555555"}
+        {
+          "evaluation_ref": "vaig:gv_step_up",
+          "evaluation_digest": "sha256:5555555555555555555555555555555555555555555555555555555555555555"
+        }
       ],
-      "note": "Negative path: requires stronger authority + new determination before any ALLOW."
+      "note": "Negative path: no clearance emitted; boundary evidence remains bound to the determination."
     },
     {
       "id": "gv_halt",
@@ -79,19 +129,32 @@
       "clearance_decision": null,
       "clearance_admissibility_state": null,
       "clearance_issued": false,
+      "boundary_assessment_binding": {
+        "assessment_ref": "bca:gv_halt",
+        "assessment_digest": "sha256:6666666666666666666666666666666666666666666666666666666666666666"
+      },
       "evaluation_bindings": [
-        {"evaluation_ref": "vaig:gv_halt", "evaluation_digest": "sha256:6666666666666666666666666666666666666666666666666666666666666666"}
+        {
+          "evaluation_ref": "vaig:gv_halt",
+          "evaluation_digest": "sha256:6666666666666666666666666666666666666666666666666666666666666666"
+        }
       ],
-      "note": "Negative path: terminal for this attempt; any previously granted clearance is revoked or invalidated through a signed RevocationEvent."
+      "note": "Negative path: no clearance emitted; boundary evidence remains bound to the determination."
     }
   ],
-  "monotonicity_rule": "AARM verdict is bound provenance through the chain via evaluation_bindings (ref + content digest); never used directly as execution authorization. New evidence/authority/state requires NEW artifact, NEW ID, NEW digest.",
-  "no_longer_admissible": "OUT of scope for initial mapping; belongs to continuous integrity (STALE/REVOKED/HALTED post-clearance).",
+  "monotonicity_rule": "AARM verdict and BoundaryCrossingAssessment are bound provenance through the chain; neither is direct execution authorization. New evidence, authority or state requires a new artifact, ID and digest.",
+  "no_longer_admissible": "Out of scope for initial mapping; belongs to continuous integrity (STALE/REVOKED/HALTED post-clearance).",
   "provenance_chain": {
-    "AdmissibilityDetermination": {"evaluation_bindings": "[{evaluation_ref, evaluation_digest}] -> signed GovernanceEvaluation"},
+    "GovernanceEvaluation": {
+      "boundary_assessment_binding": "->{assessment_ref, assessment_digest} signed BoundaryCrossingAssessment"
+    },
+    "AdmissibilityDetermination": {
+      "boundary_assessment_binding": "must equal GovernanceEvaluation binding",
+      "evaluation_bindings": "[{evaluation_ref, evaluation_digest}] -> signed GovernanceEvaluation"
+    },
     "GovernanceClearance": {
       "admissibility_determination_ref": "-> AdmissibilityDetermination",
-      "admissibility_determination_digest": "-> AdmissibilityDetermination"
+      "admissibility_determination_digest": "-> exact AdmissibilityDetermination payload"
     }
   }
 }

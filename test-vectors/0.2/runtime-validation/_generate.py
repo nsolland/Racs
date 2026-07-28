@@ -1,10 +1,7 @@
-"""Generate the shared, language-agnostic Stage 3C runtime-validation vectors.
+"""Generate boundary-aware RACS v0.2 runtime and canonical vectors.
 
-Run from repo root:
+Run from repository root:
     python test-vectors/0.2/runtime-validation/_generate.py
-
-Cross-artifact vectors may include ``verification_time``. This pins validity-window
-checks to a deterministic RFC 3339 instant instead of the machine wall clock.
 """
 from __future__ import annotations
 
@@ -13,345 +10,104 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
-VEC = REPO / "test-vectors" / "0.2" / "runtime-validation"
-
+OUT = REPO / "test-vectors" / "0.2"
 sys.path.insert(0, str(REPO / "reference" / "bindings" / "v0.2" / "python"))
-from racs_v02 import (  # noqa: E402
-    AdmissibilityDetermination,
-    GovernanceClearance,
-    GovernanceEvaluation,
-)
+from racs_v02 import canonical_str, sha256_digest  # noqa: E402
 
-D = "sha256:" + "a" * 64
-EV_DIGEST = "sha256:" + "e" * 64
-DET_DIGEST = "sha256:" + "d" * 64
-VERIFICATION_TIME = "2026-07-23T12:15:00Z"
+D='sha256:'+'a'*64
 
+def canon(o):
+    return canonical_str(o)
+def digest(o):
+    return sha256_digest(o)
+def dump(path,o):
+    p=OUT/path; p.parent.mkdir(parents=True,exist_ok=True); p.write_text(json.dumps(o,indent=2,ensure_ascii=False)+'\n', encoding='utf-8')
 
-def ev_payload() -> dict:
+def action_envelope():
     return {
-        "evaluation_id": "ev-001",
-        "action_id": "act-001",
-        "action_envelope_digest": D,
-        "tenant_id": "tenant-1",
-        "evaluator_id": "eval-1",
-        "evaluator_version": "1.0.0",
-        "decision": "ALLOW",
-        "authority_status": "PRESENT_AND_VALID",
-        "policy_status": "PRESENT_AND_VALID",
-        "evidence_status": "PRESENT_AND_VALID",
-        "purpose_status": "PRESENT_AND_VALID",
-        "state_status": "PRESENT_AND_VALID",
-        "risk_status": "PRESENT_AND_VALID",
-        "reason_codes": ["OK"],
-        "evaluated_at": "2026-07-23T12:00:00Z",
-        "valid_until": "2026-07-24T12:00:00Z",
+      'action_id':'act-001','tenant_id':'tenant-1','action_type':'CONNECTOR_CALL','actor_ref':'agent://demo/1',
+      'target_ref':'system://demo/target','target_digest':D,'payload_digest':D,
+      'authority_grant_ref':'authority://grant/001','delegation_chain_ref':'delegation://chain/001',
+      'policy_ref':'policy://boundary/001','evidence_package_ref':'evidence://package/001',
+      'purpose_ref':'purpose://demo/001','environment_state_ref':'state://environment/001',
+      'risk_context_ref':'risk://context/001','connector_id':'conn-1','capability':'read',
+      'consequence_class':'LOW','reversibility':'REVERSIBLE','created_at':'2026-07-23T11:50:00Z',
+      'expires_at':'2026-07-23T12:20:00Z','replay_nonce':'0123456789abcdef0123','idempotency_key':'idem-001',
+      'boundary_requirements':{'required_types':['EXECUTION'],'policy_ref':'policy://boundary/001','policy_digest':D,'fail_closed':True}
     }
+AE=action_envelope(); AE_DIGEST=digest(AE)
 
-
-def det_payload() -> dict:
+def assessment():
     return {
-        "determination_id": "det-001",
-        "action_id": "act-001",
-        "action_envelope_digest": D,
-        "tenant_id": "tenant-1",
-        "authority_digest": D,
-        "delegation_chain_digest": D,
-        "policy_digest": D,
-        "evidence_digest": D,
-        "purpose_digest": D,
-        "state_digest": D,
-        "evaluation_bindings": [
-            {"evaluation_ref": "ev-001", "evaluation_digest": EV_DIGEST}
-        ],
-        "state": "ADMISSIBLE",
-        "reason_codes": ["OK"],
-        "determined_at": "2026-07-23T12:05:00Z",
-        "valid_until": "2026-07-24T12:05:00Z",
-        "revocation_registry_ref": "revreg-001",
+      'schema_version':'racs.boundary-crossing-assessment.v0.2','assessment_id':'bca-001','action_id':'act-001',
+      'action_envelope_digest':AE_DIGEST,'tenant_id':'tenant-1','assessor_id':'boundary-evaluator-1','assessor_version':'0.2.0',
+      'requirement_policy_ref':'policy://boundary/001','requirement_policy_digest':D,
+      'crossings':[{
+        'crossing_id':'crossing-execution-001','boundary_type':'EXECUTION','crossing_detected':True,
+        'prior_state_digest':'sha256:'+'b'*64,'proposed_state_digest':'sha256:'+'c'*64,
+        'authority_requirement_ref':'authority-requirement://execution/001',
+        'authority_binding':{'ref':'authority://grant/001','digest':D},
+        'policy_binding':{'ref':'policy://boundary/001','digest':D},
+        'evidence_binding':{'ref':'evidence://execution/001','digest':D},
+        'details_digest':'sha256:'+'d'*64,'state':'AUTHORIZED','required_response_floor':'NONE','reason_codes':[],
+        'observed_at':'2026-07-23T11:55:00Z','valid_until':'2026-07-23T12:20:00Z'}],
+      'aggregate_state':'AUTHORIZED','required_response_floor':'NONE','reason_codes':[],
+      'assessed_at':'2026-07-23T11:55:00Z','valid_until':'2026-07-23T12:20:00Z','revocation_registry_ref':'revreg-001'
     }
+BCA=assessment(); BCA_DIGEST=digest(BCA)
 
+def ev_payload():
+    return {'evaluation_id':'ev-001','action_id':'act-001','action_envelope_digest':AE_DIGEST,'tenant_id':'tenant-1','evaluator_id':'eval-1','evaluator_version':'1.0.0','decision':'ALLOW','authority_status':'PRESENT_AND_VALID','policy_status':'PRESENT_AND_VALID','evidence_status':'PRESENT_AND_VALID','purpose_status':'PRESENT_AND_VALID','state_status':'PRESENT_AND_VALID','risk_status':'PRESENT_AND_VALID','reason_codes':['OK'],'boundary_assessment_binding':{'assessment_ref':'bca-001','assessment_digest':BCA_DIGEST},'evaluated_at':'2026-07-23T12:00:00Z','valid_until':'2026-07-23T12:18:00Z'}
+EV=ev_payload(); EV_DIGEST=digest(EV)
+def det_payload():
+    return {'determination_id':'det-001','action_id':'act-001','action_envelope_digest':AE_DIGEST,'tenant_id':'tenant-1','authority_digest':D,'delegation_chain_digest':D,'policy_digest':D,'evidence_digest':D,'purpose_digest':D,'state_digest':D,'evaluation_bindings':[{'evaluation_ref':'ev-001','evaluation_digest':EV_DIGEST}],'boundary_assessment_binding':{'assessment_ref':'bca-001','assessment_digest':BCA_DIGEST},'state':'ADMISSIBLE','reason_codes':['OK'],'determined_at':'2026-07-23T12:05:00Z','valid_until':'2026-07-23T12:16:00Z','revocation_registry_ref':'revreg-001'}
+DET=det_payload(); DET_DIGEST=digest(DET)
+def clr_payload():
+    return {'clearance_id':'clr-001','action_id':'act-001','action_envelope_digest':AE_DIGEST,'tenant_id':'tenant-1','decision':'ALLOW','admissibility_state':'ADMISSIBLE','authority_digest':D,'delegation_chain_digest':D,'policy_digest':D,'evidence_digest':D,'purpose_digest':D,'state_digest':D,'target_digest':D,'payload_digest':D,'connector_id':'conn-1','capability':'read','consequence_class':'LOW','reversibility':'REVERSIBLE','valid_from':'2026-07-23T12:10:00Z','valid_until':'2026-07-23T12:15:00Z','replay_nonce':'0123456789abcdef0123','idempotency_key':'idem-001','revocation_registry_ref':'revreg-001','evaluator_refs':['eval-1'],'admissibility_determination_ref':'det-001','admissibility_determination_digest':DET_DIGEST}
+VERIFICATION_TIME='2026-07-23T12:12:00Z'
 
-def clr_payload() -> dict:
-    return {
-        "clearance_id": "clr-001",
-        "action_id": "act-001",
-        "action_envelope_digest": D,
-        "tenant_id": "tenant-1",
-        "decision": "ALLOW",
-        "admissibility_state": "ADMISSIBLE",
-        "authority_digest": D,
-        "delegation_chain_digest": D,
-        "policy_digest": D,
-        "evidence_digest": D,
-        "purpose_digest": D,
-        "state_digest": D,
-        "target_digest": D,
-        "payload_digest": "PLACEHOLDER",
-        "connector_id": "conn-1",
-        "capability": "read",
-        "consequence_class": "LOW",
-        "reversibility": "REVERSIBLE",
-        "valid_from": "2026-07-23T12:10:00Z",
-        "valid_until": "2026-07-24T12:10:00Z",
-        "replay_nonce": "0123456789abcdef0123",
-        "idempotency_key": "idem-001",
-        "revocation_registry_ref": "revreg-001",
-        "evaluator_refs": ["eval-1"],
-        "admissibility_determination_ref": "det-001",
-        "admissibility_determination_digest": DET_DIGEST,
-    }
-
-
-def write(artifact_dir: str, name: str, document: dict) -> None:
-    path = VEC / artifact_dir / name
-    path.write_text(
-        json.dumps(document, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-    print("wrote", path.relative_to(REPO))
-
-
-write(
-    "governance-evaluation",
-    "ev_accept.json",
-    {
-        "id": "ev_accept",
-        "artifact_type": "GovernanceEvaluation",
-        "expected": "ACCEPT",
-        "reason_code": "ACCEPT",
-        "payload": ev_payload(),
-    },
-)
-
-ev_bad = ev_payload()
-ev_bad["decision"] = "NOT_A_DECISION"
-write(
-    "governance-evaluation",
-    "ev_reject_bad_enum.json",
-    {
-        "id": "ev_reject_bad_enum",
-        "artifact_type": "GovernanceEvaluation",
-        "expected": "REJECT",
-        "reason_code": "SCHEMA_INVALID",
-        "payload": ev_bad,
-    },
-)
-
-ev_bad2 = ev_payload()
-del ev_bad2["evaluator_id"]
-write(
-    "governance-evaluation",
-    "ev_reject_missing_required.json",
-    {
-        "id": "ev_reject_missing_required",
-        "artifact_type": "GovernanceEvaluation",
-        "expected": "REJECT",
-        "reason_code": "SCHEMA_INVALID",
-        "payload": ev_bad2,
-    },
-)
-
-ev_bad3 = ev_payload()
-ev_bad3["action_envelope_digest"] = "not-a-digest"
-write(
-    "governance-evaluation",
-    "ev_reject_bad_digest_pattern.json",
-    {
-        "id": "ev_reject_bad_digest_pattern",
-        "artifact_type": "GovernanceEvaluation",
-        "expected": "REJECT",
-        "reason_code": "SCHEMA_INVALID",
-        "payload": ev_bad3,
-    },
-)
-
-write(
-    "admissibility-determination",
-    "det_accept.json",
-    {
-        "id": "det_accept",
-        "artifact_type": "AdmissibilityDetermination",
-        "expected": "ACCEPT",
-        "reason_code": "ACCEPT",
-        "payload": det_payload(),
-    },
-)
-
-det_bad = det_payload()
-det_bad["evaluation_bindings"] = []
-write(
-    "admissibility-determination",
-    "det_reject_empty_bindings.json",
-    {
-        "id": "det_reject_empty_bindings",
-        "artifact_type": "AdmissibilityDetermination",
-        "expected": "REJECT",
-        "reason_code": "SCHEMA_INVALID",
-        "payload": det_bad,
-    },
-)
-
-det_bad2 = det_payload()
-det_bad2["state"] = "WRONG_STATE"
-write(
-    "admissibility-determination",
-    "det_reject_bad_state_enum.json",
-    {
-        "id": "det_reject_bad_state_enum",
-        "artifact_type": "AdmissibilityDetermination",
-        "expected": "REJECT",
-        "reason_code": "SCHEMA_INVALID",
-        "payload": det_bad2,
-    },
-)
-
-_clr = clr_payload()
-_clr_model = GovernanceClearance.model_validate(_clr)
-_clr["payload_digest"] = _clr_model.model_digest()
-write(
-    "governance-clearance",
-    "clr_allow_accept.json",
-    {
-        "id": "clr_allow_accept",
-        "artifact_type": "GovernanceClearance",
-        "expected": "ACCEPT",
-        "reason_code": "ACCEPT",
-        "payload": _clr,
-    },
-)
-
-clr_bad = clr_payload()
-clr_bad["constraints"] = {
-    "machine_readable": True,
-    "binds_exact_action": True,
-    "rules": [{"id": "r1", "predicate": "max", "target": "x", "value": 5}],
-}
-clr_bad_model = GovernanceClearance.model_validate(clr_bad)
-clr_bad["payload_digest"] = clr_bad_model.model_digest()
-write(
-    "governance-clearance",
-    "clr_allow_with_constraints.json",
-    {
-        "id": "clr_allow_with_constraints",
-        "artifact_type": "GovernanceClearance",
-        "expected": "REJECT",
-        "reason_code": "SCHEMA_INVALID",
-        "payload": clr_bad,
-    },
-)
-
-clr_bad2 = clr_payload()
-clr_bad2["decision"] = "MODIFY"
-clr_bad2["admissibility_state"] = "CONDITIONALLY_ADMISSIBLE"
-clr_bad2_model = GovernanceClearance.model_validate(clr_bad2)
-clr_bad2["payload_digest"] = clr_bad2_model.model_digest()
-write(
-    "governance-clearance",
-    "clr_modify_missing_constraints.json",
-    {
-        "id": "clr_modify_missing_constraints",
-        "artifact_type": "GovernanceClearance",
-        "expected": "REJECT",
-        "reason_code": "SCHEMA_INVALID",
-        "payload": clr_bad2,
-    },
-)
-
-clr_bad3 = clr_payload()
-clr_bad3["admissibility_state"] = "CONDITIONALLY_ADMISSIBLE"
-clr_bad3_model = GovernanceClearance.model_validate(clr_bad3)
-clr_bad3["payload_digest"] = clr_bad3_model.model_digest()
-write(
-    "governance-clearance",
-    "clr_allow_state_mismatch.json",
-    {
-        "id": "clr_allow_state_mismatch",
-        "artifact_type": "GovernanceClearance",
-        "expected": "REJECT",
-        "reason_code": "SCHEMA_INVALID",
-        "payload": clr_bad3,
-    },
-)
-
-clr_bad4 = clr_payload()
-clr_bad4["replay_nonce"] = "short"
-write(
-    "governance-clearance",
-    "clr_reject_short_nonce.json",
-    {
-        "id": "clr_reject_short_nonce",
-        "artifact_type": "GovernanceClearance",
-        "expected": "REJECT",
-        "reason_code": "SCHEMA_INVALID",
-        "payload": clr_bad4,
-    },
-)
-
-_ev_actual = GovernanceEvaluation.model_validate(ev_payload()).model_digest()
-_det_chain = det_payload()
-_det_chain["evaluation_bindings"] = [
-    {"evaluation_ref": "ev-001", "evaluation_digest": _ev_actual}
-]
-_det_actual = AdmissibilityDetermination.model_validate(_det_chain).model_digest()
-_clr_chain = clr_payload()
-_clr_chain["admissibility_determination_digest"] = _det_actual
-_clr_chain_model = GovernanceClearance.model_validate(_clr_chain)
-_clr_chain["payload_digest"] = _clr_chain_model.model_digest()
-
-write(
-    "cross-artifact-bindings",
-    "chain_accept.json",
-    {
-        "id": "chain_accept",
-        "artifact_type": "GovernanceClearance",
-        "expected": "ACCEPT",
-        "reason_code": "ACCEPT",
-        "verification_time": VERIFICATION_TIME,
-        "payload": _clr_chain,
-        "resolved": {
-            "evaluation": ev_payload(),
-            "determination": _det_chain,
-        },
-    },
-)
-
-_clr_m = clr_payload()
-_clr_m["admissibility_determination_digest"] = DET_DIGEST
-_clr_m_model = GovernanceClearance.model_validate(_clr_m)
-_clr_m["payload_digest"] = _clr_m_model.model_digest()
-write(
-    "cross-artifact-bindings",
-    "chain_reject_det_digest_mismatch.json",
-    {
-        "id": "chain_reject_det_digest_mismatch",
-        "artifact_type": "GovernanceClearance",
-        "expected": "REJECT",
-        "reason_code": "CLEARANCE_DETERMINATION_DIGEST_MISMATCH",
-        "payload": _clr_m,
-        "resolved": {"evaluation": ev_payload(), "determination": _det_chain},
-    },
-)
-
-_det_badbind = det_payload()
-_det_badbind["evaluation_bindings"] = [
-    {"evaluation_ref": "ev-001", "evaluation_digest": "sha256:" + "0" * 64}
-]
-_clr_b = clr_payload()
-_clr_b["admissibility_determination_digest"] = _det_actual
-_clr_b_model = GovernanceClearance.model_validate(_clr_b)
-_clr_b["payload_digest"] = _clr_b_model.model_digest()
-write(
-    "cross-artifact-bindings",
-    "chain_reject_eval_binding_mismatch.json",
-    {
-        "id": "chain_reject_eval_binding_mismatch",
-        "artifact_type": "GovernanceClearance",
-        "expected": "REJECT",
-        "reason_code": "EVALUATION_BINDING_DIGEST_MISMATCH",
-        "payload": _clr_b,
-        "resolved": {"evaluation": ev_payload(), "determination": _det_badbind},
-    },
-)
-
-print("\nAll vectors generated.")
+def vec(id,atype,expected,reason,payload,resolved=None,vt=None):
+    x={'id':id,'artifact_type':atype,'expected':expected,'reason_code':reason,'payload':payload}
+    if vt:x['verification_time']=vt
+    if resolved:x['resolved']=resolved
+    return x
+# schema vectors
+vectors=[]
+vectors.append(('governance-evaluation/ev_accept.json',vec('ev_accept','GovernanceEvaluation','ACCEPT','ACCEPT',ev_payload())))
+e=ev_payload();e['decision']='NOT_A_DECISION';vectors.append(('governance-evaluation/ev_reject_bad_enum.json',vec('ev_reject_bad_enum','GovernanceEvaluation','REJECT','SCHEMA_INVALID',e)))
+e=ev_payload();del e['evaluator_id'];vectors.append(('governance-evaluation/ev_reject_missing_required.json',vec('ev_reject_missing_required','GovernanceEvaluation','REJECT','SCHEMA_INVALID',e)))
+e=ev_payload();e['action_envelope_digest']='not-a-digest';vectors.append(('governance-evaluation/ev_reject_bad_digest_pattern.json',vec('ev_reject_bad_digest_pattern','GovernanceEvaluation','REJECT','SCHEMA_INVALID',e)))
+vectors.append(('admissibility-determination/det_accept.json',vec('det_accept','AdmissibilityDetermination','ACCEPT','ACCEPT',det_payload())))
+d=det_payload();d['evaluation_bindings']=[];vectors.append(('admissibility-determination/det_reject_empty_bindings.json',vec('det_reject_empty_bindings','AdmissibilityDetermination','REJECT','SCHEMA_INVALID',d)))
+d=det_payload();d['state']='WRONG_STATE';vectors.append(('admissibility-determination/det_reject_bad_state_enum.json',vec('det_reject_bad_state_enum','AdmissibilityDetermination','REJECT','SCHEMA_INVALID',d)))
+vectors.append(('governance-clearance/clr_allow_accept.json',vec('clr_allow_accept','GovernanceClearance','ACCEPT','ACCEPT',clr_payload())))
+c=clr_payload();c['constraints']={'machine_readable':True,'binds_exact_action':True,'rules':[{'id':'r1','predicate':'max','target':'x','value':5}]};vectors.append(('governance-clearance/clr_allow_with_constraints.json',vec('clr_allow_with_constraints','GovernanceClearance','REJECT','SCHEMA_INVALID',c)))
+c=clr_payload();c['decision']='MODIFY';c['admissibility_state']='CONDITIONALLY_ADMISSIBLE';vectors.append(('governance-clearance/clr_modify_missing_constraints.json',vec('clr_modify_missing_constraints','GovernanceClearance','REJECT','SCHEMA_INVALID',c)))
+c=clr_payload();c['admissibility_state']='CONDITIONALLY_ADMISSIBLE';vectors.append(('governance-clearance/clr_allow_state_mismatch.json',vec('clr_allow_state_mismatch','GovernanceClearance','REJECT','SCHEMA_INVALID',c)))
+c=clr_payload();c['replay_nonce']='short';vectors.append(('governance-clearance/clr_reject_short_nonce.json',vec('clr_reject_short_nonce','GovernanceClearance','REJECT','SCHEMA_INVALID',c)))
+resolved={'action_envelope':AE,'boundary_assessment':BCA,'evaluation':EV,'determination':DET}
+vectors.append(('cross-artifact-bindings/chain_accept.json',vec('chain_accept','GovernanceClearance','ACCEPT','ACCEPT',clr_payload(),resolved,VERIFICATION_TIME)))
+c=clr_payload();c['admissibility_determination_digest']='sha256:'+'0'*64;vectors.append(('cross-artifact-bindings/chain_reject_det_digest_mismatch.json',vec('chain_reject_det_digest_mismatch','GovernanceClearance','REJECT','CLEARANCE_DETERMINATION_DIGEST_MISMATCH',c,resolved,VERIFICATION_TIME)))
+d=det_payload();d['evaluation_bindings']=[{'evaluation_ref':'ev-001','evaluation_digest':'sha256:'+'0'*64}];r={**resolved,'determination':d}; c=clr_payload(); c['admissibility_determination_digest']=digest(d);vectors.append(('cross-artifact-bindings/chain_reject_eval_binding_mismatch.json',vec('chain_reject_eval_binding_mismatch','GovernanceClearance','REJECT','EVALUATION_BINDING_DIGEST_MISMATCH',c,r,VERIFICATION_TIME)))
+# boundary chain negatives
+r={**resolved}; r['boundary_assessment']=dict(BCA); r['boundary_assessment']['requirement_policy_digest']='sha256:'+'0'*64
+# binding must match mutated assessment digest, so gets to policy check
+r['evaluation']=dict(EV); r['evaluation']['boundary_assessment_binding']={'assessment_ref':'bca-001','assessment_digest':digest(r['boundary_assessment'])}
+r['determination']=dict(DET); r['determination']['boundary_assessment_binding']=r['evaluation']['boundary_assessment_binding']; r['determination']['evaluation_bindings']=[{'evaluation_ref':'ev-001','evaluation_digest':digest(r['evaluation'])}]
+c=clr_payload();c['admissibility_determination_digest']=digest(r['determination'])
+vectors.append(('cross-artifact-bindings/chain_reject_boundary_policy_mismatch.json',vec('chain_reject_boundary_policy_mismatch','GovernanceClearance','REJECT','BOUNDARY_POLICY_MISMATCH',c,r,VERIFICATION_TIME)))
+e=ev_payload(); del e['boundary_assessment_binding']; vectors.append(('governance-evaluation/ev_reject_missing_boundary_binding.json',vec('ev_reject_missing_boundary_binding','GovernanceEvaluation','REJECT','SCHEMA_INVALID',e)))
+d=det_payload(); del d['boundary_assessment_binding']; vectors.append(('admissibility-determination/det_reject_missing_boundary_binding.json',vec('det_reject_missing_boundary_binding','AdmissibilityDetermination','REJECT','SCHEMA_INVALID',d)))
+for p,o in vectors: dump(Path('runtime-validation')/p,o)
+# boundary canonical file
+boundary_canonical={'schema_version':'racs.boundary-crossing-vectors.v0.2','vectors':[{'id':'boundary_assessment_authorized_execution','artifact_type':'BoundaryCrossingAssessment','payload':BCA,'canonical_payload':canon(BCA),'payload_digest':BCA_DIGEST},{'id':'governance_evaluation_bound_to_assessment','artifact_type':'GovernanceEvaluation','payload':EV,'canonical_payload':canon(EV),'payload_digest':EV_DIGEST},{'id':'admissibility_determination_preserves_assessment','artifact_type':'AdmissibilityDetermination','payload':DET,'canonical_payload':canon(DET),'payload_digest':DET_DIGEST}], 'chain_invariants':['assessment is evidence, never authority','execution boundary is always declared','evaluation and determination bind the exact assessment digest','determination cannot outlive evaluation or assessment']}
+dump(Path('boundary-crossing/canonical-vectors.json'),boundary_canonical)
+# golden evaluation based on deterministic actual assessment binding
+GOLD_BCA=dict(BCA); GOLD_BCA['assessment_id']='bca:gv_allow'; GOLD_BCA['action_id']='act_test_001'; GOLD_BCA['action_envelope_digest']=D; GOLD_BCA['tenant_id']='tenant-test'; GOLD_BCA['assessed_at']='2026-07-14T17:55:00Z'; GOLD_BCA['valid_until']='2026-07-14T18:10:00Z'; GOLD_BCA['crossings']=[dict(BCA['crossings'][0])]; GOLD_BCA['crossings'][0]['crossing_id']='crossing:gv_allow:execution'; GOLD_BCA['crossings'][0]['observed_at']='2026-07-14T17:55:00Z'; GOLD_BCA['crossings'][0]['valid_until']='2026-07-14T18:10:00Z'; GOLD_BCA_DIGEST=digest(GOLD_BCA)
+GOLD_EV={'action_envelope_digest':D,'action_id':'act_test_001','authority_status':'PRESENT_AND_VALID','boundary_assessment_binding':{'assessment_ref':'bca:gv_allow','assessment_digest':GOLD_BCA_DIGEST},'decision':'ALLOW','evaluated_at':'2026-07-14T18:00:00Z','evaluation_id':'vaig:gv_allow','evaluator_id':'vaig:test','evaluator_version':'0.2','evidence_status':'PRESENT_AND_VALID','policy_status':'PRESENT_AND_VALID','purpose_status':'PRESENT_AND_VALID','reason_codes':['aarm.allow'],'risk_status':'PRESENT_AND_VALID','state_status':'PRESENT_AND_VALID','tenant_id':'tenant-test','valid_until':'2026-07-14T18:05:00Z'}
+GOLD_EV_DIGEST=digest(GOLD_EV)
+golden={'canonical_payload':canon(GOLD_EV),'description':'Golden GovernanceEvaluation (ALLOW) bound to the exact BoundaryCrossingAssessment digest.','payload':GOLD_EV,'payload_digest':GOLD_EV_DIGEST,'vector_id':'gev_allow'}
+dump(Path('governance-evaluation-golden.json'),golden)
+jcs_path = REPO / 'test-vectors' / 'jcs' / 'racs-v0.2' / 'governance-evaluation.json'
+jcs_path.write_text(json.dumps({'vector_id':'gev_allow_rfc8785','description':'RACS GovernanceEvaluation (ALLOW) with mandatory BoundaryCrossingAssessment binding.','payload':GOLD_EV,'canonical_payload':canon(GOLD_EV),'payload_digest':GOLD_EV_DIGEST}, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+print(json.dumps({'AE_DIGEST':AE_DIGEST,'BCA_DIGEST':BCA_DIGEST,'EV_DIGEST':EV_DIGEST,'DET_DIGEST':DET_DIGEST,'GOLD_BCA_DIGEST':GOLD_BCA_DIGEST,'GOLD_EV_DIGEST':GOLD_EV_DIGEST,'vectors':len(vectors)},indent=2))

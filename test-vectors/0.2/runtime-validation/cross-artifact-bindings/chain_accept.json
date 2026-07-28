@@ -3,11 +3,10 @@
   "artifact_type": "GovernanceClearance",
   "expected": "ACCEPT",
   "reason_code": "ACCEPT",
-  "verification_time": "2026-07-23T12:15:00Z",
   "payload": {
     "clearance_id": "clr-001",
     "action_id": "act-001",
-    "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "action_envelope_digest": "sha256:769b2d801cd1c36b80b2324306dd8a357cdb919b9b43c1e44169ec7d07d7300a",
     "tenant_id": "tenant-1",
     "decision": "ALLOW",
     "admissibility_state": "ADMISSIBLE",
@@ -18,13 +17,13 @@
     "purpose_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "state_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "target_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "payload_digest": "sha256:63616ba6a214a23e7579476b112d205cae225188b108d40a9c8525f2692185ed",
+    "payload_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "connector_id": "conn-1",
     "capability": "read",
     "consequence_class": "LOW",
     "reversibility": "REVERSIBLE",
     "valid_from": "2026-07-23T12:10:00Z",
-    "valid_until": "2026-07-24T12:10:00Z",
+    "valid_until": "2026-07-23T12:15:00Z",
     "replay_nonce": "0123456789abcdef0123",
     "idempotency_key": "idem-001",
     "revocation_registry_ref": "revreg-001",
@@ -32,13 +31,91 @@
       "eval-1"
     ],
     "admissibility_determination_ref": "det-001",
-    "admissibility_determination_digest": "sha256:2b931b33de9fbc3f32b8a5be6776a4b9dd50b462ed312592ab92940f6114cfbc"
+    "admissibility_determination_digest": "sha256:91d0a6389400f6c7e7f5c6f7d221e798d2850e3a9f8d3ae136ebb97c696829a6"
   },
+  "verification_time": "2026-07-23T12:12:00Z",
   "resolved": {
+    "action_envelope": {
+      "action_id": "act-001",
+      "tenant_id": "tenant-1",
+      "action_type": "CONNECTOR_CALL",
+      "actor_ref": "agent://demo/1",
+      "target_ref": "system://demo/target",
+      "target_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "payload_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "authority_grant_ref": "authority://grant/001",
+      "delegation_chain_ref": "delegation://chain/001",
+      "policy_ref": "policy://boundary/001",
+      "evidence_package_ref": "evidence://package/001",
+      "purpose_ref": "purpose://demo/001",
+      "environment_state_ref": "state://environment/001",
+      "risk_context_ref": "risk://context/001",
+      "connector_id": "conn-1",
+      "capability": "read",
+      "consequence_class": "LOW",
+      "reversibility": "REVERSIBLE",
+      "created_at": "2026-07-23T11:50:00Z",
+      "expires_at": "2026-07-23T12:20:00Z",
+      "replay_nonce": "0123456789abcdef0123",
+      "idempotency_key": "idem-001",
+      "boundary_requirements": {
+        "required_types": [
+          "EXECUTION"
+        ],
+        "policy_ref": "policy://boundary/001",
+        "policy_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "fail_closed": true
+      }
+    },
+    "boundary_assessment": {
+      "schema_version": "racs.boundary-crossing-assessment.v0.2",
+      "assessment_id": "bca-001",
+      "action_id": "act-001",
+      "action_envelope_digest": "sha256:769b2d801cd1c36b80b2324306dd8a357cdb919b9b43c1e44169ec7d07d7300a",
+      "tenant_id": "tenant-1",
+      "assessor_id": "boundary-evaluator-1",
+      "assessor_version": "0.2.0",
+      "requirement_policy_ref": "policy://boundary/001",
+      "requirement_policy_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "crossings": [
+        {
+          "crossing_id": "crossing-execution-001",
+          "boundary_type": "EXECUTION",
+          "crossing_detected": true,
+          "prior_state_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "proposed_state_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "authority_requirement_ref": "authority-requirement://execution/001",
+          "authority_binding": {
+            "ref": "authority://grant/001",
+            "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "policy_binding": {
+            "ref": "policy://boundary/001",
+            "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "evidence_binding": {
+            "ref": "evidence://execution/001",
+            "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "details_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "state": "AUTHORIZED",
+          "required_response_floor": "NONE",
+          "reason_codes": [],
+          "observed_at": "2026-07-23T11:55:00Z",
+          "valid_until": "2026-07-23T12:20:00Z"
+        }
+      ],
+      "aggregate_state": "AUTHORIZED",
+      "required_response_floor": "NONE",
+      "reason_codes": [],
+      "assessed_at": "2026-07-23T11:55:00Z",
+      "valid_until": "2026-07-23T12:20:00Z",
+      "revocation_registry_ref": "revreg-001"
+    },
     "evaluation": {
       "evaluation_id": "ev-001",
       "action_id": "act-001",
-      "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "action_envelope_digest": "sha256:769b2d801cd1c36b80b2324306dd8a357cdb919b9b43c1e44169ec7d07d7300a",
       "tenant_id": "tenant-1",
       "evaluator_id": "eval-1",
       "evaluator_version": "1.0.0",
@@ -52,13 +129,17 @@
       "reason_codes": [
         "OK"
       ],
+      "boundary_assessment_binding": {
+        "assessment_ref": "bca-001",
+        "assessment_digest": "sha256:c145792a7b8c608370f8d4cd80af39cd91052107196fece2994edc06113f4174"
+      },
       "evaluated_at": "2026-07-23T12:00:00Z",
-      "valid_until": "2026-07-24T12:00:00Z"
+      "valid_until": "2026-07-23T12:18:00Z"
     },
     "determination": {
       "determination_id": "det-001",
       "action_id": "act-001",
-      "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "action_envelope_digest": "sha256:769b2d801cd1c36b80b2324306dd8a357cdb919b9b43c1e44169ec7d07d7300a",
       "tenant_id": "tenant-1",
       "authority_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "delegation_chain_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -69,15 +150,19 @@
       "evaluation_bindings": [
         {
           "evaluation_ref": "ev-001",
-          "evaluation_digest": "sha256:968b185cfab835d1c69d07f934a756255334629e92732f19e3bb2168f8d2e08e"
+          "evaluation_digest": "sha256:75519ad51c047a299e8cf20c46d59e4229a8317067713723f290e34ece7481a2"
         }
       ],
+      "boundary_assessment_binding": {
+        "assessment_ref": "bca-001",
+        "assessment_digest": "sha256:c145792a7b8c608370f8d4cd80af39cd91052107196fece2994edc06113f4174"
+      },
       "state": "ADMISSIBLE",
       "reason_codes": [
         "OK"
       ],
       "determined_at": "2026-07-23T12:05:00Z",
-      "valid_until": "2026-07-24T12:05:00Z",
+      "valid_until": "2026-07-23T12:16:00Z",
       "revocation_registry_ref": "revreg-001"
     }
   }

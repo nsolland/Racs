@@ -4,30 +4,7 @@
   "base_sha": "96e4f7cdc2f64f915dc2651e62bf2a1b07ae16e9",
   "branch": "build/boundary-crossing-contracts-v02",
   "owner": "ChatGPT",
-  "scope": "canonical BoundaryCrossingAssessment contract, exact binding into GovernanceEvaluation, AdmissibilityDetermination and GovernanceClearance, cross-language verification and golden vectors",
-  "claimed_paths": [
-    "spec/boundary-crossing-assessment-v0.2.schema.json",
-    "spec/governance-evaluation-v0.2.schema.json",
-    "spec/admissibility-determination-v0.2.schema.json",
-    "spec/governance-clearance.schema.json",
-    "spec/BOUNDARY_CROSSING_V0_2.md",
-    "spec/CANONICAL_CONTRACTS.md",
-    "reference/bindings/v0.2/python/src/racs_v02/boundary_crossing.py",
-    "reference/bindings/v0.2/python/src/racs_v02/boundary_validation.py",
-    "reference/bindings/v0.2/python/src/racs_v02/models.py",
-    "reference/bindings/v0.2/python/src/racs_v02/verification.py",
-    "reference/bindings/v0.2/python/src/racs_v02/__init__.py",
-    "reference/bindings/v0.2/python/tests/test_boundary_crossing.py",
-    "reference/bindings/v0.2/rust/src/boundary_crossing.rs",
-    "reference/bindings/v0.2/rust/src/lib.rs",
-    "reference/bindings/v0.2/rust/tests/boundary_crossing.rs",
-    "reference/bindings/v0.2/typescript/src/boundary-crossing.ts",
-    "reference/bindings/v0.2/typescript/src/index.ts",
-    "reference/bindings/v0.2/typescript/test/boundary-crossing.test.ts",
-    "reference/bindings/v0.2/typescript/package.json",
-    "test-vectors/0.2/boundary-crossing/canonical-vectors.json",
-    ".github/workflows/bindings-canonical-gate.yml"
-  ],
+  "scope": "canonical BoundaryCrossingAssessment contract and exact digest binding through GovernanceEvaluation, AdmissibilityDetermination and GovernanceClearance",
   "must_not_touch": [
     "runtime continuity semantics",
     "AgentBound v0.3 contracts",
@@ -35,24 +12,34 @@
     "REHT issuance implementation",
     "platform adapters"
   ],
-  "dependencies": [
-    "RACS v0.2 canonicalization and signed artifact conventions",
-    "runtime continuity Stage 2 merged at 2659660889297ca624a47ca9a8798738ff6cf539",
-    "valo-platform BoundaryCrossing detector merged at 532f559c881e2b124b899f082e53abbc29a238d6",
-    "valo-platform AuthorizationBinding merged at bacc75ce3912aa2481b1cf1e76ced2970c3647ce"
+  "completed_stages": [
+    {
+      "stage": "stage-1-python-contract-and-verification",
+      "evidence": "22 focused tests passed against exact committed contract content",
+      "closed": [
+        "boundary requirement omission bypass",
+        "payload digest confused with ActionEnvelope digest",
+        "binding dropped before determination",
+        "clearance accepted without resolved boundary chain",
+        "downstream artifact outliving bound evidence"
+      ]
+    },
+    {
+      "stage": "stage-2-golden-vectors-and-fixture-migration",
+      "evidence": {
+        "runtime_vectors": 18,
+        "positive_full_chain": "ActionEnvelope -> BoundaryCrossingAssessment -> GovernanceEvaluation -> AdmissibilityDetermination -> GovernanceClearance",
+        "negative_vectors": [
+          "missing evaluation boundary binding",
+          "missing determination boundary binding",
+          "boundary policy mismatch",
+          "evaluation digest mismatch",
+          "determination digest mismatch"
+        ],
+        "governance_evaluation_golden_digest": "sha256:532d2a571f8536890bf9b79994703c63a44c01ba40f71b4733d045674bdb3273"
+      }
+    }
   ],
-  "completed_stage": "stage-1-python-contract-and-verification",
-  "stage_1_evidence": {
-    "focused_tests": "22 passed",
-    "validation_mode": "isolated local pytest against exact committed schema and Python contract content",
-    "p0_defects_closed": [
-      "boundary_requirements omission bypass",
-      "payload_digest confused with ActionEnvelope digest",
-      "boundary binding dropped between evaluation and determination",
-      "clearance verification accepted without resolved boundary chain",
-      "evaluation or determination outliving bound assessment evidence"
-    ]
-  },
-  "next_stage": "stage-2-golden-vectors-and-existing-fixture-migration",
-  "status": "stage-1-complete-pr-remains-draft"
+  "next_stage": "stage-3-rust-and-typescript-contract-conformance",
+  "status": "stage-2-complete-pr-remains-draft"
 }

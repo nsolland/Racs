@@ -1,8 +1,8 @@
 {
-  "id": "chain_reject_eval_binding_mismatch",
+  "id": "chain_reject_boundary_policy_mismatch",
   "artifact_type": "GovernanceClearance",
   "expected": "REJECT",
-  "reason_code": "EVALUATION_BINDING_DIGEST_MISMATCH",
+  "reason_code": "BOUNDARY_POLICY_MISMATCH",
   "payload": {
     "clearance_id": "clr-001",
     "action_id": "act-001",
@@ -31,7 +31,7 @@
       "eval-1"
     ],
     "admissibility_determination_ref": "det-001",
-    "admissibility_determination_digest": "sha256:d11ae269caae57c48088b284304dad6f3e04a59d5a3e9452e443cea1a0529352"
+    "admissibility_determination_digest": "sha256:f4e291a8efab3ad3e2c2e5b5e16f89fd67a8ad6cad7b3d528c7627a2ae3f127b"
   },
   "verification_time": "2026-07-23T12:12:00Z",
   "resolved": {
@@ -76,7 +76,7 @@
       "assessor_id": "boundary-evaluator-1",
       "assessor_version": "0.2.0",
       "requirement_policy_ref": "policy://boundary/001",
-      "requirement_policy_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "requirement_policy_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
       "crossings": [
         {
           "crossing_id": "crossing-execution-001",
@@ -131,7 +131,7 @@
       ],
       "boundary_assessment_binding": {
         "assessment_ref": "bca-001",
-        "assessment_digest": "sha256:c145792a7b8c608370f8d4cd80af39cd91052107196fece2994edc06113f4174"
+        "assessment_digest": "sha256:7d25b2e97ae6ac4d8c6f19b8d37d6993f1b5573c4f39911e0a48691a851fe49d"
       },
       "evaluated_at": "2026-07-23T12:00:00Z",
       "valid_until": "2026-07-23T12:18:00Z"
@@ -150,12 +150,12 @@
       "evaluation_bindings": [
         {
           "evaluation_ref": "ev-001",
-          "evaluation_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+          "evaluation_digest": "sha256:b7dd1fadb88a188b2d77430338720959f37cd8d09dd83c0feed850ca8c817556"
         }
       ],
       "boundary_assessment_binding": {
         "assessment_ref": "bca-001",
-        "assessment_digest": "sha256:c145792a7b8c608370f8d4cd80af39cd91052107196fece2994edc06113f4174"
+        "assessment_digest": "sha256:7d25b2e97ae6ac4d8c6f19b8d37d6993f1b5573c4f39911e0a48691a851fe49d"
       },
       "state": "ADMISSIBLE",
       "reason_codes": [
