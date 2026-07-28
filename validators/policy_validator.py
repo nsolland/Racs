@@ -4,7 +4,7 @@ RACS Policy Validator
 
 Checks that a policy context conforms to the RACS specification.
 Policy is data, not code — this validator checks structure only,
-never evaluates policy content.
+never evaluates policy content or grants execution authority.
 
 Usage:
     python validators/policy_validator.py path/to/policy-context.yaml
@@ -35,6 +35,18 @@ REQUIRED_FIELDS = [
     "valid_from",
 ]
 
+REGULATORY_PROFILE_REQUIRED_FIELDS = [
+    "profile_id",
+    "legal_act_ref",
+    "version",
+    "jurisdiction",
+    "effective_at",
+    "active_obligation_ids",
+    "evidence_refs",
+    "accountable_owner_ref",
+    "profile_digest",
+]
+
 VALID_EVALUATION_MODES = {"strict", "advisory", "audit_only"}
 VALID_EFFECTS = {"ALLOW", "DENY", "REQUIRE_ELEVATION", "REQUIRE_REVIEW", "LOG"}
 
@@ -56,10 +68,7 @@ def _load_document(path: str) -> dict[str, Any]:
         try:
             loaded = yaml.safe_load(content)
             if not isinstance(loaded, dict):
-                print(
-                    f"ERROR: policy context must be a mapping",
-                    file=sys.stderr,
-                )
+                print("ERROR: policy context must be a mapping", file=sys.stderr)
                 sys.exit(1)
             return loaded
         except yaml.YAMLError as exc:
@@ -70,18 +79,58 @@ def _load_document(path: str) -> dict[str, Any]:
     sys.exit(1)
 
 
+def _validate_regulatory_profiles(data: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if "regulatory_profiles" not in data:
+        return errors
+
+    profiles = data["regulatory_profiles"]
+    if not isinstance(profiles, list):
+        return ["regulatory_profiles: must be a list"]
+
+    for index, profile in enumerate(profiles):
+        prefix = f"regulatory_profiles[{index}]"
+        if not isinstance(profile, dict):
+            errors.append(f"{prefix}: must be an object")
+            continue
+
+        for field in REGULATORY_PROFILE_REQUIRED_FIELDS:
+            if field not in profile or profile[field] is None:
+                errors.append(f"{prefix}.{field}: is required")
+
+        for field in (
+            "profile_id",
+            "legal_act_ref",
+            "version",
+            "jurisdiction",
+            "effective_at",
+            "accountable_owner_ref",
+            "profile_digest",
+        ):
+            if field in profile and not isinstance(profile[field], str):
+                errors.append(f"{prefix}.{field}: must be a string")
+
+        for field in ("active_obligation_ids", "evidence_refs"):
+            if field in profile:
+                value = profile[field]
+                if not isinstance(value, list) or not all(
+                    isinstance(item, str) and item for item in value
+                ):
+                    errors.append(f"{prefix}.{field}: must be a list of strings")
+
+    return errors
+
+
 def validate_policy_context(data: dict[str, Any]) -> list[str]:
     """Validate a policy context dict. Returns list of errors (empty = valid)."""
     errors: list[str] = []
 
-    # Check required fields
     for field in REQUIRED_FIELDS:
         if field not in data or data[field] is None:
             errors.append(f"{field}: is required")
         elif not isinstance(data[field], str):
             errors.append(f"{field}: must be a string")
 
-    # Validate evaluation_mode
     if "evaluation_mode" in data:
         mode = data["evaluation_mode"]
         if mode not in VALID_EVALUATION_MODES:
@@ -89,7 +138,6 @@ def validate_policy_context(data: dict[str, Any]) -> list[str]:
                 f"evaluation_mode: must be one of {', '.join(sorted(VALID_EVALUATION_MODES))}, got {mode!r}"
             )
 
-    # Validate rules if present
     if "rules" in data:
         if not isinstance(data["rules"], list):
             errors.append("rules: must be a list")
@@ -100,12 +148,12 @@ def validate_policy_context(data: dict[str, Any]) -> list[str]:
                     continue
                 if "rule_id" not in rule:
                     errors.append(f"rules[{i}]: rule_id is required")
-                if "effect" in rule:
-                    if rule["effect"] not in VALID_EFFECTS:
-                        errors.append(
-                            f"rules[{i}].effect: must be one of {', '.join(sorted(VALID_EFFECTS))}, got {rule['effect']!r}"
-                        )
+                if "effect" in rule and rule["effect"] not in VALID_EFFECTS:
+                    errors.append(
+                        f"rules[{i}].effect: must be one of {', '.join(sorted(VALID_EFFECTS))}, got {rule['effect']!r}"
+                    )
 
+    errors.extend(_validate_regulatory_profiles(data))
     return errors
 
 
