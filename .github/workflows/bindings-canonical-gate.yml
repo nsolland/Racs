@@ -7,12 +7,14 @@ on:
       - "reference/bindings/v0.2/**"
       - "test-vectors/jcs/**"
       - "test-vectors/0.2/runtime-validation/**"
+      - "test-vectors/0.2/runtime-continuity/**"
       - ".github/workflows/bindings-canonical-gate.yml"
   pull_request:
     paths:
       - "reference/bindings/v0.2/**"
       - "test-vectors/jcs/**"
       - "test-vectors/0.2/runtime-validation/**"
+      - "test-vectors/0.2/runtime-continuity/**"
       - ".github/workflows/bindings-canonical-gate.yml"
 
 jobs:
