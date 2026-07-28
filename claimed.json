@@ -130,9 +130,11 @@
       "runtime-continuity files and bindings owned by Racs #78",
       "existing hierarchy, composition, distributed authority and shared documentation"
     ],
-    "status": "ready",
-    "last_verified_head": "e469361fee6fff825713f5a8e041776c5795eaab",
-    "tests": "Python compileall pass; 19 focused unittest cases pass",
-    "dependencies": "Racs #77, #79 and #81 merged; no file overlap with open Racs #78"
+    "status": "merged",
+    "last_verified_head": "ab78ddea87deea03c65c7e6f918c57be44ce1c88",
+    "merge_commit": "5fb8121f4c8edfeba362c90ee7cd6950f42aabc8",
+    "tests": "Python compileall pass; 19 focused unittest cases pass; canonical verdict-mapping conformance success; repo-profile success; baseline compliance explicitly continue-on-error",
+    "dependencies": "Racs #77, #79 and #81 merged; no file overlap with open Racs #78",
+    "merged": true
   }
 }
