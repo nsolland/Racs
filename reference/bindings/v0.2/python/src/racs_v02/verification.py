@@ -28,7 +28,6 @@ Binding rules enforced
 Return value: a :class:`VerificationResult` (decision ACCEPT/REJECT, normalized
 reason code). On ACCEPT the caller may construct ``Verified[T]``.
 """
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -63,7 +62,6 @@ class VerificationResult:
     detail: Optional[str] = None
 
 
-# Admissibility states that may never become a clearance.
 _NON_CLEARABLE_STATES = {
     "NOT_ADMISSIBLE",
     "INDETERMINATE",
@@ -78,25 +76,33 @@ def verify_evaluation_binding(
     determination: AdmissibilityDetermination,
     evaluation: GovernanceEvaluation,
 ) -> VerificationResult:
-    """Verify a determination's evaluation_bindings against a resolved
-    GovernanceEvaluation. Returns ACCEPT when all bindings are satisfied."""
-    # 1. action identity consistency
+    """Verify a determination's evaluation bindings against a resolved evaluation."""
     if determination.action_id != evaluation.action_id:
-        return VerificationResult("REJECT", REASON_CLEARANCE_ACTION_MISMATCH,
-                                  "determination.action_id != evaluation.action_id")
+        return VerificationResult(
+            "REJECT",
+            REASON_CLEARANCE_ACTION_MISMATCH,
+            "determination.action_id != evaluation.action_id",
+        )
     if determination.action_envelope_digest != evaluation.action_envelope_digest:
-        return VerificationResult("REJECT", REASON_CLEARANCE_ENVELOPE_MISMATCH,
-                                  "envelope digest mismatch")
-    # 2. evaluation digest must match the resolved evaluation's payload_digest
+        return VerificationResult(
+            "REJECT", REASON_CLEARANCE_ENVELOPE_MISMATCH, "envelope digest mismatch"
+        )
+
     expected = evaluation.model_digest()
     bindings = determination.evaluation_bindings
     if not any(b.evaluation_ref == evaluation.evaluation_id for b in bindings):
-        return VerificationResult("REJECT", REASON_EVALUATION_BINDING_REF_MISMATCH,
-                                  f"no binding references {evaluation.evaluation_id}")
-    for b in bindings:
-        if b.evaluation_digest != expected:
-            return VerificationResult("REJECT", REASON_EVALUATION_BINDING_DIGEST_MISMATCH,
-                                      f"binding {b.evaluation_ref}: digest mismatch")
+        return VerificationResult(
+            "REJECT",
+            REASON_EVALUATION_BINDING_REF_MISMATCH,
+            f"no binding references {evaluation.evaluation_id}",
+        )
+    for binding in bindings:
+        if binding.evaluation_digest != expected:
+            return VerificationResult(
+                "REJECT",
+                REASON_EVALUATION_BINDING_DIGEST_MISMATCH,
+                f"binding {binding.evaluation_ref}: digest mismatch",
+            )
     return VerificationResult("ACCEPT", REASON_ACCEPT)
 
 
@@ -104,89 +110,124 @@ def verify_clearance_binding(
     clearance: GovernanceClearance,
     determination: AdmissibilityDetermination,
     action_envelope: Optional[Dict[str, Any]] = None,
+    verification_time: Optional[str] = None,
 ) -> VerificationResult:
-    """Verify a clearance against its issuing determination (+ optional envelope).
+    """Verify a clearance against its determination and optional action envelope.
 
-    ``action_envelope`` (when provided) must resolve to a digest that equals
-    clearance.action_envelope_digest (the envelope existence/digest check; the
-    caller is responsible for resolving the envelope artifact)."""
-    # 1. determination reference + digest binding
+    ``verification_time`` is an explicit RFC 3339 instant for deterministic
+    conformance and replay. Production callers normally omit it, in which case the
+    current UTC clock is used.
+    """
     if clearance.admissibility_determination_ref != determination.determination_id:
-        return VerificationResult("REJECT", REASON_CLEARANCE_DETERMINATION_DIGEST_MISMATCH,
-                                  "determination_ref mismatch")
+        return VerificationResult(
+            "REJECT",
+            REASON_CLEARANCE_DETERMINATION_DIGEST_MISMATCH,
+            "determination_ref mismatch",
+        )
     if clearance.admissibility_determination_digest != determination.model_digest():
-        return VerificationResult("REJECT", REASON_CLEARANCE_DETERMINATION_DIGEST_MISMATCH,
-                                  "admissibility_determination_digest mismatch")
+        return VerificationResult(
+            "REJECT",
+            REASON_CLEARANCE_DETERMINATION_DIGEST_MISMATCH,
+            "admissibility_determination_digest mismatch",
+        )
 
-    # 2. shared action identity
     if clearance.action_id != determination.action_id:
-        return VerificationResult("REJECT", REASON_CLEARANCE_ACTION_MISMATCH,
-                                  "action_id mismatch")
+        return VerificationResult(
+            "REJECT", REASON_CLEARANCE_ACTION_MISMATCH, "action_id mismatch"
+        )
     if clearance.action_envelope_digest != determination.action_envelope_digest:
-        return VerificationResult("REJECT", REASON_CLEARANCE_ENVELOPE_MISMATCH,
-                                  "action_envelope_digest mismatch")
+        return VerificationResult(
+            "REJECT",
+            REASON_CLEARANCE_ENVELOPE_MISMATCH,
+            "action_envelope_digest mismatch",
+        )
 
-    # 3. digest congruence across authority/delegation/policy/evidence/purpose/state
     digest_pairs = [
         ("authority_digest", clearance.authority_digest, determination.authority_digest),
-        ("delegation_chain_digest", clearance.delegation_chain_digest,
-         determination.delegation_chain_digest),
+        (
+            "delegation_chain_digest",
+            clearance.delegation_chain_digest,
+            determination.delegation_chain_digest,
+        ),
         ("policy_digest", clearance.policy_digest, determination.policy_digest),
         ("evidence_digest", clearance.evidence_digest, determination.evidence_digest),
         ("purpose_digest", clearance.purpose_digest, determination.purpose_digest),
         ("state_digest", clearance.state_digest, determination.state_digest),
     ]
-    for name, c_val, d_val in digest_pairs:
-        if c_val != d_val:
-            return VerificationResult("REJECT", REASON_CLEARANCE_DETERMINATION_DIGEST_MISMATCH,
-                                      f"{name} mismatch")
+    for name, clearance_value, determination_value in digest_pairs:
+        if clearance_value != determination_value:
+            return VerificationResult(
+                "REJECT",
+                REASON_CLEARANCE_DETERMINATION_DIGEST_MISMATCH,
+                f"{name} mismatch",
+            )
 
-    # 4. admissibility-state semantics
     if determination.state in _NON_CLEARABLE_STATES:
-        return VerificationResult("REJECT", REASON_CLEARANCE_NEGATIVE_STATE,
-                                  f"determination.state={determination.state} is not clearable")
+        return VerificationResult(
+            "REJECT",
+            REASON_CLEARANCE_NEGATIVE_STATE,
+            f"determination.state={determination.state} is not clearable",
+        )
     if clearance.decision == "ALLOW":
         if determination.state != "ADMISSIBLE":
-            return VerificationResult("REJECT", REASON_CLEARANCE_ALLOW_STATE_MISMATCH,
-                                      "ALLOW requires ADMISSIBLE")
+            return VerificationResult(
+                "REJECT", REASON_CLEARANCE_ALLOW_STATE_MISMATCH, "ALLOW requires ADMISSIBLE"
+            )
         if clearance.constraints is not None:
-            return VerificationResult("REJECT", REASON_CLEARANCE_ALLOW_HAS_CONSTRAINTS,
-                                      "ALLOW must not carry constraints")
+            return VerificationResult(
+                "REJECT", REASON_CLEARANCE_ALLOW_HAS_CONSTRAINTS, "ALLOW must not carry constraints"
+            )
     elif clearance.decision == "MODIFY":
         if determination.state != "CONDITIONALLY_ADMISSIBLE":
-            return VerificationResult("REJECT", REASON_CLEARANCE_MODIFY_STATE_MISMATCH,
-                                      "MODIFY requires CONDITIONALLY_ADMISSIBLE")
+            return VerificationResult(
+                "REJECT",
+                REASON_CLEARANCE_MODIFY_STATE_MISMATCH,
+                "MODIFY requires CONDITIONALLY_ADMISSIBLE",
+            )
         if clearance.constraints is None:
-            return VerificationResult("REJECT", REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS,
-                                      "MODIFY requires constraints")
+            return VerificationResult(
+                "REJECT",
+                REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS,
+                "MODIFY requires constraints",
+            )
         if not _enforceable_constraints(clearance.constraints):
-            return VerificationResult("REJECT", REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS,
-                                      "constraints present but not enforceable")
+            return VerificationResult(
+                "REJECT",
+                REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS,
+                "constraints present but not enforceable",
+            )
 
-    # 5. validity window + revocation
-    # (revocation_registry is referenced by ref only; the caller resolves it.
-    #  Here we assert the ref is present and the window is well-formed.)
     if clearance.revocation_registry_ref == "":
-        return VerificationResult("REJECT", REASON_CLEARANCE_REVOKED,
-                                  "empty revocation_registry_ref")
-    if _is_expired(clearance.valid_from, clearance.valid_until):
-        return VerificationResult("REJECT", REASON_CLEARANCE_EXPIRED, "validity window expired")
+        return VerificationResult(
+            "REJECT", REASON_CLEARANCE_REVOKED, "empty revocation_registry_ref"
+        )
+    if _is_expired(
+        clearance.valid_from,
+        clearance.valid_until,
+        verification_time=verification_time,
+    ):
+        return VerificationResult(
+            "REJECT", REASON_CLEARANCE_EXPIRED, "validity window expired"
+        )
 
-    # 6. optional envelope digest resolution
     if action_envelope is not None:
-        env_digest = action_envelope.get("payload_digest") or action_envelope.get(
+        envelope_digest = action_envelope.get("payload_digest") or action_envelope.get(
             "action_envelope_digest"
         )
-        if env_digest is not None and env_digest != clearance.action_envelope_digest:
-            return VerificationResult("REJECT", REASON_CLEARANCE_ENVELOPE_MISMATCH,
-                                      "resolved envelope digest mismatch")
+        if (
+            envelope_digest is not None
+            and envelope_digest != clearance.action_envelope_digest
+        ):
+            return VerificationResult(
+                "REJECT",
+                REASON_CLEARANCE_ENVELOPE_MISMATCH,
+                "resolved envelope digest mismatch",
+            )
 
     return VerificationResult("ACCEPT", REASON_ACCEPT)
 
 
 def _enforceable_constraints(constraints: Any) -> bool:
-    """A constraint set is enforceable iff it carries >=1 rule OR a
-    (constraint_set_ref, constraint_set_digest) pair."""
     if not isinstance(constraints, dict):
         return False
     rules = constraints.get("rules")
@@ -194,21 +235,35 @@ def _enforceable_constraints(constraints: Any) -> bool:
         return True
     ref = constraints.get("constraint_set_ref")
     digest = constraints.get("constraint_set_digest")
-    if isinstance(ref, str) and ref and isinstance(digest, str) and digest.startswith("sha256:"):
-        return True
-    return False
+    return (
+        isinstance(ref, str)
+        and bool(ref)
+        and isinstance(digest, str)
+        and digest.startswith("sha256:")
+    )
 
 
-def _is_expired(valid_from: Optional[str], valid_until: Optional[str]) -> bool:
+def _is_expired(
+    valid_from: Optional[str],
+    valid_until: Optional[str],
+    *,
+    verification_time: Optional[str] = None,
+) -> bool:
     from datetime import datetime, timezone
 
     if not valid_until:
         return False
     try:
         until = datetime.fromisoformat(valid_until.replace("Z", "+00:00"))
+        at = (
+            datetime.fromisoformat(verification_time.replace("Z", "+00:00"))
+            if verification_time
+            else datetime.now(timezone.utc)
+        )
     except ValueError:
         return False
-    now = datetime.now(timezone.utc)
     if until.tzinfo is None:
         until = until.replace(tzinfo=timezone.utc)
-    return until < now
+    if at.tzinfo is None:
+        at = at.replace(tzinfo=timezone.utc)
+    return until < at
