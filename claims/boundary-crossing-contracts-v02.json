@@ -47,8 +47,8 @@
     {
       "stage": "stage-3-rust-and-typescript-contract-conformance",
       "evidence": {
+        "conformance_head": "40c64e141e77d080e59185d6b99ccf7190676d94",
         "implementation_commit": "51daa85d872c86d91a88c549c5cda189c0cd09fa",
-        "integration_commit": "ac274ca38966e3c2f4f174f086d325091efb2bc2",
         "rust": [
           "typed BoundaryCrossingAssessment and binding models",
           "semantic boundary validation",
@@ -63,21 +63,34 @@
           "canonical ActionEnvelope digest binding",
           "runtime CLI and active test script"
         ],
+        "python": [
+          "boundary assessment passed through evaluation and clearance CLI verification",
+          "92 tests passed"
+        ],
         "continuity_fixture": {
           "evaluation_binding_added": true,
           "governance_evaluation_digest": "sha256:a652db723e35f8dee009134b356aa6d3f4889b676bbb261247c1280132c40560"
         },
-        "local_verification": {
-          "typescript_compile": "passed",
-          "rust_compile": "not locally available; hosted conformance required"
+        "hosted_runs": {
+          "racs_conformance": {
+            "run_id": 30390557025,
+            "conclusion": "success"
+          },
+          "bindings_canonical_gate": {
+            "run_id": 30390556862,
+            "conclusion": "success",
+            "cross_language_gate": "success",
+            "per_language_tests": "success"
+          }
         }
       }
     }
   ],
   "hosted_ci": {
-    "status": "pending-stage-3-run",
-    "merge_effect": "PR remains draft until Python, Rust and TypeScript produce identical canonical bytes, digests, decisions and reason codes"
+    "status": "green",
+    "proof": "Python, Rust and TypeScript produced identical canonical bytes, payload digests, decisions and reason codes; all language unit and integration tests passed",
+    "merge_effect": "Stage 3 is complete, but PR remains draft and unmerged pending explicit transition to the next build stage"
   },
-  "next_stage": "stage-3-hosted-conformance-fix-and-close",
-  "status": "stage-3-code-complete-ci-pending"
+  "next_stage": "stage-4-reht-issuance-binding",
+  "status": "stage-3-complete-pr-remains-draft"
 }
