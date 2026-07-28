@@ -7,6 +7,23 @@ Runtime continuity — active execution, observation, intervention and recovery 
 """
 from .canonical import canonical_bytes, canonical_str
 from .digest import sha256_digest, verify_payload_digest
+from .boundary_crossing import (
+    ArtifactBinding,
+    BoundaryAssessmentBinding,
+    BoundaryCrossing,
+    BoundaryCrossingAssessment,
+    BoundaryRequirementSet,
+    BoundaryResponseFloor,
+    BoundaryState,
+    BoundaryType,
+)
+from .boundary_validation import (
+    BoundaryVerificationResult,
+    verify_boundary_chain,
+    verify_clearance_boundary_resolution,
+    verify_determination_boundary_binding,
+    verify_evaluation_boundary_binding,
+)
 from .models import (
     AdmissibilityDetermination,
     AdmissibilityState,
@@ -73,6 +90,19 @@ __all__ = [
     "canonical_str",
     "sha256_digest",
     "verify_payload_digest",
+    "ArtifactBinding",
+    "BoundaryAssessmentBinding",
+    "BoundaryCrossing",
+    "BoundaryCrossingAssessment",
+    "BoundaryRequirementSet",
+    "BoundaryResponseFloor",
+    "BoundaryState",
+    "BoundaryType",
+    "BoundaryVerificationResult",
+    "verify_boundary_chain",
+    "verify_clearance_boundary_resolution",
+    "verify_determination_boundary_binding",
+    "verify_evaluation_boundary_binding",
     "GovernanceEvaluation",
     "AdmissibilityDetermination",
     "GovernanceClearance",
