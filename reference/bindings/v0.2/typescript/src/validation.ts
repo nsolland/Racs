@@ -1,40 +1,22 @@
-//! RACS v0.2 runtime conformance — Stage 3C, Port A (schema validation).
-//!
-//! Turns the pure typed models from Stage 3B into governed types:
-//!
-//! * `Raw<T>`      — JSON parsed, NOT yet schema-conformant.
-//! * `Validated<T>` — proven schema-conformant (Draft 2020-12) for its artifact type.
-//! * `Verified<T>`  — schema-conformant AND all external cross-artifact bindings
-//!                    resolved and checked (Stage 3C, Port B).
-//!
-//! The normative contract is the schema files under `spec/*.schema.json`. Nothing
-//! may be promoted to `Validated` without passing the Ajv validator, and nothing
-//! may be promoted to `Verified` without passing the cross-artifact verifier in
-//! `./verification`.
-//!
-//! All three bindings (Python/Rust/TypeScript) MUST emit byte-identical:
-//! * accept/reject decision
-//! * normalized reason code
-//! * canonical bytes (for accepted objects)
-//! * payload digest (for accepted objects)
-
 import { createHash } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as url from "node:url";
 import { fileURLToPath } from "node:url";
 import * as AjvNs from "ajv/dist/2020.js";
 import * as addFormatsNs from "ajv-formats";
 const Ajv = (AjvNs as any).default ?? AjvNs;
 const addFormats = (addFormatsNs as any).default ?? addFormatsNs;
+
 import { canonicalString, sha256Digest } from "./index.js";
+import {
+  boundaryAssessmentSemanticError,
+  type BoundaryCrossingAssessment,
+} from "./boundary-crossing.js";
 import type {
   AdmissibilityDetermination,
   GovernanceClearance,
   GovernanceEvaluation,
 } from "./index.js";
-
-// --- normalized reason codes (language-agnostic) -----------------------------
 
 export const REASON_ACCEPT = "ACCEPT";
 export const REASON_SCHEMA_INVALID = "SCHEMA_INVALID";
@@ -52,15 +34,12 @@ export const REASON_EVALUATION_BINDING_REF_MISMATCH =
   "EVALUATION_BINDING_REF_MISMATCH";
 export const REASON_CLEARANCE_DETERMINATION_DIGEST_MISMATCH =
   "CLEARANCE_DETERMINATION_DIGEST_MISMATCH";
-export const REASON_CLEARANCE_ACTION_MISMATCH =
-  "CLEARANCE_ACTION_MISMATCH";
+export const REASON_CLEARANCE_ACTION_MISMATCH = "CLEARANCE_ACTION_MISMATCH";
 export const REASON_CLEARANCE_ENVELOPE_MISMATCH =
   "CLEARANCE_ENVELOPE_MISMATCH";
 export const REASON_CLEARANCE_NEGATIVE_STATE = "CLEARANCE_NEGATIVE_STATE";
 export const REASON_CLEARANCE_EXPIRED = "CLEARANCE_EXPIRED";
 export const REASON_CLEARANCE_REVOKED = "CLEARANCE_REVOKED";
-
-// --- artifact type registry -------------------------------------------------
 
 interface ArtifactType {
   schemaFile: string;
@@ -77,10 +56,11 @@ function artifactTypes(): Record<string, ArtifactType> {
     GovernanceClearance: {
       schemaFile: "governance-clearance.schema.json",
     },
+    BoundaryCrossingAssessment: {
+      schemaFile: "boundary-crossing-assessment-v0.2.schema.json",
+    },
   };
 }
-
-// --- wrapper types ----------------------------------------------------------
 
 export class Raw<T> {
   constructor(public data: unknown) {}
@@ -107,32 +87,26 @@ export interface ValidationResult {
 }
 
 export class SchemaValidationError extends Error {
-  constructor(
-    message: string,
-    public path: string,
-  ) {
+  constructor(message: string, public path: string) {
     super(message);
     this.name = "SchemaValidationError";
   }
 }
 
-// --- schema loading ---------------------------------------------------------
-
 function repoRoot(): string {
-  // Walk up from this file until we find spec/governance-clearance.schema.json.
   const start = path.dirname(fileURLToPath(import.meta.url));
-  let cand = start;
+  let candidate = start;
   for (;;) {
     if (
       fs.existsSync(
-        path.join(cand, "spec", "governance-clearance.schema.json"),
+        path.join(candidate, "spec", "governance-clearance.schema.json"),
       )
     ) {
-      return cand;
+      return candidate;
     }
-    const parent = path.dirname(cand);
-    if (parent === cand) break;
-    cand = parent;
+    const parent = path.dirname(candidate);
+    if (parent === candidate) break;
+    candidate = parent;
   }
   throw new Error("could not locate RACS spec/ directory");
 }
@@ -142,60 +116,59 @@ const validatorCache = new Map<string, any>();
 function getValidator(artifactType: string): any {
   const cached = validatorCache.get(artifactType);
   if (cached) return cached;
-  const types = artifactTypes();
-  const entry = types[artifactType];
-  if (!entry) {
-    throw new Error(`unknown artifact_type: ${artifactType}`);
-  }
-  const schemaPath = path.join(repoRoot(), "spec", entry.schemaFile);
-  const text = fs.readFileSync(schemaPath, "utf-8");
-  const schema = JSON.parse(text);
-  const ajv = new Ajv({ strict: false, draft: "2020-12", allErrors: true });
+  const entry = artifactTypes()[artifactType];
+  if (!entry) throw new Error(`unknown artifact_type: ${artifactType}`);
+  const schema = JSON.parse(
+    fs.readFileSync(path.join(repoRoot(), "spec", entry.schemaFile), "utf-8"),
+  );
+  const ajv = new Ajv({ strict: false, allErrors: true });
   addFormats(ajv);
-  const validate = ajv.compile(schema);
-  validatorCache.set(artifactType, validate);
-  return validate;
+  const validator = ajv.compile(schema);
+  validatorCache.set(artifactType, validator);
+  return validator;
 }
 
 export function schemaSha256(artifactType: string): string {
-  const types = artifactTypes();
-  const entry = types[artifactType];
-  if (!entry) {
-    throw new Error(`unknown artifact_type: ${artifactType}`);
-  }
-  const schemaPath = path.join(repoRoot(), "spec", entry.schemaFile);
-  const raw = fs.readFileSync(schemaPath);
-  const h = createHash("sha256");
-  h.update(raw);
-  return "sha256:" + h.digest("hex");
+  const entry = artifactTypes()[artifactType];
+  if (!entry) throw new Error(`unknown artifact_type: ${artifactType}`);
+  const raw = fs.readFileSync(path.join(repoRoot(), "spec", entry.schemaFile));
+  return "sha256:" + createHash("sha256").update(raw).digest("hex");
 }
-
-// --- core validate entrypoint -----------------------------------------------
 
 export function validate(
   artifactType: string,
   raw: unknown,
 ): Validated<unknown> {
   const validateFn = getValidator(artifactType);
-  const ok = validateFn(raw);
-  if (!ok) {
+  if (!validateFn(raw)) {
     const first = (validateFn.errors || [])[0];
-    const path = first
-      ? first.instancePath || (first.params as { missingProperty?: string })
-          .missingProperty
-        ? `${first.instancePath}/${(
-            first.params as { missingProperty?: string }
-          ).missingProperty}`
+    const missing = first?.params?.missingProperty;
+    const errorPath = first
+      ? missing
+        ? `${first.instancePath}/${missing}`
         : first.instancePath
       : "";
-    const message = first ? first.message || "schema violation" : "schema violation";
-    throw new SchemaValidationError(message, path);
+    throw new SchemaValidationError(
+      first?.message || "schema violation",
+      errorPath,
+    );
   }
-  return {
-    artifactType,
-    model: raw,
-    payload: raw,
-  };
+
+  if (artifactType === "BoundaryCrossingAssessment") {
+    try {
+      const semanticError = boundaryAssessmentSemanticError(
+        raw as BoundaryCrossingAssessment,
+      );
+      if (semanticError !== null) {
+        throw new SchemaValidationError(semanticError, "");
+      }
+    } catch (error) {
+      if (error instanceof SchemaValidationError) throw error;
+      throw new SchemaValidationError((error as Error).message, "");
+    }
+  }
+
+  return { artifactType, model: raw, payload: raw };
 }
 
 function typedDigest(
@@ -203,18 +176,26 @@ function typedDigest(
   raw: unknown,
 ): [string, string] {
   switch (artifactType) {
-    case "GovernanceEvaluation": {
-      const m = raw as GovernanceEvaluation;
-      return [canonicalString(m), sha256Digest(m)];
-    }
-    case "AdmissibilityDetermination": {
-      const m = raw as AdmissibilityDetermination;
-      return [canonicalString(m), sha256Digest(m)];
-    }
-    case "GovernanceClearance": {
-      const m = raw as GovernanceClearance;
-      return [canonicalString(m), sha256Digest(m)];
-    }
+    case "GovernanceEvaluation":
+      return [
+        canonicalString(raw as GovernanceEvaluation),
+        sha256Digest(raw as GovernanceEvaluation),
+      ];
+    case "AdmissibilityDetermination":
+      return [
+        canonicalString(raw as AdmissibilityDetermination),
+        sha256Digest(raw as AdmissibilityDetermination),
+      ];
+    case "GovernanceClearance":
+      return [
+        canonicalString(raw as GovernanceClearance),
+        sha256Digest(raw as GovernanceClearance),
+      ];
+    case "BoundaryCrossingAssessment":
+      return [
+        canonicalString(raw as BoundaryCrossingAssessment),
+        sha256Digest(raw as BoundaryCrossingAssessment),
+      ];
     default:
       throw new Error(`unknown artifact_type: ${artifactType}`);
   }
@@ -232,11 +213,10 @@ function clearanceIntraCheck(model: GovernanceClearance): string | null {
     if (model.admissibility_state !== "CONDITIONALLY_ADMISSIBLE") {
       return REASON_CLEARANCE_MODIFY_STATE_MISMATCH;
     }
-    const c = model.constraints;
-    if (c === undefined || c === null) {
+    if (model.constraints === undefined || model.constraints === null) {
       return REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS;
     }
-    if (!enforceable(c as unknown)) {
+    if (!enforceable(model.constraints)) {
       return REASON_CLEARANCE_MODIFY_MISSING_CONSTRAINTS;
     }
   }
@@ -245,20 +225,17 @@ function clearanceIntraCheck(model: GovernanceClearance): string | null {
 
 function enforceable(constraints: unknown): boolean {
   if (typeof constraints !== "object" || constraints === null) return false;
-  const map = constraints as Record<string, unknown>;
-  const rules = map["rules"];
+  const values = constraints as Record<string, unknown>;
+  const rules = values["rules"];
   if (Array.isArray(rules) && rules.length > 0) return true;
-  const refOk =
-    typeof map["constraint_set_ref"] === "string" &&
-    (map["constraint_set_ref"] as string).length > 0;
-  const digestOk =
-    typeof map["constraint_set_digest"] === "string" &&
-    (map["constraint_set_digest"] as string).startsWith("sha256:");
-  return refOk && digestOk;
+  return (
+    typeof values["constraint_set_ref"] === "string" &&
+    values["constraint_set_ref"].length > 0 &&
+    typeof values["constraint_set_digest"] === "string" &&
+    values["constraint_set_digest"].startsWith("sha256:")
+  );
 }
 
-/// Non-raising variant: returns an ACCEPT/REJECT ValidationResult with a
-/// normalized reason code. For ACCEPT, canonical bytes + digest are attached.
 export function check(
   artifactType: string,
   raw: unknown,
@@ -266,12 +243,12 @@ export function check(
   let validated: Validated<unknown>;
   try {
     validated = validate(artifactType, raw);
-  } catch (e) {
-    const err = e as SchemaValidationError;
+  } catch (error) {
+    const validationError = error as SchemaValidationError;
     return {
       decision: "REJECT",
       reason_code: REASON_SCHEMA_INVALID,
-      error_path: err.path,
+      error_path: validationError.path,
     };
   }
 
@@ -279,19 +256,20 @@ export function check(
   let digest: string;
   try {
     [canonical, digest] = typedDigest(artifactType, validated.model);
-  } catch (e) {
+  } catch (error) {
     return {
       decision: "REJECT",
       reason_code: REASON_SCHEMA_INVALID,
-      error_path: (e as Error).message,
+      error_path: (error as Error).message,
     };
   }
 
   if (artifactType === "GovernanceClearance") {
-    const model = validated.model as GovernanceClearance;
-    const sem = clearanceIntraCheck(model);
-    if (sem !== null) {
-      return { decision: "REJECT", reason_code: sem };
+    const reason = clearanceIntraCheck(
+      validated.model as GovernanceClearance,
+    );
+    if (reason !== null) {
+      return { decision: "REJECT", reason_code: reason };
     }
   }
 
