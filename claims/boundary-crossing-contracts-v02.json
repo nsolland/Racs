@@ -48,7 +48,7 @@
       "stage": "stage-3-rust-and-typescript-contract-conformance",
       "evidence": {
         "implementation_commit": "51daa85d872c86d91a88c549c5cda189c0cd09fa",
-        "integration_commit": "de40c5af152354cb2999ba14dbd3b288edf13611",
+        "integration_commit": "ac274ca38966e3c2f4f174f086d325091efb2bc2",
         "rust": [
           "typed BoundaryCrossingAssessment and binding models",
           "semantic boundary validation",
