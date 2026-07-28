@@ -6,7 +6,6 @@ Used so CI can compare the three language bindings directly. Run:
     python -m racs_v02.cli --vector <jcs-vector-file>
     python -m racs_v02.cli --check <runtime-vector-file>
 """
-
 from __future__ import annotations
 
 import argparse
@@ -36,6 +35,7 @@ def _emit_canonical(payload: object) -> dict[str, str]:
 def _runtime_check(vec: dict[str, Any]) -> dict[str, Any]:
     artifact_type = vec["artifact_type"]
     payload = vec["payload"]
+    verification_time = vec.get("verification_time")
     port_a = check(artifact_type, payload)
 
     decision = port_a.decision
@@ -53,7 +53,11 @@ def _runtime_check(vec: dict[str, Any]) -> dict[str, Any]:
             evaluation = GovernanceEvaluation.model_validate(resolved["evaluation"])
             verification = verify_evaluation_binding(determination, evaluation)
             if verification.decision == "ACCEPT":
-                verification = verify_clearance_binding(clearance, determination)
+                verification = verify_clearance_binding(
+                    clearance,
+                    determination,
+                    verification_time=verification_time,
+                )
         elif artifact_type == "AdmissibilityDetermination":
             determination = AdmissibilityDetermination.model_validate(payload)
             evaluation = GovernanceEvaluation.model_validate(resolved["evaluation"])
@@ -126,7 +130,6 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         return 2
-
     out = _emit_canonical(subject)
     ok = out["canonical"] == exp_canon and out["digest"] == exp_digest
     print(
