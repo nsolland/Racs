@@ -136,5 +136,24 @@
     "tests": "Python compileall pass; 19 focused unittest cases pass; canonical verdict-mapping conformance success; repo-profile success; baseline compliance explicitly continue-on-error",
     "dependencies": "Racs #77, #79 and #81 merged; no file overlap with open Racs #78",
     "merged": true
+  },
+  "test/agentbound-delta-benchmark": {
+    "repo": "nsolland/Racs",
+    "stage": "agentbound-track-f",
+    "base_sha": "3067d5fae91e4f454af7dcbd0037e7484d260740",
+    "branch": "test/agentbound-delta-benchmark",
+    "owner": "ChatGPT",
+    "scope": "deterministic AgentBound-delta benchmark, security metrics, ablations and machine-readable results; no production logic changes",
+    "claimed_paths": [
+      "benchmarks/agentbound_delta/**"
+    ],
+    "must_not_touch": [
+      "reference and production logic",
+      "spec contracts",
+      "runtime-continuity files and bindings owned by Racs #78",
+      "shared documentation"
+    ],
+    "status": "claimed",
+    "dependencies": "Racs #77, #79, #81 and #83 merged; no file overlap with open Racs #78"
   }
 }
