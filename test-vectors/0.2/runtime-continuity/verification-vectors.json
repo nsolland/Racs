@@ -170,7 +170,7 @@
     {"id":"bounds_noop","current":{"max_duration_ms":3600000,"max_cost":10000,"allowed_zones":["zone-a","zone-b"],"allowed_resources":["ledger","payments-api"],"deadline":"2026-07-28T16:00:00Z"},"proposed":{"max_duration_ms":3600000,"max_cost":10000,"allowed_zones":["zone-a","zone-b"],"allowed_resources":["ledger","payments-api"],"deadline":"2026-07-28T16:00:00Z"},"expected":"REJECT","reason_code":"BOUNDS_NOT_NARROWER"}
   ],
   "decision_cases": [
-    {"id":"decision_accept","mutations":{},"expected":"ACCEPT","reason_code":"ACCEPT"},
+    {"id":"decision_accept","mutations":{},"expected":"ACCEPT","reason_code":"BOUNDS_NARROWED"},
     {"id":"decision_sequence_mismatch","mutations":{"decision.continuity_sequence":2},"expected":"REJECT","reason_code":"DECISION_SEQUENCE_MISMATCH"},
     {"id":"decision_capability_mismatch","mutations":{"decision.capability_manifest_digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},"expected":"REJECT","reason_code":"DECISION_CAPABILITY_MISMATCH"},
     {"id":"decision_expired","mutations":{"decision.valid_until":"2026-07-28T09:30:00Z","decision.next_review_at":"2026-07-28T09:15:00Z"},"expected":"REJECT","reason_code":"DECISION_EXPIRED"}
