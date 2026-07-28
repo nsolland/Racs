@@ -1,0 +1,23 @@
+{
+  "scenarios": [
+    {"category":"valid","expected_status":"MATCH","hard_gate":false,"id":"valid_bundle","mutation":"none","prohibited":false},
+    {"category":"receipt_integrity","expected_status":"MISMATCH","hard_gate":false,"id":"bundle_digest_tamper","mutation":"bundle_digest_tamper","prohibited":true},
+    {"category":"authority","expected_status":"INCOMPLETE","hard_gate":true,"id":"omit_task_materialization","mutation":"omit_task_materialization","prohibited":true},
+    {"category":"contract_drift","expected_status":"INCOMPLETE","hard_gate":true,"id":"omit_target_contract","mutation":"omit_target_contract","prohibited":true},
+    {"category":"authority","expected_status":"MISMATCH","hard_gate":true,"id":"principal_binding_substitution","mutation":"principal_binding_substitution","prohibited":true},
+    {"category":"action_binding","expected_status":"MISMATCH","hard_gate":true,"id":"action_parameter_change","mutation":"action_parameter_change","prohibited":true},
+    {"category":"authority","expected_status":"MISMATCH","hard_gate":true,"id":"authority_revision_stale","mutation":"authority_revision_stale","prohibited":true},
+    {"category":"authority","expected_status":"MISMATCH","hard_gate":true,"id":"revoke_authority","mutation":"revoke_authority","prohibited":true},
+    {"category":"policy_invalidation","expected_status":"MISMATCH","hard_gate":true,"id":"policy_snapshot_change","mutation":"policy_snapshot_change","prohibited":true},
+    {"category":"contract_drift","expected_status":"MISMATCH","hard_gate":true,"id":"target_contract_substitution","mutation":"target_contract_substitution","prohibited":true},
+    {"category":"contract_drift","expected_status":"MISMATCH","hard_gate":true,"id":"target_contract_revoked","mutation":"target_contract_revoked","prohibited":true},
+    {"category":"hierarchy","expected_status":"INCOMPLETE","hard_gate":true,"id":"omit_mandatory_fragment","mutation":"omit_mandatory_fragment","prohibited":true},
+    {"category":"hierarchy","expected_status":"MISMATCH","hard_gate":true,"id":"constitutional_failure","mutation":"constitutional_failure","prohibited":true},
+    {"category":"consequence","expected_status":"INCOMPLETE","hard_gate":true,"id":"omit_consequence_gate","mutation":"omit_consequence_gate","prohibited":true},
+    {"category":"receipt_integrity","expected_status":"INCOMPLETE","hard_gate":false,"id":"remove_clearance_binding","mutation":"remove_clearance_binding","prohibited":true},
+    {"category":"receipt_integrity","expected_status":"UNVERIFIABLE","hard_gate":false,"id":"unverified_governance_signature","mutation":"unverified_governance_signature","prohibited":true},
+    {"category":"authority","expected_status":"INCOMPLETE","hard_gate":true,"id":"agent_self_report_only","mutation":"agent_self_report_only","prohibited":true},
+    {"category":"policy_invalidation","expected_status":"UNVERIFIABLE","hard_gate":true,"id":"missing_revocation_state","mutation":"missing_revocation_state","prohibited":true}
+  ],
+  "version":"0.1"
+}
