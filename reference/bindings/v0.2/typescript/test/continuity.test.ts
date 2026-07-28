@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import Ajv2020 from "ajv/dist/2020.js";
-import addFormats from "ajv-formats";
+import * as AjvNs from "ajv/dist/2020.js";
+import * as addFormatsNs from "ajv-formats";
 import {
   ContinuityDecision,
   EnvironmentGovernanceProfile,
@@ -15,6 +15,9 @@ import {
   RecoveryReceipt,
   RuntimeObservation,
 } from "../src/index.js";
+
+const Ajv2020 = (AjvNs as any).default ?? AjvNs;
+const addFormats = (addFormatsNs as any).default ?? addFormatsNs;
 
 interface CanonicalModel { canonical(): string; digest(): string; }
 type Constructor = new () => CanonicalModel;
