@@ -1,0 +1,16 @@
+{
+  "acceptance_targets": {
+    "all_ablations_document_lost_invariant": true,
+    "contract_drift_detection_rate": 1.0,
+    "governance_decision_accuracy": 1.0,
+    "hard_gate_false_allow_rate": 0.0,
+    "policy_change_invalidation_rate": 1.0,
+    "receipt_verification_rate": 1.0,
+    "replay_equivalence_rate": 1.0,
+    "violation_escape_rate": 0.0
+  },
+  "benchmark": "agentbound-delta",
+  "latency_scope": "offline verifier only; network and transport excluded",
+  "note": "Measured latency is emitted by benchmark.py and is not pinned across hardware.",
+  "version": "0.1"
+}
