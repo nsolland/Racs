@@ -58,8 +58,25 @@ jobs:
           npm run build
 
       - name: Cross-language Stage 3A/3B/3C gate
+        id: cross_language_gate
+        continue-on-error: true
         working-directory: reference/bindings/v0.2
-        run: python3 gate.py
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 gate.py 2>&1 | tee /tmp/racs-bindings-gate.log
+
+      - name: Upload gate diagnostics
+        if: steps.cross_language_gate.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-gate-diagnostics
+          path: /tmp/racs-bindings-gate.log
+          if-no-files-found: error
+
+      - name: Fail on cross-language mismatch
+        if: steps.cross_language_gate.outcome == 'failure'
+        run: exit 1
 
       - name: Per-language unit/integration tests
         run: |
