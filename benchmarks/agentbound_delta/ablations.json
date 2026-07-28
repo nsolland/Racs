@@ -1,0 +1,15 @@
+{
+  "ablations": [
+    {"effect":"prohibited_action_possible","id":"remove_principal_binding","lost_invariant":"An action is bound to the exact human or organisational principal.","removed_control":"principal binding","scenario":"principal_binding_substitution"},
+    {"effect":"prohibited_action_possible","id":"remove_task_materialization","lost_invariant":"Standing authority cannot execute directly; exact task authority must be current and narrower.","removed_control":"task-authority materialization","scenario":"omit_task_materialization"},
+    {"effect":"prohibited_action_possible","id":"remove_target_contract","lost_invariant":"The exact target operation has authenticated semantics before clearance.","removed_control":"TargetActionContract","scenario":"omit_target_contract"},
+    {"effect":"prohibited_action_possible","id":"remove_authority_state_freshness","lost_invariant":"Clearance is bound to the current authority revision and revocation state.","removed_control":"authority-state freshness","scenario":"authority_revision_stale"},
+    {"effect":"prohibited_action_possible","id":"remove_constitutional_hierarchy","lost_invariant":"A lower-level pass cannot override a constitutional or legal prohibition.","removed_control":"constitutional hierarchy","scenario":"constitutional_failure"},
+    {"effect":"prohibited_action_possible","id":"remove_consequence_gate","lost_invariant":"Consequential exposure and irreversible effects are evaluated before ALLOW.","removed_control":"consequence gate","scenario":"omit_consequence_gate"},
+    {"effect":"evidence_guarantee_lost","id":"remove_replay_protection","lost_invariant":"A governance decision is uniquely bound to one exact action instance and cannot be safely reused.","removed_control":"replay and exact-action binding","scenario":"bundle_digest_tamper"},
+    {"effect":"evidence_guarantee_lost","id":"remove_receipt_verification","lost_invariant":"Clearance, fragments, constraints, obligations and decision digests can be independently verified.","removed_control":"receipt verification","scenario":"remove_clearance_binding"},
+    {"effect":"prohibited_action_possible","id":"trust_agent_self_report","lost_invariant":"The proposing agent cannot attest itself into authority or clearance.","removed_control":"independent governance signature","scenario":"agent_self_report_only"},
+    {"effect":"prohibited_action_possible","id":"allow_stale_policy_snapshots","lost_invariant":"The decision is bound to the policy state active at decision time.","removed_control":"policy snapshot freshness","scenario":"policy_snapshot_change"}
+  ],
+  "version":"0.1"
+}
