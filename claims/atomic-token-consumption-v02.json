@@ -1,0 +1,49 @@
+{
+  "repo": "nsolland/Racs",
+  "stage": "atomic-token-consumption-v0.2",
+  "base_sha": "480872e61dbd9d35f3639caa58115c06a48f736f",
+  "branch": "build/atomic-token-consumption-v02",
+  "owner": "ChatGPT",
+  "scope": "verify and atomically consume CommitToken before provider side effect, reject replay, and issue signed ExecutionReceipt",
+  "claimed_paths": [
+    "reference/python/racs_connector.py",
+    "reference/python/test_racs_connector.py",
+    "spec/ATOMIC_TOKEN_CONSUMPTION_V0_2.md"
+  ],
+  "dependencies": [
+    "PR #95 merged as 480872e61dbd9d35f3639caa58115c06a48f736f"
+  ],
+  "invariants": [
+    "no_external_consequence_before_atomic_token_consumption",
+    "one successful consumption per commit_token_id",
+    "invalid token or request substitution never reaches provider",
+    "provider failure leaves token consumed and produces receipt",
+    "execution receipt remains separate from outcome proof"
+  ],
+  "production_boundary": [
+    "InMemoryConsumptionRegistry is process-local reference code only",
+    "production requires shared durable linearizable compare-and-set",
+    "provider idempotency or transactional outbox remains required for distributed exactly-once effect"
+  ],
+  "local_validation": {
+    "mode": "focused pytest using exact branch file contents",
+    "verified_blobs": {
+      "reference/python/racs_connector.py": "99323cfb9090f937e0149e353d384c5022e55c94",
+      "reference/python/test_racs_connector.py": "b082ff87facc8b407a95c3cd484f9e7187bc938d"
+    },
+    "syntax_compile": "passed",
+    "pytest": "15 passed in 1.78s",
+    "coverage": [
+      "verified successful execution and signed receipt",
+      "sequential replay rejection",
+      "concurrent replay permits exactly one provider invocation",
+      "target and payload substitution rejected without consumption",
+      "tampered and expired token rejected without consumption",
+      "revoked Core issuer rejected before provider",
+      "provider failure receipted and token remains consumed",
+      "invalid receipt-chain hash rejected before consumption",
+      "all prior REHT issuance binding tests remain green"
+    ]
+  },
+  "status": "implementation-complete-local-focused-tests-green"
+}
