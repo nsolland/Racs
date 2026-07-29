@@ -7,13 +7,15 @@ repository:
   maintainers:
     - nsolland
   classification: evidence-contract
-  visibility: public
+  role: canonical-contract-and-standard
+  status: active
+  visibility: private
   maturity: active-development
   support: maintained
   normative_status: normative
   license: proprietary-unless-file-states-otherwise
 purpose:
-  summary: Canonical receipt and evidence contract. Protocol specification for representing, evaluating, authorizing, executing and evidencing AI-mediated actions.
+  summary: Canonical receipt and evidence contract. Protocol specification for representing and validating AI-mediated action data; runtime layers decide and enforce.
   owns:
     - action envelope specification
     - authority context specification
@@ -24,6 +26,8 @@ purpose:
     - reference implementations (Python, TypeScript)
   does_not_own:
     - runtime implementation
+    - policy enforcement
+    - action authorization
     - production calibration
     - organization-specific policy
     - customer configuration
@@ -64,10 +68,31 @@ related_repositories:
     relationship: canonical-product-orchestration
   - id: valo.reht
     relationship: canonical-clearance-layer
+  - id: valo.index
+    relationship: canonical-manifest-schema-and-portfolio-architecture
+interfaces:
+  - id: action-envelope
+    type: yaml-schema
+    path: spec/action-envelope.yaml
+  - id: authority-context
+    type: yaml-schema
+    path: spec/authority-context.yaml
+  - id: evidence-package
+    type: yaml-schema
+    path: spec/evidence-package.yaml
+canonical_documents:
+  - README.md
+  - CLAUDE.md
+  - spec/action-envelope.yaml
+canonical_repository:
+  id: valo.racs
+  owns:
+    - action-contracts
+    - receipts-and-evidence-contracts
 security:
   contact: njaal.solland@gmail.com
   disclosure: private-contact-first
 machine_reading:
   canonical_terms: README.md
   agent_instructions: CLAUDE.md
-  llm_summary: llms.txt
+  llm_summary: README.md
