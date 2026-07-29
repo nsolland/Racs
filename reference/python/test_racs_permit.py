@@ -1,18 +1,21 @@
-"""P0-C conformance: Platform -> Core -> Connector signed-permit/token chain."""
+"""P0-C conformance: verified REHT clearance -> permit -> commit token."""
+
+from copy import deepcopy
 
 import pytest
 
-from racs_canonical import sha256_digest
-from racs_crypto import generate_keypair, load_private_key, load_public_key
-from racs_clearance import GovernanceClearanceIssuer
+from racs_crypto import generate_keypair, load_private_key
+from racs_clearance import GovernanceClearanceIssuer, GovernanceClearanceVerifier
 from racs_permit import (
-    CoreExecutionPermitBuilder,
     CommitTokenIssuer,
+    CoreExecutionPermitBuilder,
+    CoreExecutionPermitVerifier,
+    PermitError,
 )
 
 
-def _digest():
-    return "sha256:" + "a" * 64
+def _digest(char="a"):
+    return "sha256:" + char * 64
 
 
 def _clearance_payload():
@@ -42,6 +45,8 @@ def _clearance_payload():
         "idempotency_key": "idem-" + "c" * 8,
         "revocation_registry_ref": "rev-reg-1",
         "evaluator_refs": ["vaig-1", "reht-1"],
+        "admissibility_determination_ref": "det-1",
+        "admissibility_determination_digest": _digest("d"),
     }
 
 
@@ -89,77 +94,137 @@ def registry(keys):
     }
 
 
+def _issue_clearance(keys):
+    return GovernanceClearanceIssuer(
+        issuer_id="reht-1",
+        tenant_id="tenant-acme",
+        trust_domain="valo-trust",
+        private_key=keys["reht"][0],
+        key_id="key-reht",
+    ).issue(_clearance_payload())
+
+
+def _builder(keys, registry):
+    return CoreExecutionPermitBuilder(
+        issuer_id="core-1",
+        tenant_id="tenant-acme",
+        trust_domain="valo-trust",
+        private_key=keys["core"][0],
+        key_id="key-core",
+        clearance_verifier=GovernanceClearanceVerifier(registry),
+    )
+
+
+def _build_permit(keys, registry, clearance=None, execution_id="exec-1"):
+    clearance = clearance or _issue_clearance(keys)
+    return _builder(keys, registry).build(
+        clearance_artifact=clearance,
+        execution_id=execution_id,
+        target_digest=_digest(),
+        payload_digest=_digest(),
+        reservation_id=f"resv-{execution_id}",
+    )
+
+
+def _token_issuer(keys, registry):
+    return CommitTokenIssuer(
+        issuer_id="core-1",
+        tenant_id="tenant-acme",
+        trust_domain="valo-trust",
+        private_key=keys["core"][0],
+        key_id="key-core",
+        trust_registry=registry,
+    )
+
+
 def _connector_accept(token, core_pub_pem):
-    """Connector-side check: a real bounded connector requires a valid token."""
+    """A bounded connector accepts only a valid single-use signed token."""
     from racs_crypto import load_public_key, verify_artifact_signature
 
+    if not isinstance(token, dict):
+        return False
     pub = load_public_key(core_pub_pem.encode())
     if not verify_artifact_signature(token, pub):
         return False
     if token.get("artifact_type") != "CommitToken":
         return False
-    if token.get("payload", {}).get("single_use") is not True:
-        return False
-    return True
+    return token.get("payload", {}).get("single_use") is True
 
 
-def test_step1_full_chain_issues_token(keys, registry):
-    reht_priv, _ = keys["reht"]
-    core_priv, core_pub = keys["core"]
-    reht = GovernanceClearanceIssuer(
-        issuer_id="reht-1", tenant_id="tenant-acme", trust_domain="valo-trust",
-        private_key=reht_priv, key_id="key-reht",
-    )
-    clearance = reht.issue(_clearance_payload())
+def test_full_verified_chain_issues_token(keys, registry):
+    permit = _build_permit(keys, registry)
+    CoreExecutionPermitVerifier(registry).verify(permit)
 
-    builder = CoreExecutionPermitBuilder(
-        issuer_id="core-1", tenant_id="tenant-acme", trust_domain="valo-trust",
-        private_key=core_priv, key_id="key-core",
-    )
-    permit = builder.build(
-        clearance_artifact=clearance,
-        execution_id="exec-1",
-        target_digest=_digest(),
-        payload_digest=_digest(),
-        reservation_id="resv-1",
-    )
-    assert permit["signature"]["value"]  # signed
+    token = _token_issuer(keys, registry).issue(permit)
 
-    issuer = CommitTokenIssuer(
-        issuer_id="core-1", tenant_id="tenant-acme", trust_domain="valo-trust",
-        private_key=core_priv, key_id="key-core",
-    )
-    token = issuer.issue(permit)
-    assert token["signature"]["value"]  # signed single-use token
-
-    assert _connector_accept(token, core_pub) is True
+    assert permit["payload"]["clearance_digest"]
+    assert token["payload"]["execution_permit_digest"] == permit["payload_digest"]
+    assert token["payload"]["clearance_digest"] == permit["payload"]["clearance_digest"]
+    assert _connector_accept(token, keys["core"][1]) is True
 
 
-def test_step2_connector_rejects_missing_token(keys, registry):
-    # No token presented -> connector must refuse to execute
+def test_connector_rejects_missing_token(keys):
     assert _connector_accept(None, keys["core"][1]) is False
 
 
-def test_step3_connector_rejects_tampered_token(keys, registry):
-    reht_priv, _ = keys["reht"]
-    core_priv, core_pub = keys["core"]
-    reht = GovernanceClearanceIssuer(
-        issuer_id="reht-1", tenant_id="tenant-acme", trust_domain="valo-trust",
-        private_key=reht_priv, key_id="key-reht",
-    )
-    clearance = reht.issue(_clearance_payload())
-    builder = CoreExecutionPermitBuilder(
-        issuer_id="core-1", tenant_id="tenant-acme", trust_domain="valo-trust",
-        private_key=core_priv, key_id="key-core",
-    )
-    permit = builder.build(
-        clearance_artifact=clearance, execution_id="exec-2",
-        target_digest=_digest(), payload_digest=_digest(), reservation_id="resv-2",
-    )
-    token = CommitTokenIssuer(
-        issuer_id="core-1", tenant_id="tenant-acme", trust_domain="valo-trust",
-        private_key=core_priv, key_id="key-core",
-    ).issue(permit)
-    # mutate payload after signing
+def test_connector_rejects_tampered_token(keys, registry):
+    token = _token_issuer(keys, registry).issue(_build_permit(keys, registry))
     token["payload"]["action_id"] = "act-999"
-    assert _connector_accept(token, core_pub) is False
+    assert _connector_accept(token, keys["core"][1]) is False
+
+
+def test_builder_rejects_tampered_clearance(keys, registry):
+    clearance = _issue_clearance(keys)
+    clearance["payload"]["target_digest"] = _digest("f")
+    with pytest.raises(PermitError, match="clearance verification failed"):
+        _build_permit(keys, registry, clearance=clearance)
+
+
+def test_builder_rejects_unknown_clearance_issuer(keys, registry):
+    clearance = _issue_clearance(keys)
+    restricted_registry = {"core-1": registry["core-1"]}
+    with pytest.raises(PermitError, match="unknown issuer"):
+        _build_permit(keys, restricted_registry, clearance=clearance)
+
+
+def test_builder_rejects_target_or_payload_substitution(keys, registry):
+    clearance = _issue_clearance(keys)
+    builder = _builder(keys, registry)
+
+    with pytest.raises(PermitError, match="target digest does not match clearance"):
+        builder.build(
+            clearance_artifact=clearance,
+            execution_id="exec-target-substitution",
+            target_digest=_digest("e"),
+            payload_digest=_digest(),
+            reservation_id="resv-target-substitution",
+        )
+
+    with pytest.raises(PermitError, match="payload digest does not match clearance"):
+        builder.build(
+            clearance_artifact=clearance,
+            execution_id="exec-payload-substitution",
+            target_digest=_digest(),
+            payload_digest=_digest("e"),
+            reservation_id="resv-payload-substitution",
+        )
+
+
+def test_token_issuer_rejects_tampered_permit(keys, registry):
+    permit = _build_permit(keys, registry)
+    permit["payload"]["target_digest"] = _digest("f")
+    with pytest.raises(PermitError, match="permit payload digest mismatch"):
+        _token_issuer(keys, registry).issue(permit)
+
+
+def test_token_issuer_rejects_unknown_or_revoked_core(keys, registry):
+    permit = _build_permit(keys, registry)
+
+    unknown_registry = {"reht-1": registry["reht-1"]}
+    with pytest.raises(PermitError, match="unknown permit issuer"):
+        _token_issuer(keys, unknown_registry).issue(permit)
+
+    revoked_registry = deepcopy(registry)
+    revoked_registry["core-1"]["revocation_status"] = "REVOKED"
+    with pytest.raises(PermitError, match="not active"):
+        _token_issuer(keys, revoked_registry).issue(permit)
