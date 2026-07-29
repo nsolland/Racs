@@ -1,0 +1,73 @@
+schema_version: "1.0"
+repository:
+  id: valo.racs
+  canonical_name: RACS
+  url: https://github.com/nsolland/Racs
+  owner: nsolland
+  maintainers:
+    - nsolland
+  classification: evidence-contract
+  visibility: public
+  maturity: active-development
+  support: maintained
+  normative_status: normative
+  license: proprietary-unless-file-states-otherwise
+purpose:
+  summary: Canonical receipt and evidence contract. Protocol specification for representing, evaluating, authorizing, executing and evidencing AI-mediated actions.
+  owns:
+    - action envelope specification
+    - authority context specification
+    - evidence package specification
+    - policy context specification
+    - execution and evidence semantics
+    - compliance validators
+    - reference implementations (Python, TypeScript)
+  does_not_own:
+    - runtime implementation
+    - production calibration
+    - organization-specific policy
+    - customer configuration
+boundaries:
+  public:
+    - spec definitions (YAML)
+    - example scenarios
+    - compliance test suites
+    - reference implementations
+  private_by_default:
+    - organization-specific authority structures
+    - customer-specific policy
+    - deployment-specific configurations
+claims:
+  - id: CLAIM-RACS-001
+    statement: RACS is a neutral, model-agnostic protocol specification — not a runtime implementation.
+    evidence_level: normative-architecture-invariant
+    evidence:
+      - CLAUDE.md
+      - README.md
+      - spec/action-envelope.yaml
+  - id: CLAIM-RACS-002
+    statement: RACS defines the contract between evidence layers and action governance layers.
+    evidence_level: normative-architecture-invariant
+    evidence:
+      - README.md
+      - spec/*.yaml
+non_claims:
+  - This repository does not implement runtime governance.
+  - Protocol validation does not equal production certification.
+  - Example scenarios are illustrative, not normative.
+related_repositories:
+  - id: valo.baro
+    relationship: canonical-observation-layer
+  - id: valo.vaig
+    relationship: canonical-evaluation-layer
+  - id: valo.platform
+    relationship: canonical-product-orchestration
+  - id: valo.reht
+    relationship: canonical-clearance-layer
+security:
+  contact: njaal.solland@gmail.com
+  disclosure: private-contact-first
+machine_reading:
+  canonical_terms: README.md
+  agent_instructions: CLAUDE.md
+  llm_summary: llms.txt
