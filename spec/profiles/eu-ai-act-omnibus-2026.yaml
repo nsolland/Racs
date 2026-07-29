@@ -1,0 +1,39 @@
+profile_id: EU_AI_ACT_OMNIBUS_2026
+legal_act_ref: Regulation (EU) 2026/1744
+version: "2026.07.27"
+jurisdiction: EU
+entered_into_force: "2026-07-27"
+
+milestones:
+  - obligation_id: article_50_transparency
+    applies_from: "2026-08-02"
+    classification_required: false
+  - obligation_id: article_50_2_legacy_transition
+    applies_from: "2026-12-02"
+    requires_market_placement_before: "2026-08-02"
+  - obligation_id: new_prohibited_practices
+    applies_from: "2026-12-02"
+    classification_required: false
+  - obligation_id: annex_iii_high_risk
+    applies_from: "2027-12-02"
+    classification_required: annex_iii
+  - obligation_id: annex_i_product_high_risk
+    applies_from: "2028-08-02"
+    classification_required: annex_i
+
+required_evidence:
+  - intended_purpose
+  - provider_deployer_role_classification
+  - market_placement_date_if_relevant
+  - article_50_transparency_classification
+  - annex_classification_or_not_applicable_determination
+  - disclosure_or_marking_evidence
+  - human_oversight_evidence_if_applicable
+  - accountable_owner_ref
+  - profile_digest
+
+semantics:
+  policy_input_only: true
+  grants_execution_authority: false
+  article_50_independent_of_high_risk_classification: true
+  fail_closed_when_required_evidence_missing: true
