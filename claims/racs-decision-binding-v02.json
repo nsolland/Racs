@@ -4,7 +4,7 @@
   "base_sha": "ea00237fe99986e0cdfcd1b3ea6f49d701eb57ae",
   "branch": "build/racs-decision-binding-v02",
   "implementation_commit": "febda25702d7ae414da59eb677bb778bdf0c35f8",
-  "integration_commit": "141e2d3d9079ca9cf3b1b49907525151a9f5ee8b",
+  "integration_commit": "1ed56d8367045110bdb4fdd0a4cf53d1ff49c8c6",
   "owner": "ChatGPT",
   "scope": "resolve the complete REHT clearance chain into a signed non-authority-expanding RACSDecision and bind it into CoreExecutionPermit and CommitToken",
   "dependencies": [
