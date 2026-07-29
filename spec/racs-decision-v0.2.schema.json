@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.2/racs-decision.schema.json",
+  "title": "RACS Runtime Decision Payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "racs_decision_id",
+    "action_id",
+    "tenant_id",
+    "action_envelope_digest",
+    "clearance_id",
+    "clearance_digest",
+    "admissibility_determination_ref",
+    "admissibility_determination_digest",
+    "boundary_assessment_ref",
+    "boundary_assessment_digest",
+    "evaluation_bindings",
+    "decision",
+    "connector_id",
+    "capability",
+    "target_digest",
+    "payload_digest",
+    "consequence_class",
+    "reversibility",
+    "reason_codes",
+    "decided_at",
+    "valid_until",
+    "revocation_registry_ref"
+  ],
+  "properties": {
+    "racs_decision_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tenant_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action_envelope_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "clearance_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "clearance_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "admissibility_determination_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "admissibility_determination_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "boundary_assessment_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "boundary_assessment_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "evaluation_bindings": {
+      "$ref": "#/$defs/evaluation_bindings"
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "ALLOW",
+        "MODIFY",
+        "DEFER",
+        "DENY",
+        "STEP_UP",
+        "HALT"
+      ],
+      "description": "May preserve or narrow the REHT clearance outcome; it can never expand authority."
+    },
+    "connector_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "capability": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "payload_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "consequence_class": {
+      "type": "string",
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ]
+    },
+    "reversibility": {
+      "type": "string",
+      "enum": [
+        "REVERSIBLE",
+        "COMPENSATABLE",
+        "IRREVERSIBLE"
+      ]
+    },
+    "constraints": {
+      "$ref": "#/$defs/constraints"
+    },
+    "reason_codes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "decided_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "valid_until": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revocation_registry_ref": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "MODIFY"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "constraints"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "constraints"
+          ]
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "evaluation_bindings": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evaluation_ref",
+          "evaluation_digest"
+        ],
+        "properties": {
+          "evaluation_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evaluation_digest": {
+            "$ref": "#/$defs/digest"
+          }
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "machine_readable",
+        "binds_exact_action"
+      ],
+      "properties": {
+        "machine_readable": {
+          "const": true
+        },
+        "binds_exact_action": {
+          "const": true
+        },
+        "rules": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "predicate",
+              "target"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "predicate": {
+                "type": "string",
+                "minLength": 1
+              },
+              "target": {
+                "type": "string",
+                "minLength": 1
+              },
+              "value": {}
+            }
+          }
+        },
+        "constraint_set_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "constraint_set_digest": {
+          "$ref": "#/$defs/digest"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "rules"
+          ]
+        },
+        {
+          "required": [
+            "constraint_set_ref",
+            "constraint_set_digest"
+          ]
+        }
+      ]
+    }
+  },
+  "description": "Signed RACS binding decision over a verified REHT clearance chain. This artifact does not originate authority and does not itself permit execution."
+}

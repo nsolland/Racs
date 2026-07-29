@@ -32,13 +32,20 @@ jobs:
                   jsonschema.Draft202012Validator.check_schema(json.load(fh))
               print("valid schema:", path)
           PY
-      - name: Run canonical contract conformance suite
+      - name: Run canonical and execution-bound conformance suite
         id: canonical_tests
         continue-on-error: true
         shell: bash
+        env:
+          PYTHONPATH: reference/python:reference/bindings/v0.2/python/src
         run: |
           set -o pipefail
-          python -m pytest tests/compliance/test_canonical_contract.py -v 2>&1 | tee /tmp/racs-canonical-tests.log
+          python -m pytest \
+            tests/compliance/test_canonical_contract.py \
+            tests/compliance/test_racs_decision_chain.py \
+            reference/python/test_racs_permit.py \
+            reference/python/test_racs_connector.py \
+            -v 2>&1 | tee /tmp/racs-canonical-tests.log
       - name: Verify golden vector .sha256 sidecars
         id: golden_sidecars
         continue-on-error: true
@@ -77,5 +84,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install ".[dev]"
       - name: Run full compliance suite (informational)
+        env:
+          PYTHONPATH: reference/python:reference/bindings/v0.2/python/src
         run: |
           python -m pytest tests/compliance/ -v

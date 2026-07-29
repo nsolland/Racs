@@ -1,29 +1,97 @@
 {
-  "$schema":"https://json-schema.org/draft/2020-12/schema",
-  "$id":"https://racs.dev/schema/0.2/commit-token.schema.json",
-  "title":"RACS CommitToken Payload",
-  "type":"object",
-  "additionalProperties":false,
-  "required":["commit_token_id","execution_id","tenant_id","action_id","action_envelope_digest","clearance_id","clearance_digest","execution_permit_id","execution_permit_digest","connector_id","capability","target_digest","payload_digest","reservation_id","issued_at","valid_until","single_use","consumption_registry_ref"],
-  "properties":{
-    "commit_token_id":{"type":"string","minLength":1},
-    "execution_id":{"type":"string","minLength":1},
-    "tenant_id":{"type":"string","minLength":1},
-    "action_id":{"type":"string","minLength":1},
-    "action_envelope_digest":{"$ref":"#/$defs/digest"},
-    "clearance_id":{"type":"string","minLength":1},
-    "clearance_digest":{"$ref":"#/$defs/digest"},
-    "execution_permit_id":{"type":"string","minLength":1},
-    "execution_permit_digest":{"$ref":"#/$defs/digest"},
-    "connector_id":{"type":"string","minLength":1},
-    "capability":{"type":"string","minLength":1},
-    "target_digest":{"$ref":"#/$defs/digest"},
-    "payload_digest":{"$ref":"#/$defs/digest"},
-    "reservation_id":{"type":"string","minLength":1},
-    "issued_at":{"type":"string","format":"date-time"},
-    "valid_until":{"type":"string","format":"date-time"},
-    "single_use":{"const":true},
-    "consumption_registry_ref":{"type":"string","minLength":1}
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.2/commit-token.schema.json",
+  "title": "RACS CommitToken Payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "commit_token_id",
+    "execution_id",
+    "tenant_id",
+    "action_id",
+    "action_envelope_digest",
+    "clearance_id",
+    "clearance_digest",
+    "racs_decision_id",
+    "racs_decision_digest",
+    "decision",
+    "execution_permit_id",
+    "execution_permit_digest",
+    "connector_id",
+    "capability",
+    "target_digest",
+    "payload_digest",
+    "reservation_id",
+    "issued_at",
+    "valid_until",
+    "single_use",
+    "consumption_registry_ref"
+  ],
+  "properties": {
+    "commit_token_id": {"type": "string", "minLength": 1},
+    "execution_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "action_id": {"type": "string", "minLength": 1},
+    "action_envelope_digest": {"$ref": "#/$defs/digest"},
+    "clearance_id": {"type": "string", "minLength": 1},
+    "clearance_digest": {"$ref": "#/$defs/digest"},
+    "racs_decision_id": {"type": "string", "minLength": 1},
+    "racs_decision_digest": {"$ref": "#/$defs/digest"},
+    "decision": {"type": "string", "enum": ["ALLOW", "MODIFY"]},
+    "constraints": {"$ref": "#/$defs/constraints"},
+    "execution_permit_id": {"type": "string", "minLength": 1},
+    "execution_permit_digest": {"$ref": "#/$defs/digest"},
+    "connector_id": {"type": "string", "minLength": 1},
+    "capability": {"type": "string", "minLength": 1},
+    "target_digest": {"$ref": "#/$defs/digest"},
+    "payload_digest": {"$ref": "#/$defs/digest"},
+    "reservation_id": {"type": "string", "minLength": 1},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "valid_until": {"type": "string", "format": "date-time"},
+    "single_use": {"const": true},
+    "consumption_registry_ref": {"type": "string", "minLength": 1}
   },
-  "$defs":{"digest":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}}
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "MODIFY"}}},
+      "then": {"required": ["constraints"]}
+    },
+    {
+      "if": {"properties": {"decision": {"const": "ALLOW"}}},
+      "then": {"not": {"required": ["constraints"]}}
+    }
+  ],
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["machine_readable", "binds_exact_action"],
+      "properties": {
+        "machine_readable": {"const": true},
+        "binds_exact_action": {"const": true},
+        "rules": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "predicate", "target"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "predicate": {"type": "string", "minLength": 1},
+              "target": {"type": "string", "minLength": 1},
+              "value": {}
+            }
+          }
+        },
+        "constraint_set_ref": {"type": "string", "minLength": 1},
+        "constraint_set_digest": {"$ref": "#/$defs/digest"}
+      },
+      "anyOf": [
+        {"required": ["rules"]},
+        {"required": ["constraint_set_ref", "constraint_set_digest"]}
+      ]
+    }
+  }
 }
