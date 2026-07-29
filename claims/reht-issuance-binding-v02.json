@@ -1,0 +1,48 @@
+{
+  "repo": "nsolland/Racs",
+  "stage": "reht-issuance-binding-v0.2",
+  "base_sha": "19c3c4daafdacbc490c62feb144c477ddf1f4b2d",
+  "branch": "build/reht-issuance-binding-v02",
+  "owner": "ChatGPT",
+  "scope": "fail-closed binding from verified REHT GovernanceClearance through CoreExecutionPermit to single-use CommitToken",
+  "claimed_paths": [
+    "reference/python/racs_permit.py",
+    "reference/python/test_racs_permit.py",
+    "spec/REHT_ISSUANCE_BINDING_V0_2.md"
+  ],
+  "dependencies": [
+    "PR #91 merged as c235b7e9d32e0529e026d0444324d4aa54342545",
+    "PR #94 merged as 19c3c4daafdacbc490c62feb144c477ddf1f4b2d"
+  ],
+  "closed_gaps": [
+    "permit builder accepted unverified clearance",
+    "missing governance fields were replaced with placeholder digests",
+    "caller could substitute target or payload after clearance",
+    "permit lifetime could outlive clearance",
+    "commit token issuer did not verify permit payload digest, signature, issuer, scope, revocation or expiry"
+  ],
+  "invariants": [
+    "no_commit_token_without_verified_clearance_chain",
+    "issuance can only narrow authority",
+    "exact target and payload bindings survive clearance to token",
+    "downstream lifetime cannot exceed upstream authorization",
+    "no fallback or parallel execution path"
+  ],
+  "local_validation": {
+    "mode": "focused isolated replay using exact branch racs_permit.py content",
+    "verified_blob_sha": "1b3a43e998a0578318e0c14af8f351d724a966d3",
+    "syntax_compile": "passed",
+    "checks": {
+      "happy_verified_chain": "passed",
+      "tampered_clearance": "rejected",
+      "target_substitution": "rejected",
+      "payload_substitution": "rejected",
+      "tampered_permit": "rejected",
+      "unknown_reht_issuer": "rejected",
+      "unknown_core_issuer": "rejected",
+      "revoked_core_issuer": "rejected"
+    },
+    "result": "8 of 8 passed"
+  },
+  "status": "implementation-complete-local-focused-tests-green"
+}
