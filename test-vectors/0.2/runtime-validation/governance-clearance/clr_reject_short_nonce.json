@@ -6,7 +6,7 @@
   "payload": {
     "clearance_id": "clr-001",
     "action_id": "act-001",
-    "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "action_envelope_digest": "sha256:769b2d801cd1c36b80b2324306dd8a357cdb919b9b43c1e44169ec7d07d7300a",
     "tenant_id": "tenant-1",
     "decision": "ALLOW",
     "admissibility_state": "ADMISSIBLE",
@@ -17,13 +17,13 @@
     "purpose_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "state_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "target_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "payload_digest": "PLACEHOLDER",
+    "payload_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "connector_id": "conn-1",
     "capability": "read",
     "consequence_class": "LOW",
     "reversibility": "REVERSIBLE",
     "valid_from": "2026-07-23T12:10:00Z",
-    "valid_until": "2026-07-24T12:10:00Z",
+    "valid_until": "2026-07-23T12:15:00Z",
     "replay_nonce": "short",
     "idempotency_key": "idem-001",
     "revocation_registry_ref": "revreg-001",
@@ -31,6 +31,6 @@
       "eval-1"
     ],
     "admissibility_determination_ref": "det-001",
-    "admissibility_determination_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    "admissibility_determination_digest": "sha256:91d0a6389400f6c7e7f5c6f7d221e798d2850e3a9f8d3ae136ebb97c696829a6"
   }
 }

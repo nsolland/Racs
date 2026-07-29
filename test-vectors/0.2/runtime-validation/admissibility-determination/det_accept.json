@@ -6,7 +6,7 @@
   "payload": {
     "determination_id": "det-001",
     "action_id": "act-001",
-    "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "action_envelope_digest": "sha256:769b2d801cd1c36b80b2324306dd8a357cdb919b9b43c1e44169ec7d07d7300a",
     "tenant_id": "tenant-1",
     "authority_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "delegation_chain_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -17,15 +17,19 @@
     "evaluation_bindings": [
       {
         "evaluation_ref": "ev-001",
-        "evaluation_digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        "evaluation_digest": "sha256:75519ad51c047a299e8cf20c46d59e4229a8317067713723f290e34ece7481a2"
       }
     ],
+    "boundary_assessment_binding": {
+      "assessment_ref": "bca-001",
+      "assessment_digest": "sha256:c145792a7b8c608370f8d4cd80af39cd91052107196fece2994edc06113f4174"
+    },
     "state": "ADMISSIBLE",
     "reason_codes": [
       "OK"
     ],
     "determined_at": "2026-07-23T12:05:00Z",
-    "valid_until": "2026-07-24T12:05:00Z",
+    "valid_until": "2026-07-23T12:16:00Z",
     "revocation_registry_ref": "revreg-001"
   }
 }

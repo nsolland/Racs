@@ -20,7 +20,11 @@
     "reason_codes": [
       "OK"
     ],
+    "boundary_assessment_binding": {
+      "assessment_ref": "bca-001",
+      "assessment_digest": "sha256:c145792a7b8c608370f8d4cd80af39cd91052107196fece2994edc06113f4174"
+    },
     "evaluated_at": "2026-07-23T12:00:00Z",
-    "valid_until": "2026-07-24T12:00:00Z"
+    "valid_until": "2026-07-23T12:18:00Z"
   }
 }

@@ -20,8 +20,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install "jsonschema>=4.20" pytest
       - name: Validate all spec schemas (Draft 2020-12)
+        id: schema_validation
+        continue-on-error: true
+        shell: bash
         run: |
-          python - <<'PY'
+          set -o pipefail
+          python - <<'PY' 2>&1 | tee /tmp/racs-schema-validation.log
           import json, glob, jsonschema
           for path in sorted(glob.glob("spec/*.schema.json")):
               with open(path) as fh:
@@ -29,17 +33,40 @@ jobs:
               print("valid schema:", path)
           PY
       - name: Run canonical contract conformance suite
+        id: canonical_tests
+        continue-on-error: true
+        shell: bash
         run: |
-          python -m pytest tests/compliance/test_canonical_contract.py -v
+          set -o pipefail
+          python -m pytest tests/compliance/test_canonical_contract.py -v 2>&1 | tee /tmp/racs-canonical-tests.log
       - name: Verify golden vector .sha256 sidecars
+        id: golden_sidecars
+        continue-on-error: true
+        shell: bash
         run: |
-          sha256sum -c test-vectors/0.2/canonical-verdict-mapping.sha256
-          sha256sum -c test-vectors/0.2/governance-evaluation-golden.sha256
+          set -o pipefail
+          {
+            sha256sum -c test-vectors/0.2/canonical-verdict-mapping.sha256
+            sha256sum -c test-vectors/0.2/governance-evaluation-golden.sha256
+          } 2>&1 | tee /tmp/racs-golden-sidecars.log
+      - name: Upload canonical diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: racs-canonical-diagnostics
+          path: |
+            /tmp/racs-schema-validation.log
+            /tmp/racs-canonical-tests.log
+            /tmp/racs-golden-sidecars.log
+          if-no-files-found: warn
+      - name: Fail on canonical conformance error
+        if: steps.schema_validation.outcome == 'failure' || steps.canonical_tests.outcome == 'failure' || steps.golden_sidecars.outcome == 'failure'
+        run: exit 1
 
   full-compliance:
     name: Full compliance suite (baseline reference)
     runs-on: ubuntu-latest
-    continue-on-error: true   # Pre-existing repo failures (import path) are documented, not blockers
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

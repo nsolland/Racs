@@ -1,0 +1,127 @@
+{
+  "schema_version": "racs.boundary-crossing-vectors.v0.2",
+  "vectors": [
+    {
+      "id": "boundary_assessment_authorized_execution",
+      "artifact_type": "BoundaryCrossingAssessment",
+      "payload": {
+        "schema_version": "racs.boundary-crossing-assessment.v0.2",
+        "assessment_id": "bca-001",
+        "action_id": "act-001",
+        "action_envelope_digest": "sha256:769b2d801cd1c36b80b2324306dd8a357cdb919b9b43c1e44169ec7d07d7300a",
+        "tenant_id": "tenant-1",
+        "assessor_id": "boundary-evaluator-1",
+        "assessor_version": "0.2.0",
+        "requirement_policy_ref": "policy://boundary/001",
+        "requirement_policy_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "crossings": [
+          {
+            "crossing_id": "crossing-execution-001",
+            "boundary_type": "EXECUTION",
+            "crossing_detected": true,
+            "prior_state_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "proposed_state_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "authority_requirement_ref": "authority-requirement://execution/001",
+            "authority_binding": {
+              "ref": "authority://grant/001",
+              "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            "policy_binding": {
+              "ref": "policy://boundary/001",
+              "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            "evidence_binding": {
+              "ref": "evidence://execution/001",
+              "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            "details_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "state": "AUTHORIZED",
+            "required_response_floor": "NONE",
+            "reason_codes": [],
+            "observed_at": "2026-07-23T11:55:00Z",
+            "valid_until": "2026-07-23T12:20:00Z"
+          }
+        ],
+        "aggregate_state": "AUTHORIZED",
+        "required_response_floor": "NONE",
+        "reason_codes": [],
+        "assessed_at": "2026-07-23T11:55:00Z",
+        "valid_until": "2026-07-23T12:20:00Z",
+        "revocation_registry_ref": "revreg-001"
+      },
+      "canonical_payload": "{\"action_envelope_digest\":\"sha256:769b2d801cd1c36b80b2324306dd8a357cdb919b9b43c1e44169ec7d07d7300a\",\"action_id\":\"act-001\",\"aggregate_state\":\"AUTHORIZED\",\"assessed_at\":\"2026-07-23T11:55:00Z\",\"assessment_id\":\"bca-001\",\"assessor_id\":\"boundary-evaluator-1\",\"assessor_version\":\"0.2.0\",\"crossings\":[{\"authority_binding\":{\"digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"ref\":\"authority://grant/001\"},\"authority_requirement_ref\":\"authority-requirement://execution/001\",\"boundary_type\":\"EXECUTION\",\"crossing_detected\":true,\"crossing_id\":\"crossing-execution-001\",\"details_digest\":\"sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"evidence_binding\":{\"digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"ref\":\"evidence://execution/001\"},\"observed_at\":\"2026-07-23T11:55:00Z\",\"policy_binding\":{\"digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"ref\":\"policy://boundary/001\"},\"prior_state_digest\":\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"proposed_state_digest\":\"sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"reason_codes\":[],\"required_response_floor\":\"NONE\",\"state\":\"AUTHORIZED\",\"valid_until\":\"2026-07-23T12:20:00Z\"}],\"reason_codes\":[],\"required_response_floor\":\"NONE\",\"requirement_policy_digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"requirement_policy_ref\":\"policy://boundary/001\",\"revocation_registry_ref\":\"revreg-001\",\"schema_version\":\"racs.boundary-crossing-assessment.v0.2\",\"tenant_id\":\"tenant-1\",\"valid_until\":\"2026-07-23T12:20:00Z\"}",
+      "payload_digest": "sha256:c145792a7b8c608370f8d4cd80af39cd91052107196fece2994edc06113f4174"
+    },
+    {
+      "id": "governance_evaluation_bound_to_assessment",
+      "artifact_type": "GovernanceEvaluation",
+      "payload": {
+        "evaluation_id": "ev-001",
+        "action_id": "act-001",
+        "action_envelope_digest": "sha256:769b2d801cd1c36b80b2324306dd8a357cdb919b9b43c1e44169ec7d07d7300a",
+        "tenant_id": "tenant-1",
+        "evaluator_id": "eval-1",
+        "evaluator_version": "1.0.0",
+        "decision": "ALLOW",
+        "authority_status": "PRESENT_AND_VALID",
+        "policy_status": "PRESENT_AND_VALID",
+        "evidence_status": "PRESENT_AND_VALID",
+        "purpose_status": "PRESENT_AND_VALID",
+        "state_status": "PRESENT_AND_VALID",
+        "risk_status": "PRESENT_AND_VALID",
+        "reason_codes": [
+          "OK"
+        ],
+        "boundary_assessment_binding": {
+          "assessment_ref": "bca-001",
+          "assessment_digest": "sha256:c145792a7b8c608370f8d4cd80af39cd91052107196fece2994edc06113f4174"
+        },
+        "evaluated_at": "2026-07-23T12:00:00Z",
+        "valid_until": "2026-07-23T12:18:00Z"
+      },
+      "canonical_payload": "{\"action_envelope_digest\":\"sha256:769b2d801cd1c36b80b2324306dd8a357cdb919b9b43c1e44169ec7d07d7300a\",\"action_id\":\"act-001\",\"authority_status\":\"PRESENT_AND_VALID\",\"boundary_assessment_binding\":{\"assessment_digest\":\"sha256:c145792a7b8c608370f8d4cd80af39cd91052107196fece2994edc06113f4174\",\"assessment_ref\":\"bca-001\"},\"decision\":\"ALLOW\",\"evaluated_at\":\"2026-07-23T12:00:00Z\",\"evaluation_id\":\"ev-001\",\"evaluator_id\":\"eval-1\",\"evaluator_version\":\"1.0.0\",\"evidence_status\":\"PRESENT_AND_VALID\",\"policy_status\":\"PRESENT_AND_VALID\",\"purpose_status\":\"PRESENT_AND_VALID\",\"reason_codes\":[\"OK\"],\"risk_status\":\"PRESENT_AND_VALID\",\"state_status\":\"PRESENT_AND_VALID\",\"tenant_id\":\"tenant-1\",\"valid_until\":\"2026-07-23T12:18:00Z\"}",
+      "payload_digest": "sha256:75519ad51c047a299e8cf20c46d59e4229a8317067713723f290e34ece7481a2"
+    },
+    {
+      "id": "admissibility_determination_preserves_assessment",
+      "artifact_type": "AdmissibilityDetermination",
+      "payload": {
+        "determination_id": "det-001",
+        "action_id": "act-001",
+        "action_envelope_digest": "sha256:769b2d801cd1c36b80b2324306dd8a357cdb919b9b43c1e44169ec7d07d7300a",
+        "tenant_id": "tenant-1",
+        "authority_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "delegation_chain_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "policy_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "purpose_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "state_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evaluation_bindings": [
+          {
+            "evaluation_ref": "ev-001",
+            "evaluation_digest": "sha256:75519ad51c047a299e8cf20c46d59e4229a8317067713723f290e34ece7481a2"
+          }
+        ],
+        "boundary_assessment_binding": {
+          "assessment_ref": "bca-001",
+          "assessment_digest": "sha256:c145792a7b8c608370f8d4cd80af39cd91052107196fece2994edc06113f4174"
+        },
+        "state": "ADMISSIBLE",
+        "reason_codes": [
+          "OK"
+        ],
+        "determined_at": "2026-07-23T12:05:00Z",
+        "valid_until": "2026-07-23T12:16:00Z",
+        "revocation_registry_ref": "revreg-001"
+      },
+      "canonical_payload": "{\"action_envelope_digest\":\"sha256:769b2d801cd1c36b80b2324306dd8a357cdb919b9b43c1e44169ec7d07d7300a\",\"action_id\":\"act-001\",\"authority_digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"boundary_assessment_binding\":{\"assessment_digest\":\"sha256:c145792a7b8c608370f8d4cd80af39cd91052107196fece2994edc06113f4174\",\"assessment_ref\":\"bca-001\"},\"delegation_chain_digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"determination_id\":\"det-001\",\"determined_at\":\"2026-07-23T12:05:00Z\",\"evaluation_bindings\":[{\"evaluation_digest\":\"sha256:75519ad51c047a299e8cf20c46d59e4229a8317067713723f290e34ece7481a2\",\"evaluation_ref\":\"ev-001\"}],\"evidence_digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"policy_digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"purpose_digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"reason_codes\":[\"OK\"],\"revocation_registry_ref\":\"revreg-001\",\"state\":\"ADMISSIBLE\",\"state_digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"tenant_id\":\"tenant-1\",\"valid_until\":\"2026-07-23T12:16:00Z\"}",
+      "payload_digest": "sha256:91d0a6389400f6c7e7f5c6f7d221e798d2850e3a9f8d3ae136ebb97c696829a6"
+    }
+  ],
+  "chain_invariants": [
+    "assessment is evidence, never authority",
+    "execution boundary is always declared",
+    "evaluation and determination bind the exact assessment digest",
+    "determination cannot outlive evaluation or assessment"
+  ]
+}

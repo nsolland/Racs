@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// Conformance CLI for canonicalization and Stage 3C runtime vectors.
 import { readFileSync } from "node:fs";
 import {
   canonicalString,
@@ -11,6 +10,7 @@ import {
 } from "./index.js";
 import type {
   AdmissibilityDetermination,
+  BoundaryCrossingAssessment,
   GovernanceClearance,
 } from "./index.js";
 
@@ -33,15 +33,23 @@ function runtimeCheck(vector: any): Record<string, unknown> {
 
     if (artifactType === "GovernanceClearance") {
       const clearance = payload as GovernanceClearance;
-      const determination = resolved["determination"] as AdmissibilityDetermination;
+      const determination =
+        resolved["determination"] as AdmissibilityDetermination;
       const evaluation = resolved["evaluation"] as GovernanceEvaluation;
+      const actionEnvelope =
+        resolved["action_envelope"] as Record<string, unknown> | undefined;
+      const boundaryAssessment =
+        resolved["boundary_assessment"] as BoundaryCrossingAssessment | undefined;
+
       let verification = verifyEvaluationBinding(determination, evaluation);
       if (verification.decision === "ACCEPT") {
         verification = verifyClearanceBinding(
           clearance,
           determination,
-          undefined,
+          actionEnvelope,
           verificationTime,
+          evaluation,
+          boundaryAssessment,
         );
       }
       if (verification.decision === "REJECT") {
@@ -80,10 +88,10 @@ function runtimeCheck(vector: any): Record<string, unknown> {
 }
 
 const mode = process.argv[2];
-const path = process.argv[3];
+const filePath = process.argv[3];
 
-if (mode === "--vector" && path) {
-  const raw = JSON.parse(readFileSync(path, "utf-8"));
+if (mode === "--vector" && filePath) {
+  const raw = JSON.parse(readFileSync(filePath, "utf-8"));
   const subject = raw.input ?? raw.payload;
   const expectedCanonical = raw.expected_canonical ?? raw.canonical_payload;
   const expectedDigest = raw.expected_digest ?? raw.payload_digest;
@@ -105,21 +113,20 @@ if (mode === "--vector" && path) {
     ),
   );
   if (!matches) process.exit(1);
-} else if (mode === "--file" && path) {
-  const value = JSON.parse(readFileSync(path, "utf-8"));
+} else if (mode === "--file" && filePath) {
+  const value = JSON.parse(readFileSync(filePath, "utf-8"));
   console.log(
     JSON.stringify({ canonical: canonicalString(value), digest: sha256Digest(value) }),
   );
-} else if (mode === "--model-digest" && path) {
-  const raw = JSON.parse(readFileSync(path, "utf-8"));
-  const payload = raw.payload as Record<string, unknown>;
+} else if (mode === "--model-digest" && filePath) {
+  const raw = JSON.parse(readFileSync(filePath, "utf-8"));
   const evaluation = Object.assign(
     new GovernanceEvaluation(),
-    payload,
+    raw.payload as Record<string, unknown>,
   ) as GovernanceEvaluation;
   console.log(JSON.stringify({ digest: evaluation.digest() }));
-} else if (mode === "--check" && path) {
-  const vector = JSON.parse(readFileSync(path, "utf-8"));
+} else if (mode === "--check" && filePath) {
+  const vector = JSON.parse(readFileSync(filePath, "utf-8"));
   const output = runtimeCheck(vector);
   console.log(JSON.stringify(output, null, 2));
   if (output["match"] !== true) process.exit(1);

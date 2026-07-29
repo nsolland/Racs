@@ -1,0 +1,96 @@
+{
+  "repo": "nsolland/Racs",
+  "stage": "boundary-crossing-contracts-v0.2",
+  "base_sha": "96e4f7cdc2f64f915dc2651e62bf2a1b07ae16e9",
+  "branch": "build/boundary-crossing-contracts-v02",
+  "owner": "ChatGPT",
+  "scope": "canonical BoundaryCrossingAssessment contract and exact digest binding through GovernanceEvaluation, AdmissibilityDetermination and GovernanceClearance",
+  "must_not_touch": [
+    "runtime continuity semantics",
+    "AgentBound v0.3 contracts",
+    "Core enforcement implementation",
+    "REHT issuance implementation",
+    "platform adapters"
+  ],
+  "completed_stages": [
+    {
+      "stage": "stage-1-python-contract-and-verification",
+      "evidence": "22 focused tests passed against exact committed contract content",
+      "closed": [
+        "boundary requirement omission bypass",
+        "payload digest confused with ActionEnvelope digest",
+        "binding dropped before determination",
+        "clearance accepted without resolved boundary chain",
+        "downstream artifact outliving bound evidence"
+      ]
+    },
+    {
+      "stage": "stage-2-golden-vectors-and-fixture-migration",
+      "evidence": {
+        "canonical_contract_tests": "30 passed",
+        "changed_schemas": "5 valid Draft 2020-12 schemas",
+        "runtime_vector_schema_expectations": "18 of 18 matched",
+        "boundary_canonical_vectors": "3 of 3 valid",
+        "sidecars": "2 of 2 SHA-256 sidecars matched",
+        "positive_full_chain": "ActionEnvelope -> BoundaryCrossingAssessment -> GovernanceEvaluation -> AdmissibilityDetermination -> GovernanceClearance",
+        "negative_vectors": [
+          "missing evaluation boundary binding",
+          "missing determination boundary binding",
+          "boundary policy mismatch",
+          "evaluation digest mismatch",
+          "determination digest mismatch"
+        ],
+        "governance_evaluation_golden_digest": "sha256:532d2a571f8536890bf9b79994703c63a44c01ba40f71b4733d045674bdb3273",
+        "verification_mode": "local replay against exact UTF-8 contents fetched from branch head"
+      }
+    },
+    {
+      "stage": "stage-3-rust-and-typescript-contract-conformance",
+      "evidence": {
+        "conformance_head": "40c64e141e77d080e59185d6b99ccf7190676d94",
+        "implementation_commit": "51daa85d872c86d91a88c549c5cda189c0cd09fa",
+        "rust": [
+          "typed BoundaryCrossingAssessment and binding models",
+          "semantic boundary validation",
+          "full boundary-chain verification",
+          "canonical ActionEnvelope digest binding",
+          "runtime CLI and conformance tests"
+        ],
+        "typescript": [
+          "typed BoundaryCrossingAssessment and binding models",
+          "semantic boundary validation",
+          "full boundary-chain verification",
+          "canonical ActionEnvelope digest binding",
+          "runtime CLI and active test script"
+        ],
+        "python": [
+          "boundary assessment passed through evaluation and clearance CLI verification",
+          "92 tests passed"
+        ],
+        "continuity_fixture": {
+          "evaluation_binding_added": true,
+          "governance_evaluation_digest": "sha256:a652db723e35f8dee009134b356aa6d3f4889b676bbb261247c1280132c40560"
+        },
+        "hosted_runs": {
+          "racs_conformance": {
+            "run_id": 30390557025,
+            "conclusion": "success"
+          },
+          "bindings_canonical_gate": {
+            "run_id": 30390556862,
+            "conclusion": "success",
+            "cross_language_gate": "success",
+            "per_language_tests": "success"
+          }
+        }
+      }
+    }
+  ],
+  "hosted_ci": {
+    "status": "green",
+    "proof": "Python, Rust and TypeScript produced identical canonical bytes, payload digests, decisions and reason codes; all language unit and integration tests passed",
+    "merge_effect": "Stage 3 is complete, but PR remains draft and unmerged pending explicit transition to the next build stage"
+  },
+  "next_stage": "stage-4-reht-issuance-binding",
+  "status": "stage-3-complete-pr-remains-draft"
+}

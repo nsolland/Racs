@@ -1,40 +1,29 @@
 {
   "version": "0.2.0",
-  "stage": "3A-canonicalization-kernel",
-  "purpose": "RFC 8785 (JCS) canonicalization + SHA-256 payload digests, byte-identical across Python/Rust/TypeScript. No model types, no signing/trust logic (those arrive in 3B).",
+  "stage": "3C-boundary-aware-conformance",
+  "purpose": "RFC 8785 canonicalization, SHA-256 payload digests and fail-closed BoundaryCrossingAssessment binding across the RACS v0.2 artifact chain.",
   "canonicalization": {
     "standard": "RFC 8785 (JSON Canonicalization Scheme)",
-    "string_rule": "non-ASCII serialized 'as is' (NOT \\uXXXX); only \\\" and \\\\ escaped; control chars < U+0020 escaped per RFC 8785 3.2.2.2",
-    "number_rule": "integer-valued floats render as integers; -0.0 -> 0; shortest exponent form (1e-9, not 1e-09) per RFC 8785 3.2.2.3 / ECMA-262 7.1.12.1",
-    "key_sort": "object keys sorted by UTF-16 code-unit order (RFC 8785 3.2.3)"
-  },
-  "digest": {
-    "algorithm": "SHA-256",
-    "encoding": "lowercase hex",
-    "prefix": "sha256:",
-    "input": "RFC 8785 canonical UTF-8 bytes of the payload object"
+    "key_sort": "UTF-16 code-unit order",
+    "digest": "SHA-256 over canonical UTF-8 payload bytes"
   },
   "bindings": {
-    "python": {
-      "path": "python",
-      "library": "rfc8785>=0.1.4",
-      "entry": "racs_v02.canonical.canonical_bytes / sha256_digest"
-    },
-    "rust": {
-      "path": "rust",
-      "library": "serde_jcs=0.1",
-      "entry": "racs_v02::canonical_bytes / sha256_digest"
-    },
-    "typescript": {
-      "path": "typescript",
-      "library": "json-canonicalize@2.0.0",
-      "entry": "canonicalString / sha256Digest"
-    }
+    "python": {"path": "python", "library": "rfc8785>=0.1.4"},
+    "rust": {"path": "rust", "library": "serde_jcs=0.1"},
+    "typescript": {"path": "typescript", "library": "json-canonicalize@2.0.0"}
   },
   "shared_vectors": {
     "official": "test-vectors/jcs/official/vector-01..06.json",
-    "racs_governance_evaluation": "test-vectors/jcs/racs-v0.2/governance-evaluation.json"
+    "governance_evaluation": "test-vectors/jcs/racs-v0.2/governance-evaluation.json",
+    "boundary_crossing": "test-vectors/0.2/boundary-crossing/canonical-vectors.json",
+    "runtime_validation": "test-vectors/0.2/runtime-validation/**/*.json"
   },
-  "cross_language_gate": "All three bindings MUST emit byte-identical canonical bytes AND identical sha256 digests for every shared vector. CI asserts this directly (gate.rb).",
-  "note_on_step2": "The step-2 golden GovernanceEvaluation vector (test-vectors/0.2/governance-evaluation-golden.json) uses the same payload; its payload_digest (sha256:58c84315...) matches this RFC 8785 canonicalization."
+  "governance_evaluation_golden_digest": "sha256:532d2a571f8536890bf9b79994703c63a44c01ba40f71b4733d045674bdb3273",
+  "boundary_invariants": [
+    "ActionEnvelope declares fail-closed boundary requirements",
+    "GovernanceEvaluation binds the exact BoundaryCrossingAssessment digest",
+    "AdmissibilityDetermination preserves the same binding",
+    "GovernanceClearance resolves the full boundary chain before ACCEPT"
+  ],
+  "cross_language_gate": "Python, Rust and TypeScript must emit identical canonical bytes, digests, decisions and normalized reason codes."
 }
