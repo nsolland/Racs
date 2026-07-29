@@ -64,5 +64,5 @@ def test_tampered_determination_cannot_produce_racs_decision():
     clearance = _signed_clearance(keys, clearance_payload)
     tampered = deepcopy(determination)
     tampered['state_digest'] = _d('0')
-    with pytest.raises(RacsDecisionError, match='determination digest'):
+    with pytest.raises(RacsDecisionError, match='CLEARANCE_DETERMINATION_DIGEST_MISMATCH'):
         RacsDecisionIssuer(issuer_id='racs-1', tenant_id='tenant-acme', trust_domain='valo-trust', private_key=keys['racs'], key_id='key-racs', clearance_verifier=GovernanceClearanceVerifier(registry)).issue(racs_decision_id='racs-decision-tampered', clearance_artifact=clearance, action_envelope=envelope, boundary_assessment=assessment, governance_evaluations=evaluations, admissibility_determination=tampered)
