@@ -29,9 +29,13 @@
     "no fallback or parallel execution path"
   ],
   "local_validation": {
-    "mode": "focused isolated replay using exact branch racs_permit.py content",
-    "verified_blob_sha": "1b3a43e998a0578318e0c14af8f351d724a966d3",
+    "mode": "focused pytest replay using exact branch file contents",
+    "verified_blobs": {
+      "reference/python/racs_permit.py": "1b3a43e998a0578318e0c14af8f351d724a966d3",
+      "reference/python/test_racs_permit.py": "a408e716481f7d4253d8d8637d061188cc6a2653"
+    },
     "syntax_compile": "passed",
+    "pytest": "8 passed in 1.32s",
     "checks": {
       "happy_verified_chain": "passed",
       "tampered_clearance": "rejected",
