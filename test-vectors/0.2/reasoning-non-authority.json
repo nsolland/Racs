@@ -1,0 +1,129 @@
+{
+  "schema_version": "0.2",
+  "invariant": "chain_of_thought_is_non_authoritative",
+  "source": "https://arxiv.org/abs/2607.22925",
+  "vectors": [
+    {
+      "id": "missing_authority_plausible_reasoning_denied",
+      "schema_valid": true,
+      "clearance_issued": false,
+      "payload": {
+        "evaluation_id": "eval:cot:001",
+        "action_id": "action:payment:001",
+        "action_envelope_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "tenant_id": "tenant:test",
+        "evaluator_id": "vaig:test",
+        "evaluator_version": "0.2",
+        "decision": "DENY",
+        "authority_status": "MISSING",
+        "policy_status": "PRESENT_AND_VALID",
+        "evidence_status": "PRESENT_AND_VALID",
+        "purpose_status": "PRESENT_AND_VALID",
+        "state_status": "PRESENT_AND_VALID",
+        "risk_status": "PRESENT_AND_VALID",
+        "reason_codes": ["AUTHORITY_MISSING", "MODEL_REASONING_NON_AUTHORITATIVE"],
+        "boundary_assessment_binding": {
+          "assessment_ref": "bca:cot:001",
+          "assessment_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+        },
+        "reasoning_authority": false,
+        "reasoning_trace_binding": {
+          "authoritative_for_clearance": false,
+          "trace_completeness": "FULL_VISIBLE_CONTEXT",
+          "model_context_digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+          "prefill_digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+          "model_config_digest": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+          "generated_token_ranges_digest": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
+          "trace_ref": "trace:cot:001"
+        },
+        "evaluated_at": "2026-07-28T18:00:00Z",
+        "valid_until": "2026-07-28T18:01:00Z"
+      }
+    },
+    {
+      "id": "missing_authority_cannot_allow",
+      "schema_valid": false,
+      "clearance_issued": false,
+      "payload": {
+        "evaluation_id": "eval:cot:002",
+        "action_id": "action:payment:002",
+        "action_envelope_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "tenant_id": "tenant:test",
+        "evaluator_id": "vaig:test",
+        "evaluator_version": "0.2",
+        "decision": "ALLOW",
+        "authority_status": "MISSING",
+        "policy_status": "PRESENT_AND_VALID",
+        "evidence_status": "PRESENT_AND_VALID",
+        "purpose_status": "PRESENT_AND_VALID",
+        "state_status": "PRESENT_AND_VALID",
+        "risk_status": "PRESENT_AND_VALID",
+        "boundary_assessment_binding": {
+          "assessment_ref": "bca:cot:002",
+          "assessment_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+        },
+        "reasoning_authority": false,
+        "reasoning_trace_binding": {
+          "authoritative_for_clearance": false,
+          "trace_completeness": "PARTIAL_VISIBLE_CONTEXT",
+          "trace_ref": "trace:cot:002"
+        },
+        "evaluated_at": "2026-07-28T18:00:00Z",
+        "valid_until": "2026-07-28T18:01:00Z"
+      }
+    },
+    {
+      "id": "reasoning_cannot_be_authority",
+      "schema_valid": false,
+      "clearance_issued": false,
+      "payload": {
+        "evaluation_id": "eval:cot:003",
+        "action_id": "action:payment:003",
+        "action_envelope_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "tenant_id": "tenant:test",
+        "evaluator_id": "vaig:test",
+        "evaluator_version": "0.2",
+        "decision": "DENY",
+        "authority_status": "MISSING",
+        "policy_status": "PRESENT_AND_VALID",
+        "evidence_status": "PRESENT_AND_VALID",
+        "purpose_status": "PRESENT_AND_VALID",
+        "state_status": "PRESENT_AND_VALID",
+        "risk_status": "PRESENT_AND_VALID",
+        "boundary_assessment_binding": {
+          "assessment_ref": "bca:cot:003",
+          "assessment_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+        },
+        "reasoning_authority": true,
+        "evaluated_at": "2026-07-28T18:00:00Z",
+        "valid_until": "2026-07-28T18:01:00Z"
+      }
+    },
+    {
+      "id": "valid_authority_without_reasoning_trace",
+      "schema_valid": true,
+      "clearance_issued": true,
+      "payload": {
+        "evaluation_id": "eval:cot:004",
+        "action_id": "action:payment:004",
+        "action_envelope_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "tenant_id": "tenant:test",
+        "evaluator_id": "vaig:test",
+        "evaluator_version": "0.2",
+        "decision": "ALLOW",
+        "authority_status": "PRESENT_AND_VALID",
+        "policy_status": "PRESENT_AND_VALID",
+        "evidence_status": "PRESENT_AND_VALID",
+        "purpose_status": "PRESENT_AND_VALID",
+        "state_status": "PRESENT_AND_VALID",
+        "risk_status": "PRESENT_AND_VALID",
+        "boundary_assessment_binding": {
+          "assessment_ref": "bca:cot:004",
+          "assessment_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+        },
+        "evaluated_at": "2026-07-28T18:00:00Z",
+        "valid_until": "2026-07-28T18:01:00Z"
+      }
+    }
+  ]
+}
