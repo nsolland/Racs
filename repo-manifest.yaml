@@ -50,6 +50,7 @@ contract:
     - "governance evaluation, determination, and clearance schemas"
   does_not_own:
     - "execution authority grant (REHT owns admissibility clearance)"
+    - "policy enforcement"
     - "action execution (Core owns execution)"
     - "evidence evaluation (VAIG owns evaluation)"
   mappings:
@@ -76,9 +77,20 @@ dependencies:
     note: "Core owns execution; RACS receipt records execution outcome."
   - stable_id: "baro"
     relation: "consumes-evidence"
+  - stable_id: "valo.index"
+    relation: "canonical-manifest-schema-and-portfolio-architecture"
     note: "BARO provides observational evidence packages."
 
 interfaces:
+  - id: action-envelope
+    type: yaml-schema
+    path: spec/action-envelope.yaml
+  - id: authority-context
+    type: yaml-schema
+    path: spec/authority-context.yaml
+  - id: evidence-package
+    type: yaml-schema
+    path: spec/evidence-package.yaml
   - type: "spec"
     path: "spec/"
     status: "normative"
@@ -92,6 +104,16 @@ interfaces:
   - type: "ci"
     path: ".github/workflows/"
     status: "informative"
+
+canonical_documents:
+  - README.md
+  - CLAUDE.md
+  - spec/action-envelope.yaml
+canonical_repository:
+  id: valo.racs
+  owns:
+    - action-contracts
+    - receipts-and-evidence-contracts
 
 security:
   contact_path: "https://github.com/nsolland/Racs/issues"
