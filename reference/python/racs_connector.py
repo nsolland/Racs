@@ -10,10 +10,11 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from threading import Lock
-from typing import Any, Callable, Dict, Mapping, Optional
+from typing import Any, Callable, Dict, Optional
 
 import jsonschema
 
@@ -39,6 +40,7 @@ _EXECUTION_RECEIPT_SCHEMA = _load_schema("execution-receipt-v0.2.schema.json")
 
 _CORE_ROLE = "CORE_ENFORCER"
 _CONNECTOR_ROLE = "BOUNDED_CONNECTOR"
+_DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 GENESIS_RECEIPT_HASH = "sha256:" + "0" * 64
 
 
@@ -123,6 +125,8 @@ class CommitTokenVerifier:
             raise ConnectorError(f"token issuer is not active: {issuer_id}")
         if entry.get("issuer_role") != _CORE_ROLE:
             raise ConnectorError("registry token issuer_role is not CORE_ENFORCER")
+        if entry.get("algorithm") not in {None, "Ed25519"}:
+            raise ConnectorError("token issuer algorithm is not Ed25519")
         if "CommitToken" not in (entry.get("allowed_artifact_types") or []):
             raise ConnectorError("issuer is not allowed to issue CommitToken")
         if entry.get("tenant_scope") != artifact.get("tenant_id"):
@@ -146,6 +150,17 @@ class CommitTokenVerifier:
             raise ConnectorError("token is not yet valid")
         if now >= expires_at:
             raise ConnectorError("token expired")
+
+        registry_valid_from = entry.get("valid_from")
+        registry_valid_until = entry.get("valid_until")
+        if registry_valid_from and self._parse_utc(
+            registry_valid_from, "registry.valid_from"
+        ) > issued_at:
+            raise ConnectorError("token predates issuer registry validity")
+        if registry_valid_until and self._parse_utc(
+            registry_valid_until, "registry.valid_until"
+        ) <= issued_at:
+            raise ConnectorError("token issued after issuer registry validity")
         return payload
 
 
@@ -154,7 +169,7 @@ class InMemoryConsumptionRegistry:
 
     def __init__(self) -> None:
         self._lock = Lock()
-        self._records: Dict[tuple[str, str], ConsumptionRecord] = {}
+        self._records: Dict[str, ConsumptionRecord] = {}
 
     def consume(
         self,
@@ -167,10 +182,11 @@ class InMemoryConsumptionRegistry:
     ) -> ConsumptionRecord:
         if not registry_ref:
             raise ConnectorError("consumption_registry_ref is required")
-        key = (registry_ref, commit_token_id)
         with self._lock:
-            if key in self._records:
-                raise TokenAlreadyConsumed(f"commit token already consumed: {commit_token_id}")
+            if commit_token_id in self._records:
+                raise TokenAlreadyConsumed(
+                    f"commit token already consumed: {commit_token_id}"
+                )
             record = ConsumptionRecord(
                 registry_ref=registry_ref,
                 commit_token_id=commit_token_id,
@@ -178,12 +194,12 @@ class InMemoryConsumptionRegistry:
                 execution_id=execution_id,
                 consumed_at=consumed_at,
             )
-            self._records[key] = record
+            self._records[commit_token_id] = record
             return record
 
-    def get(self, registry_ref: str, commit_token_id: str) -> Optional[ConsumptionRecord]:
+    def get(self, commit_token_id: str) -> Optional[ConsumptionRecord]:
         with self._lock:
-            return self._records.get((registry_ref, commit_token_id))
+            return self._records.get(commit_token_id)
 
 
 class BoundedConnector:
@@ -202,7 +218,23 @@ class BoundedConnector:
         token_verifier: CommitTokenVerifier,
         consumption_registry: InMemoryConsumptionRegistry,
         profile_id: str = "racs-platform-0.2",
+        receipt_valid_for_seconds: int = 315360000,
     ) -> None:
+        required = {
+            "connector_id": connector_id,
+            "capability": capability,
+            "issuer_id": issuer_id,
+            "tenant_id": tenant_id,
+            "trust_domain": trust_domain,
+            "key_id": key_id,
+            "profile_id": profile_id,
+        }
+        missing = [name for name, value in required.items() if not value]
+        if missing:
+            raise ConnectorError(f"connector configuration missing: {', '.join(missing)}")
+        if receipt_valid_for_seconds <= 0:
+            raise ConnectorError("receipt_valid_for_seconds must be positive")
+
         self.connector_id = connector_id
         self.capability = capability
         self.issuer_id = issuer_id
@@ -213,10 +245,11 @@ class BoundedConnector:
         self.token_verifier = token_verifier
         self.consumption_registry = consumption_registry
         self.profile_id = profile_id
+        self.receipt_valid_for_seconds = receipt_valid_for_seconds
 
     @staticmethod
-    def _now_iso() -> str:
-        return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    def _format_utc(value: datetime) -> str:
+        return value.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def execute(
         self,
@@ -227,6 +260,11 @@ class BoundedConnector:
         provider: Callable[[Any, Any], ProviderResult],
         previous_receipt_hash: str = GENESIS_RECEIPT_HASH,
     ) -> Dict[str, Any]:
+        if not isinstance(previous_receipt_hash, str) or not _DIGEST_RE.fullmatch(
+            previous_receipt_hash
+        ):
+            raise ConnectorError("previous_receipt_hash is invalid")
+
         token_payload = self.token_verifier.verify(commit_token)
 
         if commit_token.get("tenant_id") != self.tenant_id:
@@ -245,7 +283,8 @@ class BoundedConnector:
         if payload_digest != token_payload.get("payload_digest"):
             raise ConnectorError("payload digest does not match token")
 
-        started_at = self._now_iso()
+        started = datetime.now(timezone.utc)
+        started_at = self._format_utc(started)
         self.consumption_registry.consume(
             registry_ref=token_payload["consumption_registry_ref"],
             commit_token_id=token_payload["commit_token_id"],
@@ -264,10 +303,19 @@ class BoundedConnector:
             if result.technical_outcome not in {
                 "SIMULATED",
                 "SUCCEEDED",
+                "FAILED",
                 "INDETERMINATE",
                 "REVERSED",
             }:
                 raise ValueError("unsupported provider technical_outcome")
+            if result.reversal_status not in {
+                "NOT_APPLICABLE",
+                "NOT_REVERSED",
+                "PENDING",
+                "REVERSED",
+                "FAILED",
+            }:
+                raise ValueError("unsupported provider reversal_status")
             provider_reference = result.provider_reference
             response_digest = sha256_digest(result.response)
             technical_outcome = result.technical_outcome
@@ -279,7 +327,8 @@ class BoundedConnector:
             technical_outcome = "FAILED"
             reversal_status = "NOT_REVERSED"
 
-        completed_at = self._now_iso()
+        completed = datetime.now(timezone.utc)
+        completed_at = self._format_utc(completed)
         receipt_payload: Dict[str, Any] = {
             "execution_receipt_id": f"receipt-{token_payload['execution_id']}",
             "execution_id": token_payload["execution_id"],
@@ -320,13 +369,19 @@ class BoundedConnector:
             "issuer_id": self.issuer_id,
             "issuer_role": _CONNECTOR_ROLE,
             "issued_at": completed_at,
-            "expires_at": completed_at,
+            "expires_at": self._format_utc(
+                completed + timedelta(seconds=self.receipt_valid_for_seconds)
+            ),
             "payload": receipt_payload,
             "payload_digest": sha256_digest(receipt_payload),
             "canonicalization": "RACS-JCS-1",
             "signature": {"algorithm": "Ed25519", "key_id": self.key_id, "value": ""},
         }
         sign_artifact(receipt, self.private_key)
+        try:
+            jsonschema.validate(instance=receipt, schema=_ENVELOPE_SCHEMA)
+        except jsonschema.ValidationError as exc:
+            raise ConnectorError(f"execution receipt envelope invalid: {exc.message}") from exc
         return receipt
 
 
