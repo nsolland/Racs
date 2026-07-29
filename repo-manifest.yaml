@@ -1,112 +1,98 @@
-# repo-manifest.yaml — canonical machine-readable repository profile
-# Stable ID: valo.racs
-# Defined by nsolland/Index#338 (canonical AI-first public repository architecture)
-# Adopted per nsolland/Racs#64
-#
-# This file is the authoritative machine-readable contract for this repository.
-# It MUST stay in sync with publiccode.yml and llms.txt (single source of truth
-# for catalogue generation — do not maintain a second, independent inventory).
-
 schema_version: "1.0"
-
-identity:
-  stable_id: "valo.racs"
-  canonical_name: "RACS"
-  full_name: "Runtime Agent Control Standard"
-  purpose: >-
-    Neutral, model-agnostic protocol specification for representing, evaluating,
-    authorizing, executing, and evidencing AI-mediated actions. Answers the core
-    question: "Is this action admissible to execute under the current authority,
-    policy, evidence and system state?"
-  public_url: "https://github.com/nsolland/Racs"
-
-ownership:
-  owner: "VALO Research Group"
+repository:
+  id: valo.racs
+  canonical_name: RACS
+  url: https://github.com/nsolland/Racs
+  owner: nsolland
   maintainers:
-    - "nsolland"
-  contact_path: "https://github.com/nsolland/Racs/issues"
-  governance: "Public standard; spec changes require review and version bump."
-
-boundaries:
-  public: true
-  private_core: false
-  public_private_boundary: >-
-    spec/ is public and normative. reference/ implementations and examples are
-    public and informative unless explicitly marked. Proprietary governance
-    mechanisms, runtime calibration, and internal policy live outside this repo.
-
-maturity:
-  status: "implemented"
-  support: "maintained"
-  normative_status: "normative"
-  claims_evidence_level: "validated-reference"
-  version: "0.2"
-
-contract:
+    - nsolland
+  classification: evidence-contract
+  role: canonical-contract-and-standard
+  status: active
+  visibility: private
+  maturity: active-development
+  support: maintained
+  normative_status: normative
+  license: proprietary-unless-file-states-otherwise
+purpose:
+  summary: Canonical receipt and evidence contract. Protocol specification for representing and validating AI-mediated action data; runtime layers decide and enforce.
   owns:
-    - "canonical receipt and evidence contract"
-    - "action envelope schema"
-    - "authority / policy / evidence context schemas"
-    - "governance evaluation, determination, and clearance schemas"
+    - action envelope specification
+    - authority context specification
+    - evidence package specification
+    - policy context specification
+    - execution and evidence semantics
+    - compliance validators
+    - reference implementations (Python, TypeScript)
   does_not_own:
-    - "execution authority grant (REHT owns admissibility clearance)"
-    - "action execution (Core owns execution)"
-    - "evidence evaluation (VAIG owns evaluation)"
-  mappings:
-    - standard: "REHT-104"
-      note: >-
-        Every clearance decision MUST issue a receipt. RACS records decisions and
-        effects; it does not grant clearance or execute actions. Map RACS receipt
-        fields to REHT-104 evidence obligations without redefining REHT
-        admissibility rules.
-  invariants:
-    - "Platform-local receipt objects MUST map to RACS rather than become competing standards."
-    - "Receipts link proposal, evaluation, clearance, execution and outcome."
-    - "Evidence integrity, provenance and immutable linkage are contract concerns."
-
-dependencies:
-  - stable_id: "valo.reht"
-    relation: "consumes-admissibility"
-    note: "REHT owns admissibility clearance; RACS receipt binds to REHT-104."
-  - stable_id: "valo.vaig"
-    relation: "consumes-evaluation"
-    note: "VAIG owns evidence evaluation; RACS ingests evaluation results."
-  - stable_id: "valo.core"
-    relation: "consumes-execution"
-    note: "Core owns execution; RACS receipt records execution outcome."
-  - stable_id: "baro"
-    relation: "consumes-evidence"
-    note: "BARO provides observational evidence packages."
-
-interfaces:
-  - type: "spec"
-    path: "spec/"
-    status: "normative"
-  - type: "reference-implementation"
-    path: "reference/"
-    languages: ["python", "rust", "typescript"]
-    status: "informative"
-  - type: "test-vectors"
-    path: "test-vectors/"
-    status: "informative"
-  - type: "ci"
-    path: ".github/workflows/"
-    status: "informative"
-
-security:
-  contact_path: "https://github.com/nsolland/Racs/issues"
-  vulnerability_reporting: "open an issue; mark security-sensitive reports private"
-
-license:
-  spdx_id: "MIT"
-  url: "https://opensource.org/licenses/MIT"
-
+    - runtime implementation
+    - policy enforcement
+    - action authorization
+    - production calibration
+    - organization-specific policy
+    - customer configuration
+boundaries:
+  public:
+    - spec definitions (YAML)
+    - example scenarios
+    - compliance test suites
+    - reference implementations
+  private_by_default:
+    - organization-specific authority structures
+    - customer-specific policy
+    - deployment-specific configurations
+claims:
+  - id: CLAIM-RACS-001
+    statement: RACS is a neutral, model-agnostic protocol specification — not a runtime implementation.
+    evidence_level: normative-architecture-invariant
+    evidence:
+      - CLAUDE.md
+      - README.md
+      - spec/action-envelope.yaml
+  - id: CLAIM-RACS-002
+    statement: RACS defines the contract between evidence layers and action governance layers.
+    evidence_level: normative-architecture-invariant
+    evidence:
+      - README.md
+      - spec/*.yaml
 non_claims:
-  - "RACS is not a runtime; it is a protocol specification."
-  - "RACS does not grant clearance or execute actions."
-  - "RACS does not define domain-specific policy; policy is data in policy-context."
-  - "RACS is vendor-neutral; it does not privilege any external proof format as governance authority."
-
-limitations:
-  - "Reference implementations are examples, not production runtimes."
-  - "Baseline compliance suite (non-RACS-core) is informative and not blocking."
+  - This repository does not implement runtime governance.
+  - Protocol validation does not equal production certification.
+  - Example scenarios are illustrative, not normative.
+related_repositories:
+  - id: valo.baro
+    relationship: canonical-observation-layer
+  - id: valo.vaig
+    relationship: canonical-evaluation-layer
+  - id: valo.platform
+    relationship: canonical-product-orchestration
+  - id: valo.reht
+    relationship: canonical-clearance-layer
+  - id: valo.index
+    relationship: canonical-manifest-schema-and-portfolio-architecture
+interfaces:
+  - id: action-envelope
+    type: yaml-schema
+    path: spec/action-envelope.yaml
+  - id: authority-context
+    type: yaml-schema
+    path: spec/authority-context.yaml
+  - id: evidence-package
+    type: yaml-schema
+    path: spec/evidence-package.yaml
+canonical_documents:
+  - README.md
+  - CLAUDE.md
+  - spec/action-envelope.yaml
+canonical_repository:
+  id: valo.racs
+  owns:
+    - action-contracts
+    - receipts-and-evidence-contracts
+security:
+  contact: njaal.solland@gmail.com
+  disclosure: private-contact-first
+machine_reading:
+  canonical_terms: README.md
+  agent_instructions: CLAUDE.md
+  llm_summary: README.md
