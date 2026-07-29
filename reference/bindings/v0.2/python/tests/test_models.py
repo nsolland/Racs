@@ -11,7 +11,9 @@ from racs_v02 import (
     Decision,
     GovernanceClearance,
     GovernanceEvaluation,
+    ReasoningTraceBinding,
     Status,
+    TraceCompleteness,
     sha256_digest,
 )
 
@@ -58,6 +60,39 @@ def test_invalid_decision_rejected(golden_payload):
     payload["decision"] = "NOT_A_DECISION"
     with pytest.raises(Exception):
         GovernanceEvaluation(**payload)
+
+
+def test_reasoning_trace_is_typed_and_non_authoritative():
+    binding = ReasoningTraceBinding(
+        authoritative_for_clearance=False,
+        trace_completeness=TraceCompleteness.FULL_VISIBLE_CONTEXT,
+        model_context_digest="sha256:" + "1" * 64,
+        trace_ref="trace:test:001",
+    )
+    assert binding.authoritative_for_clearance is False
+    with pytest.raises(Exception):
+        ReasoningTraceBinding(
+            authoritative_for_clearance=True,
+            trace_completeness=TraceCompleteness.UNKNOWN,
+        )
+
+
+def test_reasoning_authority_true_is_rejected(golden_payload):
+    payload = dict(golden_payload)
+    payload["reasoning_authority"] = True
+    with pytest.raises(Exception):
+        GovernanceEvaluation(**payload)
+
+
+def test_missing_authority_requires_deny_or_halt(golden_payload):
+    payload = dict(golden_payload)
+    payload["authority_status"] = "MISSING"
+    payload["decision"] = "ALLOW"
+    with pytest.raises(Exception):
+        GovernanceEvaluation(**payload)
+
+    payload["decision"] = "DENY"
+    assert GovernanceEvaluation(**payload).decision is Decision.DENY
 
 
 def test_admissibility_determination_model():

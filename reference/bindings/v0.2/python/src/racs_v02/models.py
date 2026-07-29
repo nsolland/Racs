@@ -6,9 +6,9 @@ They are pure data types plus canonicalization helpers and do not create authori
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .boundary_crossing import BoundaryAssessmentBinding
 from .canonical import canonical_bytes
@@ -59,6 +59,27 @@ class Reversibility(str, Enum):
     IRREVERSIBLE = "IRREVERSIBLE"
 
 
+class TraceCompleteness(str, Enum):
+    FULL_VISIBLE_CONTEXT = "FULL_VISIBLE_CONTEXT"
+    PARTIAL_VISIBLE_CONTEXT = "PARTIAL_VISIBLE_CONTEXT"
+    UNAVAILABLE = "UNAVAILABLE"
+    UNKNOWN = "UNKNOWN"
+
+
+class ReasoningTraceBinding(BaseModel):
+    """Audit binding for visible model traces. Never authority for clearance."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    authoritative_for_clearance: Literal[False]
+    trace_completeness: TraceCompleteness
+    model_context_digest: Optional[str] = None
+    prefill_digest: Optional[str] = None
+    model_config_digest: Optional[str] = None
+    generated_token_ranges_digest: Optional[str] = None
+    trace_ref: Optional[str] = None
+
+
 class EvaluationBinding(BaseModel):
     """Cryptographic binding to a signed GovernanceEvaluation payload."""
 
@@ -87,8 +108,19 @@ class GovernanceEvaluation(BaseModel):
     reason_codes: List[str] = Field(default_factory=list)
     constraints: Optional[Dict[str, Any]] = None
     boundary_assessment_binding: BoundaryAssessmentBinding
+    reasoning_authority: Optional[Literal[False]] = None
+    reasoning_trace_binding: Optional[ReasoningTraceBinding] = None
     evaluated_at: str
     valid_until: str
+
+    @model_validator(mode="after")
+    def missing_authority_fails_closed(self) -> "GovernanceEvaluation":
+        if self.authority_status is Status.MISSING and self.decision not in {
+            Decision.DENY,
+            Decision.HALT,
+        }:
+            raise ValueError("MISSING authority requires DENY or HALT")
+        return self
 
     def model_canonical(self) -> bytes:
         return canonical_bytes(self.model_dump(mode="json", exclude_none=True))

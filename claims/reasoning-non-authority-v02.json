@@ -1,0 +1,41 @@
+{
+  "repo": "nsolland/Racs",
+  "stage": "reasoning-non-authority-v0.2",
+  "base_sha": "c235b7e9d32e0529e026d0444324d4aa54342545",
+  "base_pr": 91,
+  "branch": "codex/cot-non-authoritative",
+  "pull_request": 94,
+  "owner": "ChatGPT",
+  "scope": "make model reasoning explicitly non-authoritative in GovernanceEvaluation, preserve optional audit bindings in ExecutionReceipt, and add adversarial conformance vectors",
+  "claimed_paths": [
+    "spec/REASONING_NON_AUTHORITY_V0_2.md",
+    "spec/governance-evaluation-v0.2.schema.json",
+    "spec/execution-receipt-v0.2.schema.json",
+    "reference/bindings/v0.2/python/src/racs_v02/models.py",
+    "reference/bindings/v0.2/python/src/racs_v02/__init__.py",
+    "reference/bindings/v0.2/python/tests/test_models.py",
+    "test-vectors/0.2/reasoning-non-authority.json",
+    "tests/compliance/test_reasoning_non_authority.py"
+  ],
+  "dependencies": ["PR #91 boundary crossing contracts merged as c235b7e9d32e0529e026d0444324d4aa54342545"],
+  "must_not_touch": [
+    "runtime continuity semantics",
+    "authority issuance",
+    "hidden-reasoning detection claims",
+    "Core enforcement implementation",
+    "platform adapters"
+  ],
+  "invariants": [
+    "chain_of_thought_is_non_authoritative",
+    "reasoning cannot grant or expand authority",
+    "missing authority yields DENY or HALT",
+    "reasoning observability is not required for execution safety"
+  ],
+  "validation": {
+    "draft_2020_12_schema_meta_validation": "passed before rebase; exact content preserved",
+    "adversarial_vectors": "4 of 4 matched expected schema verdicts before rebase; exact content preserved",
+    "python_pydantic_smoke": "passed before rebase; exact content preserved",
+    "rebase": "branch rebuilt directly on merged PR #91 main SHA with only the nine claimed files"
+  },
+  "status": "rebased-awaiting-hosted-ci"
+}
