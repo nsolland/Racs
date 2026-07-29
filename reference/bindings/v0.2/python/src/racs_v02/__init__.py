@@ -32,8 +32,10 @@ from .models import (
     EvaluationBinding,
     GovernanceClearance,
     GovernanceEvaluation,
+    ReasoningTraceBinding,
     Reversibility,
     Status,
+    TraceCompleteness,
 )
 from .continuity import (
     CompletionContract,
@@ -104,6 +106,8 @@ __all__ = [
     "verify_determination_boundary_binding",
     "verify_evaluation_boundary_binding",
     "GovernanceEvaluation",
+    "ReasoningTraceBinding",
+    "TraceCompleteness",
     "AdmissibilityDetermination",
     "GovernanceClearance",
     "EvaluationBinding",
