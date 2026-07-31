@@ -39,6 +39,12 @@ action_envelope = {
     "expires_at": "2026-07-25T12:05:00Z",
     "replay_nonce": "abcdefghijklmnop",
     "idempotency_key": "idem-0001",
+    "boundary_requirements": {
+        "required_types": ["EXECUTION"],
+        "policy_ref": "pol-1",
+        "policy_digest": ZERO,
+        "fail_closed": True,
+    },
 }
 env_digest = digest(action_envelope)
 
@@ -57,6 +63,10 @@ governance_evaluation = {
     "purpose_status": "PRESENT_AND_VALID",
     "state_status": "PRESENT_AND_VALID",
     "risk_status": "PRESENT_AND_VALID",
+    "boundary_assessment_binding": {
+        "assessment_ref": "ba-1",
+        "assessment_digest": ZERO,
+    },
     "evaluated_at": "2026-07-25T11:59:00Z",
     "valid_until": "2026-07-25T12:04:00Z",
 }
@@ -77,6 +87,10 @@ admissibility = {
     "evaluation_bindings": [
         {"evaluation_ref": "ge-1", "evaluation_digest": ge_digest}
     ],
+    "boundary_assessment_binding": {
+        "assessment_ref": "ba-1",
+        "assessment_digest": ZERO,
+    },
     "state": "ADMISSIBLE",
     "determined_at": "2026-07-25T12:00:00Z",
     "valid_until": "2026-07-25T12:05:00Z",
