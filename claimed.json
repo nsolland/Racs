@@ -137,23 +137,6 @@
     "dependencies": "Racs #77, #79 and #81 merged; no file overlap with open Racs #78",
     "merged": true
   },
-  "hermes/issue-103-clean-install": {
-    "repo": "nsolland/Racs",
-    "issue": 103,
-    "branch": "hermes/issue-103-clean-install",
-    "owner": "Codex",
-    "scope": "repair the invalid root Python build backend and prove clean isolated compliance-test installation",
-    "claimed_paths": [
-      "pyproject.toml"
-    ],
-    "must_not_touch": [
-      "spec/ normative schemas",
-      "reference/bindings/v0.2 contract implementations"
-    ],
-    "status": "in_review",
-    "tests": "isolated root install pass; installed validators import pass; 75 focused root compliance tests pass; Python bindings 95 pass; Rust release tests 12 pass; TypeScript 6 pass; Stage 3A/3B/3C gate pass",
-    "merged": false
-  },
   "test/agentbound-delta-benchmark": {
     "repo": "nsolland/Racs",
     "stage": "agentbound-track-f",
