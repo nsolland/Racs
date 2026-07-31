@@ -96,3 +96,81 @@ machine_reading:
   canonical_terms: README.md
   agent_instructions: CLAUDE.md
   llm_summary: README.md
+legacy_profile:
+  identity:
+    stable_id: "valo.racs"
+    canonical_name: "RACS"
+    full_name: "Runtime Agent Control Standard"
+    purpose: >-
+      Neutral, model-agnostic protocol specification for representing,
+      evaluating, authorizing, executing, and evidencing AI-mediated actions.
+    public_url: "https://github.com/nsolland/Racs"
+  ownership:
+    owner: "VALO Research Group"
+    maintainers:
+      - "nsolland"
+    contact_path: "https://github.com/nsolland/Racs/issues"
+    governance: "Public standard; spec changes require review and version bump."
+  boundaries:
+    public: true
+    private_core: false
+    public_private_boundary: >-
+      spec/ is public and normative. reference/ implementations and examples
+      are public and informative unless explicitly marked.
+  maturity:
+    status: "implemented"
+    support: "maintained"
+    normative_status: "normative"
+    claims_evidence_level: "validated-reference"
+    version: "0.2"
+  contract:
+    owns:
+      - "canonical receipt and evidence contract"
+      - "action envelope schema"
+      - "authority / policy / evidence context schemas"
+      - "governance evaluation, determination, and clearance schemas"
+    does_not_own:
+      - "execution authority grant (REHT owns admissibility clearance)"
+      - "action execution (Core owns execution)"
+      - "evidence evaluation (VAIG owns evaluation)"
+    mappings:
+      - standard: "REHT-104"
+        note: >-
+          Every clearance decision MUST issue a receipt. RACS records decisions
+          and effects; it does not grant clearance or execute actions.
+    invariants:
+      - "Platform-local receipt objects MUST map to RACS rather than become competing standards."
+      - "Receipts link proposal, evaluation, clearance, execution and outcome."
+      - "Evidence integrity, provenance and immutable linkage are contract concerns."
+  dependencies:
+    - stable_id: "valo.reht"
+      relation: "consumes-admissibility"
+    - stable_id: "valo.vaig"
+      relation: "consumes-evaluation"
+    - stable_id: "valo.core"
+      relation: "consumes-execution"
+    - stable_id: "baro"
+      relation: "consumes-evidence"
+  interfaces:
+    - type: "spec"
+      path: "spec/"
+      status: "normative"
+    - type: "reference-implementation"
+      path: "reference/"
+      languages: ["python", "rust", "typescript"]
+      status: "informative"
+    - type: "test-vectors"
+      path: "test-vectors/"
+      status: "informative"
+  security:
+    contact_path: "https://github.com/nsolland/Racs/issues"
+    vulnerability_reporting: "open an issue; mark security-sensitive reports private"
+  license:
+    spdx_id: "MIT"
+    url: "https://opensource.org/licenses/MIT"
+  non_claims:
+    - "RACS is not a runtime; it is a protocol specification."
+    - "RACS does not grant clearance or execute actions."
+    - "RACS does not define domain-specific policy."
+  limitations:
+    - "Reference implementations are examples, not production runtimes."
