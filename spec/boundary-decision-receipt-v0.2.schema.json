@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.2/boundary-decision-receipt.schema.json",
+  "title": "RACS BoundaryDecisionReceipt Payload",
+  "description": "Receipt for a governed execution-boundary decision where DEFER or STEP_UP prevented execution. It records non-execution and never grants authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "boundary_receipt_id",
+    "tenant_id",
+    "action_id",
+    "action_envelope_digest",
+    "decision",
+    "admissibility_state",
+    "execution_occurred",
+    "clearance_issued",
+    "commit_token_issued",
+    "research_report_ref",
+    "research_report_digest",
+    "model_power_shadow_profile_digest",
+    "normative_scorecard_digest",
+    "normative_influence_profile_digests",
+    "vaig_evaluation_report_ref",
+    "vaig_evaluation_report_digest",
+    "vaig_normative_handoff_ref",
+    "vaig_normative_handoff_digest",
+    "reht_determination_ref",
+    "reht_determination_digest",
+    "reason_codes",
+    "recorded_at",
+    "previous_receipt_hash"
+  ],
+  "properties": {
+    "boundary_receipt_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "action_id": {"type": "string", "minLength": 1},
+    "action_envelope_digest": {"$ref": "#/$defs/digest"},
+    "decision": {"type": "string", "enum": ["DEFER", "STEP_UP"]},
+    "admissibility_state": {"type": "string", "enum": ["INDETERMINATE", "REQUIRES_STEP_UP"]},
+    "execution_occurred": {"const": false},
+    "clearance_issued": {"const": false},
+    "commit_token_issued": {"const": false},
+    "research_report_ref": {"type": "string", "minLength": 1},
+    "research_report_digest": {"$ref": "#/$defs/digest"},
+    "model_power_shadow_profile_digest": {"$ref": "#/$defs/digest"},
+    "counterposition_bundle_digest": {"$ref": "#/$defs/digest"},
+    "adversarial_evaluation_digest": {"$ref": "#/$defs/digest"},
+    "normative_scorecard_digest": {"$ref": "#/$defs/digest"},
+    "normative_influence_profile_digests": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/digest"}
+    },
+    "vaig_evaluation_report_ref": {"type": "string", "minLength": 1},
+    "vaig_evaluation_report_digest": {"$ref": "#/$defs/digest"},
+    "vaig_normative_handoff_ref": {"type": "string", "minLength": 1},
+    "vaig_normative_handoff_digest": {"$ref": "#/$defs/digest"},
+    "reht_determination_ref": {"type": "string", "minLength": 1},
+    "reht_determination_digest": {"$ref": "#/$defs/digest"},
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "required_authority_class": {"type": "string", "minLength": 1},
+    "recorded_at": {"type": "string", "format": "date-time"},
+    "previous_receipt_hash": {"$ref": "#/$defs/digest"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "DEFER"}}, "required": ["decision"]},
+      "then": {
+        "properties": {"admissibility_state": {"const": "INDETERMINATE"}},
+        "not": {"required": ["required_authority_class"]}
+      }
+    },
+    {
+      "if": {"properties": {"decision": {"const": "STEP_UP"}}, "required": ["decision"]},
+      "then": {
+        "properties": {"admissibility_state": {"const": "REQUIRES_STEP_UP"}},
+        "required": ["required_authority_class"]
+      }
+    }
+  ],
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}
