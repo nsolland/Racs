@@ -438,11 +438,51 @@ Implemented or specified:
 Normative runtime-continuity detail:
 `spec/RUNTIME_CONTINUITY_V0_2.md`.
 
-## 11. Remaining normative work
+## 11. AgentBound delta profile
+
+The AgentBound-inspired v0.3 delta is an additive execution-governance profile. It
+extends the v0.2 chain with four artifacts:
+
+- `TaskAuthorityMaterialization` — current, short-lived and strictly narrower task authority;
+- `TargetActionContract` — authenticated semantics for the exact consequential target operation;
+- `AuthorityEvaluationFragment` — typed input to monotone hierarchy composition;
+- `GovernanceReplayBundle` — portable evidence for deterministic offline reconstruction.
+
+Normative payload schemas:
+
+- `spec/task-authority-materialization-v0.3.schema.json`
+- `spec/target-action-contract-v0.3.schema.json`
+- `spec/authority-evaluation-fragment-v0.3.schema.json`
+- `spec/governance-replay-bundle-v0.3.schema.json`
+
+The profile does not create an AgentBound runtime, a second constitution, a new
+clearance authority, a reduced decision vocabulary or a new receipt family.
+
+A standing authority grant MUST NOT reach a consequence-bearing commit directly when
+this profile is required. It MUST first become a current, narrower task authority.
+Target contracts describe operation semantics and can only narrow execution; they
+never grant principal authority. Mandatory evaluation fragments compose
+monotonically: constraints intersect, obligations union, and a lower-level favourable
+result cannot erase a higher-level restriction. Replay produces only `MATCH`,
+`MISMATCH`, `INCOMPLETE` or `UNVERIFIABLE` and has no execution authority.
+
+A v0.2 implementation remains conformant to its declared v0.2 profile. It MUST NOT
+claim the AgentBound-delta profile without the complete mandatory v0.3 artifacts and
+bindings for the relevant action class. A v0.3-aware consumer MUST fail closed when a
+referenced v0.3 artifact is absent, stale, revoked, substituted or unverifiable.
+
+Full compatibility and migration rules:
+`spec/AGENTBOUND_DELTA_V0_2_V0_3_COMPATIBILITY.md`.
+
+Prior-art classification and correct interpretation of the committed deterministic
+reference benchmark:
+`docs/architecture/AGENTBOUND_PRIOR_ART_AND_BENCHMARK_INTERPRETATION.md`.
+
+## 12. Remaining normative work
 
 - revocation registry snapshot schema
 - transport bindings
-- complete schema bundle and compatibility matrix
+- complete schema bundle and compatibility matrix beyond the AgentBound delta
 - signed golden vectors for all legacy artifact types
 - active-session cross-artifact verification rules
 - narrowing proof for `MODIFY_RUNTIME_BOUNDS`
