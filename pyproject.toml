@@ -25,6 +25,7 @@ dev = [
     "jsonschema>=4.21",
     "pytest>=7.0",
     "pyyaml>=6.0",
+    "rfc8785",
 ]
 
 [tool.setuptools.packages.find]
