@@ -1,0 +1,198 @@
+{
+  "financial": {
+    "execution_receipt_id": "receipt-financial-1",
+    "execution_id": "exec-financial-1",
+    "tenant_id": "tenant-1",
+    "action_id": "action-financial-1",
+    "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "clearance_id": "clearance-1",
+    "clearance_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "commit_token_id": "commit-1",
+    "commit_token_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "connector_id": "connector-financial-1",
+    "capability": "payment-execution",
+    "target_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "payload_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "started_at": "2026-08-01T12:00:00Z",
+    "completed_at": "2026-08-01T12:00:45Z",
+    "technical_outcome": "SUCCEEDED",
+    "provider_reference": "payment-provider",
+    "response_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "reversal_status": "NOT_REVERSED",
+    "previous_receipt_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "receipt_ext": {
+      "external_proof_ref": "bank-proof-bundle-001",
+      "evidence_refs": ["sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"],
+      "cost": {
+        "method": "provider_reported",
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "confidence": "high",
+        "unit": "USD",
+        "amount": 1200
+      },
+      "value_claim": {
+        "method": "estimated_monetary_impact",
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "confidence": "high",
+        "direction": "protected",
+        "amount": 50000,
+        "currency": "USD"
+      },
+      "replay_status": "FIRST_EXECUTION",
+      "idempotency_token": "idem-fin-001",
+      "pre_state": {
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "scope": "account_balance_bounded"
+      },
+      "post_state": {
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "scope": "account_balance_bounded"
+      }
+    }
+  },
+  "browser": {
+    "execution_receipt_id": "receipt-browser-1",
+    "execution_id": "exec-browser-1",
+    "tenant_id": "tenant-1",
+    "action_id": "action-browser-1",
+    "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "clearance_id": "clearance-1",
+    "clearance_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "commit_token_id": "commit-1",
+    "commit_token_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "connector_id": "connector-browser-1",
+    "capability": "browser-automation",
+    "target_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "payload_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "started_at": "2026-08-01T12:02:00Z",
+    "completed_at": "2026-08-01T12:02:18Z",
+    "technical_outcome": "SUCCEEDED",
+    "provider_reference": "chromium-automation",
+    "response_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "reversal_status": "NOT_REVERSED",
+    "previous_receipt_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "receipt_ext": {
+      "external_proof_ref": "browser-automation-proof-001",
+      "signature_binding_ref": "sig-browser-001",
+      "cost": {
+        "method": "provider_reported",
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "confidence": "high",
+        "unit": "token",
+        "amount": 250
+      },
+      "replay_status": "REPLAY",
+      "duplicate_of_receipt_id": "receipt-browser-0",
+      "pre_state": {
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "scope": "dom_snapshot_bounded"
+      },
+      "post_state": {
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "scope": "dom_snapshot_bounded"
+      }
+    }
+  },
+  "messaging": {
+    "execution_receipt_id": "receipt-messaging-1",
+    "execution_id": "exec-messaging-1",
+    "tenant_id": "tenant-1",
+    "action_id": "action-messaging-1",
+    "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "clearance_id": "clearance-1",
+    "clearance_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "commit_token_id": "commit-1",
+    "commit_token_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "connector_id": "connector-messaging-1",
+    "capability": "messaging-delivery",
+    "target_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "payload_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "started_at": "2026-08-01T12:04:00Z",
+    "completed_at": "2026-08-01T12:04:02Z",
+    "technical_outcome": "SUCCEEDED",
+    "provider_reference": "telegram-gateway",
+    "response_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "reversal_status": "NOT_REVERSED",
+    "previous_receipt_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "receipt_ext": {
+      "external_proof_ref": "telegram-message-proof-001",
+      "evidence_refs": ["sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"],
+      "cost": {
+        "method": "provider_reported",
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "confidence": "high",
+        "unit": "message",
+        "amount": 1
+      },
+      "value_claim": {
+        "method": "estimated_monetary_impact",
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "confidence": "medium",
+        "direction": "created",
+        "amount": 0,
+        "currency": "USD"
+      },
+      "replay_status": "DUPLICATE",
+      "duplicate_of_receipt_id": "receipt-messaging-0",
+      "pre_state": {
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "scope": "message_queue_bounded"
+      },
+      "post_state": {
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "scope": "message_queue_bounded"
+      }
+    }
+  },
+  "infrastructure": {
+    "execution_receipt_id": "receipt-infrastructure-1",
+    "execution_id": "exec-infrastructure-1",
+    "tenant_id": "tenant-1",
+    "action_id": "action-infrastructure-1",
+    "action_envelope_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "clearance_id": "clearance-1",
+    "clearance_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "commit_token_id": "commit-1",
+    "commit_token_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "connector_id": "connector-infrastructure-1",
+    "capability": "infrastructure-run",
+    "target_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "payload_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "started_at": "2026-08-01T12:06:00Z",
+    "completed_at": "2026-08-01T12:06:45Z",
+    "technical_outcome": "SUCCEEDED",
+    "provider_reference": "compute-provider",
+    "response_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "reversal_status": "NOT_REVERSED",
+    "previous_receipt_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "receipt_ext": {
+      "external_proof_ref": "infra-run-proof-001",
+      "signature_binding_ref": "sig-infra-001",
+      "cost": {
+        "method": "provider_reported",
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "confidence": "high",
+        "unit": "second",
+        "amount": 45
+      },
+      "value_claim": {
+        "method": "estimated_monetary_impact",
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "confidence": "high",
+        "direction": "avoided",
+        "amount": 300,
+        "currency": "USD"
+      },
+      "replay_status": "UNVERIFIED",
+      "idempotency_token": "idem-infra-001",
+      "pre_state": {
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "scope": "infrastructure_config_bounded"
+      },
+      "post_state": {
+        "evidence_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "scope": "infrastructure_config_bounded"
+      }
+    }
+  }
+}
