@@ -1,0 +1,21 @@
+{
+  "issue": 128,
+  "owner": "ChatGPT",
+  "base_sha": "68df1a5b6b6e783cf6a0a3f9cbe86d7b712999fb",
+  "branch": "feat/aaec-trajectory-profile",
+  "scope": "Additive AAEC trajectory context, monotone cumulative consequence validation, deterministic reason codes, fixtures and conformance tests.",
+  "owned_paths": [
+    "delivery/claims/issue-128-aaec.json",
+    "spec/aaec-trajectory-context-v0.3.schema.json",
+    "spec/AAEC_TRAJECTORY_PROFILE_V0_3.md",
+    "reference/governance_os/aaec_trajectory.py",
+    "reference/governance_os/test_aaec_trajectory.py",
+    "test-vectors/0.3/aaec/"
+  ],
+  "dependencies": [
+    "RACS v0.2 canonical decision chain",
+    "RACS v0.3 AgentBound additive artifacts",
+    "ExecutionReceipt and OutcomeReceipt lineage"
+  ],
+  "status": "claimed"
+}
