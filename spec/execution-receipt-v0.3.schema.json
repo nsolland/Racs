@@ -52,24 +52,25 @@
         "signature_binding_ref": {"type": "string", "minLength": 1},
         "replay_status": {"type": "string", "enum": ["FIRST_EXECUTION", "REPLAY", "DUPLICATE", "UNVERIFIED"]},
         "idempotency_token": {"type": "string", "minLength": 1},
-        "duplicate_of_receipt_id": {"type": "string", "minLength": 1}
+        "duplicate_of_receipt_id": {"type": "string", "minLength": 1},
+        "duplicate_of_receipt_hash": {"$ref": "#/$defs/digest"}
       },
       "allOf": [
         {
-          "if": {"required": ["duplicate_of_receipt_id"]},
-          "then": {"required": ["replay_status", "idempotency_token"], "properties": {"replay_status": {"enum": ["REPLAY", "DUPLICATE"]}}}
+          "if": {"anyOf": [{"required": ["duplicate_of_receipt_id"]}, {"required": ["duplicate_of_receipt_hash"]}]},
+          "then": {"required": ["replay_status", "idempotency_token", "duplicate_of_receipt_id", "duplicate_of_receipt_hash"], "properties": {"replay_status": {"enum": ["REPLAY", "DUPLICATE"]}}}
         },
         {
           "if": {"properties": {"replay_status": {"enum": ["REPLAY", "DUPLICATE"]}}, "required": ["replay_status"]},
-          "then": {"required": ["idempotency_token", "duplicate_of_receipt_id"]}
+          "then": {"required": ["idempotency_token", "duplicate_of_receipt_id", "duplicate_of_receipt_hash"]}
         },
         {
           "if": {"properties": {"replay_status": {"const": "FIRST_EXECUTION"}}, "required": ["replay_status"]},
-          "then": {"required": ["idempotency_token"], "not": {"required": ["duplicate_of_receipt_id"]}}
+          "then": {"required": ["idempotency_token"], "not": {"anyOf": [{"required": ["duplicate_of_receipt_id"]}, {"required": ["duplicate_of_receipt_hash"]}]}}
         },
         {
           "if": {"properties": {"replay_status": {"const": "UNVERIFIED"}}, "required": ["replay_status"]},
-          "then": {"not": {"required": ["duplicate_of_receipt_id"]}}
+          "then": {"not": {"anyOf": [{"required": ["duplicate_of_receipt_id"]}, {"required": ["duplicate_of_receipt_hash"]}]}}
         }
       ]
     },
@@ -77,7 +78,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["evidence_ref", "scope"],
-      "properties": {"evidence_ref": {"$ref": "#/$defs/digest"}, "scope": {"type": "string", "minLength": 1}}
+      "properties": {"evidence_ref": {"$ref": "#/$defs/digest"}, "scope": {"type": "string", "pattern": "^bounded:[a-z0-9][a-z0-9._-]{0,63}$"}}
     },
     "cost_claim": {
       "type": "object",

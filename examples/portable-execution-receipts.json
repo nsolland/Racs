@@ -42,11 +42,11 @@
       "idempotency_token": "idem-fin-001",
       "pre_state": {
         "evidence_ref": "sha256:1616161616161616161616161616161616161616161616161616161616161616",
-        "scope": "account_balance_bounded"
+        "scope": "bounded:account_balance"
       },
       "post_state": {
         "evidence_ref": "sha256:1717171717171717171717171717171717171717171717171717171717171717",
-        "scope": "account_balance_bounded"
+        "scope": "bounded:account_balance"
       }
     }
   },
@@ -81,16 +81,15 @@
         "unit": "token",
         "amount": 250
       },
-      "replay_status": "REPLAY",
+      "replay_status": "FIRST_EXECUTION",
       "idempotency_token": "idem-browser-001",
-      "duplicate_of_receipt_id": "receipt-browser-0",
       "pre_state": {
         "evidence_ref": "sha256:2424242424242424242424242424242424242424242424242424242424242424",
-        "scope": "dom_snapshot_bounded"
+        "scope": "bounded:dom_snapshot"
       },
       "post_state": {
         "evidence_ref": "sha256:2525252525252525252525252525252525252525252525252525252525252525",
-        "scope": "dom_snapshot_bounded"
+        "scope": "bounded:dom_snapshot"
       }
     }
   },
@@ -133,16 +132,15 @@
         "amount": 0,
         "currency": "USD"
       },
-      "replay_status": "DUPLICATE",
+      "replay_status": "FIRST_EXECUTION",
       "idempotency_token": "idem-messaging-001",
-      "duplicate_of_receipt_id": "receipt-messaging-0",
       "pre_state": {
         "evidence_ref": "sha256:3636363636363636363636363636363636363636363636363636363636363636",
-        "scope": "message_queue_bounded"
+        "scope": "bounded:message_queue"
       },
       "post_state": {
         "evidence_ref": "sha256:3737373737373737373737373737373737373737373737373737373737373737",
-        "scope": "message_queue_bounded"
+        "scope": "bounded:message_queue"
       }
     }
   },
@@ -189,11 +187,11 @@
       "idempotency_token": "idem-infra-001",
       "pre_state": {
         "evidence_ref": "sha256:4545454545454545454545454545454545454545454545454545454545454545",
-        "scope": "infrastructure_config_bounded"
+        "scope": "bounded:infrastructure_config"
       },
       "post_state": {
         "evidence_ref": "sha256:4646464646464646464646464646464646464646464646464646464646464646",
-        "scope": "infrastructure_config_bounded"
+        "scope": "bounded:infrastructure_config"
       }
     }
   }

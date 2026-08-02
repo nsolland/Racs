@@ -126,7 +126,7 @@ receipt_ext:
 1. External references are references only. They do not replace RACS authority or evidence semantics.
 2. Cost and value claims must always include method, evidence reference, and confidence.
 3. Pre/post state evidence is represented as bounded references or digests, not full payload duplication.
-4. Replay status does not grant authority. The v0.3 schema nevertheless enforces its internal lineage: `REPLAY` and `DUPLICATE` require both an idempotency token and an exact prior receipt id; `FIRST_EXECUTION` and `UNVERIFIED` cannot name a duplicate receipt.
+4. Replay status does not grant authority. The v0.3 schema requires `REPLAY` and `DUPLICATE` to carry an idempotency token plus an exact prior receipt id and hash; `FIRST_EXECUTION` and `UNVERIFIED` cannot name a duplicate receipt. `validators/execution_receipt_validator.py` validates those claims against an ordered receipt set, including the receipt-chain hash and shared idempotency lineage.
 5. Unknown extension fields are rejected. Receivers must not silently accept semantics they do not implement; new portable fields require a later versioned schema.
 
 ---
@@ -165,8 +165,7 @@ Confidence should be typed. The schema should allow extensions such as `low`, `m
 {
   "receipt_ext": {
     "replay_status": "FIRST_EXECUTION",
-    "idempotency_token": "sha256:...",
-    "duplicate_of_receipt_id": null
+    "idempotency_token": "sha256:..."
   }
 }
 ```
@@ -184,17 +183,17 @@ Pre and post state are not full environment snapshots. They are bounded evidence
   "receipt_ext": {
     "pre_state": {
       "evidence_ref": "sha256:...",
-      "scope": "target_digest_bounded"
+      "scope": "bounded:target_digest"
     },
     "post_state": {
       "evidence_ref": "sha256:...",
-      "scope": "target_digest_bounded"
+      "scope": "bounded:target_digest"
     }
   }
 }
 ```
 
-Scope should prevent unbounded leakage of environment state into the receipt.
+Scope uses the closed `bounded:<scope-name>` syntax. Free-form or unbounded scope labels are rejected, preventing an extension from claiming an unlimited environment snapshot.
 
 ---
 
@@ -239,7 +238,7 @@ If value-claim fields are used in a reward-economy context:
 The v0.3 schema and conformance delivery covers:
 - rejected attempts to use extension fields as authority inputs
 - malformed value claims missing method, evidence, or confidence
-- replay/duplicate/idempotency relationship mismatches while preserving the mandatory receipt-chain hash
+- replay/duplicate/idempotency relationship mismatches against an ordered receipt set while preserving the mandatory receipt-chain hash
 - pre/post state references that exceed declared scope
 
 ---

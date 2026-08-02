@@ -8,6 +8,9 @@ from pathlib import Path
 import jsonschema
 import pytest
 
+from reference.python.racs_canonical import sha256_digest
+from validators.execution_receipt_validator import validate_execution_receipt_chain
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 V02_SPEC_PATH = REPO_ROOT / "spec" / "execution-receipt-v0.2.schema.json"
 V03_SPEC_PATH = REPO_ROOT / "spec" / "execution-receipt-v0.3.schema.json"
@@ -67,8 +70,8 @@ def test_known_extension_fields_are_accepted():
         "delegation_scope_ref": "del-1",
         "policy_fingerprint_ref": "policy-1",
         "evidence_refs": [D],
-        "pre_state": {"evidence_ref": D, "scope": "target_digest_bounded"},
-        "post_state": {"evidence_ref": D, "scope": "target_digest_bounded"},
+        "pre_state": {"evidence_ref": D, "scope": "bounded:target_digest"},
+        "post_state": {"evidence_ref": D, "scope": "bounded:target_digest"},
         "cost": {
             "method": "provider_reported",
             "evidence_ref": D,
@@ -207,6 +210,7 @@ def test_replay_status_and_idempotency_token_are_supported():
         "replay_status": "REPLAY",
         "idempotency_token": "idem-1",
         "duplicate_of_receipt_id": "receipt-0",
+        "duplicate_of_receipt_hash": D,
     }
     assert V03_VALIDATOR.is_valid(receipt)
 
@@ -223,10 +227,15 @@ def test_replay_and_duplicate_require_idempotency_and_exact_prior_receipt(status
         "replay_status": status,
         "idempotency_token": "idem-1",
         "duplicate_of_receipt_id": "receipt-0",
+        "duplicate_of_receipt_hash": D,
     }
     assert V03_VALIDATOR.is_valid(complete)
 
-    for missing in ("idempotency_token", "duplicate_of_receipt_id"):
+    for missing in (
+        "idempotency_token",
+        "duplicate_of_receipt_id",
+        "duplicate_of_receipt_hash",
+    ):
         invalid = deepcopy(complete)
         del invalid["receipt_ext"][missing]
         assert not V03_VALIDATOR.is_valid(invalid)
@@ -238,6 +247,7 @@ def test_first_execution_cannot_claim_a_duplicate_lineage():
         "replay_status": "FIRST_EXECUTION",
         "idempotency_token": "idem-1",
         "duplicate_of_receipt_id": "receipt-0",
+        "duplicate_of_receipt_hash": D,
     }
     assert not V03_VALIDATOR.is_valid(receipt)
 
@@ -247,6 +257,7 @@ def test_duplicate_reference_cannot_exist_without_replay_classification():
     receipt["receipt_ext"] = {
         "idempotency_token": "idem-1",
         "duplicate_of_receipt_id": "receipt-0",
+        "duplicate_of_receipt_hash": D,
     }
     assert not V03_VALIDATOR.is_valid(receipt)
 
@@ -254,16 +265,74 @@ def test_duplicate_reference_cannot_exist_without_replay_classification():
 def test_bounded_pre_and_post_state_evidence_are_supported():
     receipt = dict(_base_receipt())
     receipt["receipt_ext"] = {
-        "pre_state": {"evidence_ref": D, "scope": "target_digest_bounded"},
-        "post_state": {"evidence_ref": D, "scope": "target_digest_bounded"},
+        "pre_state": {"evidence_ref": D, "scope": "bounded:target_digest"},
+        "post_state": {"evidence_ref": D, "scope": "bounded:target_digest"},
     }
     assert V03_VALIDATOR.is_valid(receipt)
 
     for missing_field in ("evidence_ref", "scope"):
         invalid = deepcopy(receipt)
-        invalid["receipt_ext"]["pre_state"] = {"evidence_ref": D, "scope": "target_digest_bounded"}
+        invalid["receipt_ext"]["pre_state"] = {
+            "evidence_ref": D,
+            "scope": "bounded:target_digest",
+        }
         del invalid["receipt_ext"]["pre_state"][missing_field]
         assert not V03_VALIDATOR.is_valid(invalid)
+
+    unbounded = deepcopy(receipt)
+    unbounded["receipt_ext"]["pre_state"]["scope"] = "entire_environment_unbounded"
+    assert not V03_VALIDATOR.is_valid(unbounded)
+
+
+def _valid_replay_chain():
+    prior = _base_receipt()
+    prior["execution_receipt_id"] = "receipt-0"
+    prior["execution_id"] = "exec-0"
+    prior["receipt_ext"] = {
+        "replay_status": "FIRST_EXECUTION",
+        "idempotency_token": "idem-1",
+    }
+    current = deepcopy(_base_receipt())
+    current["previous_receipt_hash"] = sha256_digest(prior)
+    current["receipt_ext"] = {
+        "replay_status": "REPLAY",
+        "idempotency_token": "idem-1",
+        "duplicate_of_receipt_id": "receipt-0",
+        "duplicate_of_receipt_hash": sha256_digest(prior),
+    }
+    return prior, current
+
+
+def test_semantic_validator_accepts_exact_prior_replay_lineage():
+    assert validate_execution_receipt_chain(_valid_replay_chain()) == []
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected"),
+    [
+        ("self_reference", "cannot self-reference"),
+        ("missing_reference", "must reference an earlier receipt"),
+        ("wrong_reference_hash", "does not match the referenced receipt"),
+        ("wrong_idempotency", "does not match the referenced execution lineage"),
+        ("broken_chain", "does not bind the immediately preceding receipt"),
+    ],
+)
+def test_semantic_validator_rejects_false_replay_lineage(mutation, expected):
+    prior, current = _valid_replay_chain()
+    extension = current["receipt_ext"]
+    if mutation == "self_reference":
+        extension["duplicate_of_receipt_id"] = current["execution_receipt_id"]
+    elif mutation == "missing_reference":
+        extension["duplicate_of_receipt_id"] = "does-not-exist"
+    elif mutation == "wrong_reference_hash":
+        extension["duplicate_of_receipt_hash"] = D
+    elif mutation == "wrong_idempotency":
+        extension["idempotency_token"] = "idem-other"
+    elif mutation == "broken_chain":
+        current["previous_receipt_hash"] = D
+
+    errors = validate_execution_receipt_chain((prior, current))
+    assert any(expected in error for error in errors)
 
 
 EXAMPLES_PATH = REPO_ROOT / "examples" / "portable-execution-receipts.json"
