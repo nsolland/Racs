@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.3/aaec-trajectory-context.schema.json",
+  "title": "RACS AAECTrajectoryContext v0.3",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "counterSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action_count",
+        "destructive_action_count",
+        "irreversible_action_count",
+        "secret_access_count",
+        "privilege_change_count",
+        "persistence_change_count",
+        "lateral_target_expansion_count",
+        "observed_egress_bytes"
+      ],
+      "properties": {
+        "action_count": {"type": "integer", "minimum": 0},
+        "destructive_action_count": {"type": "integer", "minimum": 0},
+        "irreversible_action_count": {"type": "integer", "minimum": 0},
+        "secret_access_count": {"type": "integer", "minimum": 0},
+        "privilege_change_count": {"type": "integer", "minimum": 0},
+        "persistence_change_count": {"type": "integer", "minimum": 0},
+        "lateral_target_expansion_count": {"type": "integer", "minimum": 0},
+        "observed_egress_bytes": {"type": "integer", "minimum": 0}
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_type", "statement_digest", "observed_evidence_digest", "verification_state"],
+      "properties": {
+        "claim_type": {"$ref": "#/$defs/identifier"},
+        "statement_digest": {"$ref": "#/$defs/digest"},
+        "observed_evidence_digest": {
+          "oneOf": [{"$ref": "#/$defs/digest"}, {"type": "null"}]
+        },
+        "verification_state": {"enum": ["VERIFIED", "UNVERIFIED", "CONTRADICTED"]}
+      }
+    },
+    "actionObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action_ref",
+        "action_class",
+        "target_ids",
+        "new_target_ids",
+        "authority_amplification",
+        "persistence_creation",
+        "integrity_control_change",
+        "destructive",
+        "irreversible",
+        "secret_access",
+        "lateral_movement",
+        "machine_speed_adaptive_retry",
+        "observed_egress_bytes",
+        "credential_provenance",
+        "identity_provenance",
+        "target_expansion_authorized",
+        "target_expansion_clearance_digest",
+        "claims"
+      ],
+      "properties": {
+        "action_ref": {"$ref": "#/$defs/identifier"},
+        "action_class": {
+          "enum": [
+            "GENERAL",
+            "SECRET_ACCESS",
+            "CREDENTIAL_USE",
+            "TARGET_DISCOVERY",
+            "IDENTITY_CREATE",
+            "PRIVILEGE_CHANGE",
+            "PERSISTENCE_CREATE",
+            "INTEGRITY_CONTROL_CHANGE",
+            "CONTAINER_BOUNDARY_PROBE",
+            "DATA_ENCRYPT",
+            "DATA_DELETE",
+            "DATABASE_DROP",
+            "EGRESS"
+          ]
+        },
+        "target_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/identifier"}
+        },
+        "new_target_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/identifier"}
+        },
+        "authority_amplification": {"type": "boolean"},
+        "persistence_creation": {"type": "boolean"},
+        "integrity_control_change": {"type": "boolean"},
+        "destructive": {"type": "boolean"},
+        "irreversible": {"type": "boolean"},
+        "secret_access": {"type": "boolean"},
+        "lateral_movement": {"type": "boolean"},
+        "machine_speed_adaptive_retry": {"type": "boolean"},
+        "observed_egress_bytes": {"type": "integer", "minimum": 0},
+        "credential_provenance": {
+          "enum": ["VERIFIED_UPSTREAM_AUTHORITY", "HARVESTED", "SELF_CREATED", "UNKNOWN", "NOT_APPLICABLE"]
+        },
+        "identity_provenance": {
+          "enum": ["VERIFIED_UPSTREAM_AUTHORITY", "SELF_CREATED_IN_TRAJECTORY", "UNKNOWN", "NOT_APPLICABLE"]
+        },
+        "target_expansion_authorized": {"type": "boolean"},
+        "target_expansion_clearance_digest": {
+          "oneOf": [{"$ref": "#/$defs/digest"}, {"type": "null"}]
+        },
+        "claims": {"type": "array", "items": {"$ref": "#/$defs/claim"}}
+      }
+    }
+  },
+  "required": [
+    "trajectory_version",
+    "trajectory_id",
+    "trajectory_root_digest",
+    "sequence_no",
+    "prior_terminal_receipt_digest",
+    "terminal_receipt_digest",
+    "authority_lineage_digest",
+    "principal_binding_digest",
+    "agent_identity_digest",
+    "target_ids",
+    "target_set_digest",
+    "cumulative_consequence",
+    "ceilings",
+    "action_observation",
+    "evidence_bindings",
+    "valid_from",
+    "valid_until",
+    "issued_at",
+    "independent_halt",
+    "halt_reason_digest",
+    "authority_effect",
+    "execution_authority",
+    "digest_profile",
+    "context_digest"
+  ],
+  "properties": {
+    "trajectory_version": {"const": "aaec-trajectory-context-0.3"},
+    "trajectory_id": {"$ref": "#/$defs/identifier"},
+    "trajectory_root_digest": {"$ref": "#/$defs/digest"},
+    "sequence_no": {"type": "integer", "minimum": 0},
+    "prior_terminal_receipt_digest": {
+      "oneOf": [{"$ref": "#/$defs/digest"}, {"type": "null"}]
+    },
+    "terminal_receipt_digest": {"$ref": "#/$defs/digest"},
+    "authority_lineage_digest": {"$ref": "#/$defs/digest"},
+    "principal_binding_digest": {"$ref": "#/$defs/digest"},
+    "agent_identity_digest": {"$ref": "#/$defs/digest"},
+    "target_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/identifier"}
+    },
+    "target_set_digest": {"$ref": "#/$defs/digest"},
+    "cumulative_consequence": {"$ref": "#/$defs/counterSet"},
+    "ceilings": {"$ref": "#/$defs/counterSet"},
+    "action_observation": {"$ref": "#/$defs/actionObservation"},
+    "evidence_bindings": {
+      "type": "object",
+      "propertyNames": {"pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$"},
+      "additionalProperties": {"$ref": "#/$defs/digest"}
+    },
+    "valid_from": {"$ref": "#/$defs/timestamp"},
+    "valid_until": {"$ref": "#/$defs/timestamp"},
+    "issued_at": {"$ref": "#/$defs/timestamp"},
+    "independent_halt": {"type": "boolean"},
+    "halt_reason_digest": {
+      "oneOf": [{"$ref": "#/$defs/digest"}, {"type": "null"}]
+    },
+    "authority_effect": {"const": "NO_AUTHORITY_CREATION"},
+    "execution_authority": {"const": "NONE"},
+    "digest_profile": {"const": "rfc8785-sha256-excluding:context_digest"},
+    "context_digest": {"$ref": "#/$defs/digest"}
+  }
+}
