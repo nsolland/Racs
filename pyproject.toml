@@ -20,6 +20,7 @@ classifiers = [
 [project.optional-dependencies]
 yaml = ["pyyaml>=6.0"]
 dev = [
+    "cryptography>=42.0",
     "jsoncanon>=0.2.3",
     "jsonschema>=4.21",
     "pytest>=7.0",
