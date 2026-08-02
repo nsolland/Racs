@@ -46,7 +46,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "actor_principal": {"type": "object"},
+        "actor_principal": {"type": "object", "additionalProperties": false, "properties": {"subject": {"type": "string", "minLength": 1}}},
         "delegation_scope_ref": {"type": "string", "minLength": 1},
         "policy_fingerprint_ref": {"type": "string", "minLength": 1},
         "evidence_refs": {
@@ -82,7 +82,7 @@
       "properties": {
         "method": {"type": "string", "minLength": 1},
         "evidence_ref": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
-        "confidence": {"type": "string", "minLength": 1},
+        "confidence": {"type": "string", "enum": ["low", "medium", "high"], "minLength": 1},
         "unit": {"type": "string", "minLength": 1},
         "amount": {"type": "number"}
       },
@@ -94,7 +94,7 @@
       "properties": {
         "method": {"type": "string", "minLength": 1},
         "evidence_ref": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
-        "confidence": {"type": "string", "minLength": 1},
+        "confidence": {"type": "string", "enum": ["low", "medium", "high"], "minLength": 1},
         "direction": {"type": "string", "enum": ["protected", "created", "avoided"]},
         "amount": {"type": "number"},
         "currency": {"type": "string", "minLength": 1}

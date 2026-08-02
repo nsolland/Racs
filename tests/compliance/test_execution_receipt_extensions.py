@@ -94,6 +94,36 @@ def test_unknown_extension_fields_are_rejected():
     assert not VALIDATOR.is_valid(receipt)
 
 
+def test_unknown_actor_principal_fields_are_rejected():
+    receipt = dict(_base_receipt())
+    receipt["receipt_ext"] = {
+        "actor_principal": {"vendor_x_secret": 1},
+    }
+    assert not VALIDATOR.is_valid(receipt)
+
+
+def test_confidence_must_be_typed_for_cost_and_value_claims():
+    receipt = dict(_base_receipt())
+    receipt["receipt_ext"] = {
+        "cost": {
+            "method": "provider_reported",
+            "evidence_ref": D,
+            "confidence": "banana",
+            "unit": "token",
+            "amount": 10,
+        },
+        "value_claim": {
+            "method": "estimated_monetary_impact",
+            "evidence_ref": D,
+            "confidence": "banana",
+            "direction": "protected",
+            "amount": 100,
+            "currency": "NOK",
+        },
+    }
+    assert not VALIDATOR.is_valid(receipt)
+
+
 def test_external_references_are_not_governance_authority():
     receipt = dict(_base_receipt())
     receipt["receipt_ext"] = {
