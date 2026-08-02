@@ -1,176 +1,23 @@
-schema_version: "1.0"
+schema_version: "1.0.0"
 repository:
-  id: valo.racs
-  canonical_name: RACS
-  url: https://github.com/nsolland/Racs
-  owner: nsolland
-  maintainers:
-    - nsolland
-  classification: evidence-contract
-  role: canonical-contract-and-standard
-  status: active
-  visibility: private
-  maturity: active-development
-  support: maintained
-  normative_status: normative
-  license: proprietary-unless-file-states-otherwise
-purpose:
-  summary: Canonical receipt and evidence contract. Protocol specification for representing and validating AI-mediated action data; runtime layers decide and enforce.
-  owns:
-    - action envelope specification
-    - authority context specification
-    - evidence package specification
-    - policy context specification
-    - execution and evidence semantics
-    - compliance validators
-    - reference implementations (Python, TypeScript)
-  does_not_own:
-    - runtime implementation
-    - policy enforcement
-    - action authorization
-    - production calibration
-    - organization-specific policy
-    - customer configuration
-boundaries:
-  public:
-    - spec definitions (YAML)
-    - example scenarios
-    - compliance test suites
-    - reference implementations
-  private_by_default:
-    - organization-specific authority structures
-    - customer-specific policy
-    - deployment-specific configurations
-claims:
-  - id: CLAIM-RACS-001
-    statement: RACS is a neutral, model-agnostic protocol specification — not a runtime implementation.
-    evidence_level: normative-architecture-invariant
-    evidence:
-      - CLAUDE.md
-      - README.md
-      - spec/action-envelope.yaml
-  - id: CLAIM-RACS-002
-    statement: RACS defines the contract between evidence layers and action governance layers.
-    evidence_level: normative-architecture-invariant
-    evidence:
-      - README.md
-      - spec/*.yaml
-non_claims:
-  - This repository does not implement runtime governance.
-  - Protocol validation does not equal production certification.
-  - Example scenarios are illustrative, not normative.
-related_repositories:
-  - id: valo.baro
-    relationship: canonical-observation-layer
-  - id: valo.vaig
-    relationship: canonical-evaluation-layer
-  - id: valo.platform
-    relationship: canonical-product-orchestration
-  - id: valo.reht
-    relationship: canonical-clearance-layer
-  - id: valo.index
-    relationship: canonical-manifest-schema-and-portfolio-architecture
+  id: "valo.racs"
+  name: "Racs"
+  org: "nsolland"
+  canonical_role: "decision_binding_and_enforcement"
+  normative_status: "normative_specification"
+  owner: "ANTIGRAVITY"
+
+capabilities:
+  - "decision_contract_binding"
+  - "permit_and_commit_token_issuance"
+  - "verdict_verification"
+  - "receipt_schema_definition"
+
+prohibitions:
+  - "does_not_originate_broader_authority"
+  - "does_not_override_reht_clearance"
+  - "does_not_execute_consequence_bearing_side_effects"
+
 interfaces:
-  - id: action-envelope
-    type: yaml-schema
-    path: spec/action-envelope.yaml
-  - id: authority-context
-    type: yaml-schema
-    path: spec/authority-context.yaml
-  - id: evidence-package
-    type: yaml-schema
-    path: spec/evidence-package.yaml
-canonical_documents:
-  - README.md
-  - CLAUDE.md
-  - spec/action-envelope.yaml
-canonical_repository:
-  id: valo.racs
-  owns:
-    - action-contracts
-    - receipts-and-evidence-contracts
-security:
-  contact: njaal.solland@gmail.com
-  disclosure: private-contact-first
-machine_reading:
-  canonical_terms: README.md
-  agent_instructions: CLAUDE.md
-  llm_summary: README.md
-legacy_profile:
-  identity:
-    stable_id: "valo.racs"
-    canonical_name: "RACS"
-    full_name: "Runtime Agent Control Standard"
-    purpose: >-
-      Neutral, model-agnostic protocol specification for representing,
-      evaluating, authorizing, executing, and evidencing AI-mediated actions.
-    public_url: "https://github.com/nsolland/Racs"
-  ownership:
-    owner: "VALO Research Group"
-    maintainers:
-      - "nsolland"
-    contact_path: "https://github.com/nsolland/Racs/issues"
-    governance: "Public standard; spec changes require review and version bump."
-  boundaries:
-    public: true
-    private_core: false
-    public_private_boundary: >-
-      spec/ is public and normative. reference/ implementations and examples
-      are public and informative unless explicitly marked.
-  maturity:
-    status: "implemented"
-    support: "maintained"
-    normative_status: "normative"
-    claims_evidence_level: "validated-reference"
-    version: "0.2"
-  contract:
-    owns:
-      - "canonical receipt and evidence contract"
-      - "action envelope schema"
-      - "authority / policy / evidence context schemas"
-      - "governance evaluation, determination, and clearance schemas"
-    does_not_own:
-      - "execution authority grant (REHT owns admissibility clearance)"
-      - "action execution (Core owns execution)"
-      - "evidence evaluation (VAIG owns evaluation)"
-    mappings:
-      - standard: "REHT-104"
-        note: >-
-          Every clearance decision MUST issue a receipt. RACS records decisions
-          and effects; it does not grant clearance or execute actions.
-    invariants:
-      - "Platform-local receipt objects MUST map to RACS rather than become competing standards."
-      - "Receipts link proposal, evaluation, clearance, execution and outcome."
-      - "Evidence integrity, provenance and immutable linkage are contract concerns."
-  dependencies:
-    - stable_id: "valo.reht"
-      relation: "consumes-admissibility"
-    - stable_id: "valo.vaig"
-      relation: "consumes-evaluation"
-    - stable_id: "valo.core"
-      relation: "consumes-execution"
-    - stable_id: "baro"
-      relation: "consumes-evidence"
-  interfaces:
-    - type: "spec"
-      path: "spec/"
-      status: "normative"
-    - type: "reference-implementation"
-      path: "reference/"
-      languages: ["python", "rust", "typescript"]
-      status: "informative"
-    - type: "test-vectors"
-      path: "test-vectors/"
-      status: "informative"
-  security:
-    contact_path: "https://github.com/nsolland/Racs/issues"
-    vulnerability_reporting: "open an issue; mark security-sensitive reports private"
-  license:
-    spdx_id: "MIT"
-    url: "https://opensource.org/licenses/MIT"
-  non_claims:
-    - "RACS is not a runtime; it is a protocol specification."
-    - "RACS does not grant clearance or execute actions."
-    - "RACS does not define domain-specific policy."
-  limitations:
-    - "Reference implementations are examples, not production runtimes."
+  decision_schema: "spec/racs-decision-v0.2.schema.json"
+  permit_schema: "spec/core-execution-permit.schema.json"

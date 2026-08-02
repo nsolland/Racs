@@ -1,55 +1,18 @@
-# publiccode.yml — machine-readable public repository metadata
-# Standard: https://github.com/publiccodeyml/publiccode.yml (v0.4)
-# Adopted per nsolland/Racs#64 / nsolland/Index#338
-
-publiccodeYmlVersion: "0.4"
-
-name: RACS
+publiccodeYmlVersion: "0.2"
+name: "RACS"
 url: "https://github.com/nsolland/Racs"
-landingURL: "https://github.com/nsolland/Racs#readme"
-releaseDate: "2026-07-23"
-softwareVersion: "0.2"
-developmentStatus: "stable"
-softwareType: "library"
+landingURL: "https://github.com/nsolland/Racs"
+softwareVersion: "0.2.0"
+releaseDate: "2026-08-02"
 platforms:
-  - "web"
   - "linux"
-  - "macos"
-  - "windows"
-
-maintenance:
-  type: "internal"
-  contacts:
-    - name: "VALO Research Group"
-
-localisation:
-  localisationReady: false
-  availableLanguages:
-    - "en"
-
+categories:
+  - "execution-governance"
+developmentStatus: "development"
+softwareType: "specification"
 description:
   en:
-    genericName: "Runtime Agent Control Standard"
-    shortDescription: >-
-      Neutral, model-agnostic protocol for representing, evaluating,
-      authorizing, executing, and evidencing AI-mediated actions.
-    longDescription: >-
-      RACS is a standard, not a runtime. It defines the contract between
-      evidence layers (BARO, Speider) and action governance layers (VAIG, REHT,
-      Core). RACS owns the canonical receipt and evidence contract and answers
-      the question: is this action admissible to execute under the current
-      authority, policy, evidence and system state?
-    features:
-      - "Action envelope schema (who, what, when, why, context)"
-      - "Authority, policy, and evidence context schemas"
-      - "Governance evaluation, determination, and clearance schemas"
-      - "Canonical receipt and immutable evidence linkage"
-    screenshots: []
-
+    shortDescription: "Runtime Agent Control Standard (RACS) decision binding and permit contract specification."
+    longDescription: "RACS defines deterministic decision binding, permit/commit token contracts, and receipt schemas for governed agent execution. It cannot expand authority beyond REHT clearance."
 legal:
   license: "MIT"
-  repoOwner: "VALO Research Group"
-
-categories:
-  - "standards"
-  - "artificial-intelligence"
