@@ -160,5 +160,32 @@
     "tests": "6 local harness tests pass; isolated GitHub Actions integration run 30342856278 success; 18 scenarios, 17 prohibited, 14 hard gates, zero escapes; canonical conformance and repo-profile success; result digest sha256:48ca88997f0fb321e3e7e33a48ec52a5abceab8db68de714a4b45cb1557e4ad3",
     "dependencies": "Racs #77, #79, #81 and #83 merged; no file overlap with open Racs #78",
     "merged": true
+  },
+  "hermes/codex-racs-1-reconciliation": {
+    "repo": "nsolland/Racs",
+    "issue": 1,
+    "stage": "portable-execution-receipt-reconciliation",
+    "base_sha": "baedef1e38715125c6c98509c215064bc818bc4f",
+    "branch": "hermes/codex-racs-1-reconciliation",
+    "owner": "Codex",
+    "scope": "version and reconcile the optional portable execution receipt extension, enforce replay relationships, replace synthetic example lineage, and align conformance evidence",
+    "claimed_paths": [
+      "claimed.json",
+      "spec/execution-receipt-v0.2.schema.json",
+      "spec/execution-receipt-v0.3.schema.json",
+      "spec/CANONICAL_CONTRACTS.md",
+      "docs/architecture/PORTABLE_EXECUTION_RECEIPT_EXTENSION_ANALYSIS.md",
+      "examples/portable-execution-receipts.json",
+      "tests/compliance/test_execution_receipt_extensions.py"
+    ],
+    "must_not_touch": [
+      "reference runtime implementations",
+      "REHT admissibility or clearance semantics",
+      "RACS decision-to-Core permit binding",
+      "misallocated PR #121 or its branch contents"
+    ],
+    "status": "implemented",
+    "tests": "portable receipt extension 19 passed; compliance 112 passed with PYTHONPATH=.; Python binding 95 passed; cross-language Stage 3A/3B/3C gate passed",
+    "dependencies": "RACS #115, #117 and #119 merged on base; PR #121 closed as evidence-only scaffold"
   }
 }

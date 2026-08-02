@@ -1,9 +1,9 @@
 # Portable Execution Receipt Extension Analysis
 
 > **Status:** non-normative research input
-> **Receipt schema:** `spec/execution-receipt-v0.2.schema.json`
+> **Receipt schemas:** unchanged `spec/execution-receipt-v0.2.schema.json`; opt-in extension in `spec/execution-receipt-v0.3.schema.json`
 > **Boundary reference:** `docs/architecture/BOUNDARIES.md`
-> **Delivery:** later separately reviewed schema delivery required before any normative change
+> **Delivery:** issue #1 reconciliation; the versioned v0.3 schema is the normative extension contract
 
 This document is an analytic handoff. It does not alter normative schemas, grant authority to external formats, or create new mandatory core fields. Its purpose is to make portable proof-of-execution patterns comparable against the current RACS execution receipt, identify extension opportunities, and preserve the separation between evidence and admissibility.
 
@@ -78,7 +78,7 @@ These fields must not override the core receipt's chronological chain role.
 
 ## 3. Proposed optional extension namespace
 
-The namespace is vendor-neutral and does not change normative schemas.
+The namespace is vendor-neutral. It is normative only in the opt-in v0.3 receipt schema; v0.2 remains byte-for-byte compatible with its pre-extension contract.
 
 ### Namespace concept
 
@@ -126,7 +126,8 @@ receipt_ext:
 1. External references are references only. They do not replace RACS authority or evidence semantics.
 2. Cost and value claims must always include method, evidence reference, and confidence.
 3. Pre/post state evidence is represented as bounded references or digests, not full payload duplication.
-4. Replay status is informational; the canonical receipt chain remains the source of truth for execution order.
+4. Replay status does not grant authority. The v0.3 schema nevertheless enforces its internal lineage: `REPLAY` and `DUPLICATE` require both an idempotency token and an exact prior receipt id; `FIRST_EXECUTION` and `UNVERIFIED` cannot name a duplicate receipt.
+5. Unknown extension fields are rejected. Receivers must not silently accept semantics they do not implement; new portable fields require a later versioned schema.
 
 ---
 
@@ -215,11 +216,11 @@ Disallowed patterns:
 
 ## 8. Backward compatibility and migration
 
-Current RACS v0.2 receipts remain valid because the extension namespace is additive and optional.
+Current RACS v0.2 receipts remain valid because v0.2 was restored to its original contract. The portable namespace is additive and optional only in v0.3. A v0.2 producer does not need to migrate; a producer that emits `receipt_ext` must declare and validate the v0.3 payload.
 
 Implementation guidance:
-- parsers must ignore unknown `receipt_ext` properties if they cannot interpret them
-- validators should warn when extension fields are present without declared support
+- parsers must reject unknown `receipt_ext` properties rather than silently assigning them semantics
+- validators reject extension fields under v0.2 and validate known fields under v0.3
 - no mandatory migration path is introduced; adoption is receiver-driven
 
 ---
@@ -235,14 +236,14 @@ If value-claim fields are used in a reward-economy context:
 
 ## 10. Compliance and test impact
 
-Schema changes are not introduced here. If a later schema delivery adopts these extensions, conformance tests must cover:
+The v0.3 schema and conformance delivery covers:
 - rejected attempts to use extension fields as authority inputs
 - malformed value claims missing method, evidence, or confidence
-- replay status mismatches against `previous_receipt_hash`
+- replay/duplicate/idempotency relationship mismatches while preserving the mandatory receipt-chain hash
 - pre/post state references that exceed declared scope
 
 ---
 
 ## 11. Research input declaration
 
-This document is non-normative. It is intended as structured research input for a later, separately reviewed schema delivery. No acceptance test, validator, or canonical contract should treat these proposals as current normative requirement until formal review and versioning.
+This document remains non-normative analysis. `spec/execution-receipt-v0.3.schema.json` is the versioned normative contract; v0.2 consumers are unaffected. External portable formats remain evidence references and never become governance authority.

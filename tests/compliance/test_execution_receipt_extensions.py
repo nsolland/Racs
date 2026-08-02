@@ -2,15 +2,21 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from pathlib import Path
 
 import jsonschema
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SPEC_PATH = REPO_ROOT / "spec" / "execution-receipt-v0.2.schema.json"
-VALIDATOR = jsonschema.Draft202012Validator(
-    json.loads(SPEC_PATH.read_text(encoding="utf-8")),
+V02_SPEC_PATH = REPO_ROOT / "spec" / "execution-receipt-v0.2.schema.json"
+V03_SPEC_PATH = REPO_ROOT / "spec" / "execution-receipt-v0.3.schema.json"
+V02_VALIDATOR = jsonschema.Draft202012Validator(
+    json.loads(V02_SPEC_PATH.read_text(encoding="utf-8")),
+    format_checker=jsonschema.FormatChecker(),
+)
+V03_VALIDATOR = jsonschema.Draft202012Validator(
+    json.loads(V03_SPEC_PATH.read_text(encoding="utf-8")),
     format_checker=jsonschema.FormatChecker(),
 )
 
@@ -43,13 +49,15 @@ def _base_receipt() -> dict:
 
 
 def test_existing_receipt_without_extensions_remains_valid():
-    assert VALIDATOR.is_valid(_base_receipt())
+    assert V02_VALIDATOR.is_valid(_base_receipt())
+    assert V03_VALIDATOR.is_valid(_base_receipt())
 
 
-def test_empty_ext_object_is_accepted():
+def test_v02_is_unchanged_and_rejects_the_v03_extension():
     receipt = dict(_base_receipt())
     receipt["receipt_ext"] = {}
-    assert VALIDATOR.is_valid(receipt)
+    assert not V02_VALIDATOR.is_valid(receipt)
+    assert V03_VALIDATOR.is_valid(receipt)
 
 
 def test_known_extension_fields_are_accepted():
@@ -80,9 +88,8 @@ def test_known_extension_fields_are_accepted():
         "signature_binding_ref": "sig-1",
         "replay_status": "FIRST_EXECUTION",
         "idempotency_token": "idem-1",
-        "duplicate_of_receipt_id": "receipt-0",
     }
-    assert VALIDATOR.is_valid(receipt)
+    assert V03_VALIDATOR.is_valid(receipt)
 
 
 def test_unknown_extension_fields_are_rejected():
@@ -91,7 +98,7 @@ def test_unknown_extension_fields_are_rejected():
         "actor_principal": {"subject": "actor-1"},
         "unknown_field": "rejected",
     }
-    assert not VALIDATOR.is_valid(receipt)
+    assert not V03_VALIDATOR.is_valid(receipt)
 
 
 def test_unknown_actor_principal_fields_are_rejected():
@@ -99,7 +106,7 @@ def test_unknown_actor_principal_fields_are_rejected():
     receipt["receipt_ext"] = {
         "actor_principal": {"vendor_x_secret": 1},
     }
-    assert not VALIDATOR.is_valid(receipt)
+    assert not V03_VALIDATOR.is_valid(receipt)
 
 
 def test_confidence_must_be_typed_for_cost_and_value_claims():
@@ -121,7 +128,7 @@ def test_confidence_must_be_typed_for_cost_and_value_claims():
             "currency": "NOK",
         },
     }
-    assert not VALIDATOR.is_valid(receipt)
+    assert not V03_VALIDATOR.is_valid(receipt)
 
 
 def test_external_references_are_not_governance_authority():
@@ -131,7 +138,7 @@ def test_external_references_are_not_governance_authority():
         "signature_binding_ref": "sig-1",
         "evidence_refs": [D],
     }
-    assert VALIDATOR.is_valid(receipt)
+    assert V03_VALIDATOR.is_valid(receipt)
     assert receipt["clearance_id"] == "clearance-1"
     assert receipt["commit_token_id"] == "commit-1"
 
@@ -147,10 +154,10 @@ def test_cost_claim_requires_method_evidence_and_confidence():
             "amount": 10,
         }
     }
-    assert VALIDATOR.is_valid(receipt)
+    assert V03_VALIDATOR.is_valid(receipt)
 
     for missing_field in ("method", "evidence_ref", "confidence"):
-        invalid = dict(receipt)
+        invalid = deepcopy(receipt)
         invalid["receipt_ext"] = {
             "cost": {
                 "method": "provider_reported",
@@ -161,7 +168,7 @@ def test_cost_claim_requires_method_evidence_and_confidence():
             }
         }
         del invalid["receipt_ext"]["cost"][missing_field]
-        assert not VALIDATOR.is_valid(invalid)
+        assert not V03_VALIDATOR.is_valid(invalid)
 
 
 def test_value_claim_requires_method_evidence_and_confidence():
@@ -176,7 +183,7 @@ def test_value_claim_requires_method_evidence_and_confidence():
             "currency": "NOK",
         }
     }
-    assert VALIDATOR.is_valid(receipt)
+    assert V03_VALIDATOR.is_valid(receipt)
 
     for missing_field in ("method", "evidence_ref", "confidence"):
         invalid = dict(_base_receipt())
@@ -191,7 +198,7 @@ def test_value_claim_requires_method_evidence_and_confidence():
             }
         }
         del invalid["receipt_ext"]["value_claim"][missing_field]
-        assert not VALIDATOR.is_valid(invalid)
+        assert not V03_VALIDATOR.is_valid(invalid)
 
 
 def test_replay_status_and_idempotency_token_are_supported():
@@ -201,12 +208,47 @@ def test_replay_status_and_idempotency_token_are_supported():
         "idempotency_token": "idem-1",
         "duplicate_of_receipt_id": "receipt-0",
     }
-    assert VALIDATOR.is_valid(receipt)
+    assert V03_VALIDATOR.is_valid(receipt)
 
     for invalid_status in ("FIRST_RUN", "DUPE", "retry"):
-        bad = dict(receipt)
+        bad = deepcopy(receipt)
         bad["receipt_ext"]["replay_status"] = invalid_status
-        assert not VALIDATOR.is_valid(bad)
+        assert not V03_VALIDATOR.is_valid(bad)
+
+
+@pytest.mark.parametrize("status", ["REPLAY", "DUPLICATE"])
+def test_replay_and_duplicate_require_idempotency_and_exact_prior_receipt(status):
+    complete = dict(_base_receipt())
+    complete["receipt_ext"] = {
+        "replay_status": status,
+        "idempotency_token": "idem-1",
+        "duplicate_of_receipt_id": "receipt-0",
+    }
+    assert V03_VALIDATOR.is_valid(complete)
+
+    for missing in ("idempotency_token", "duplicate_of_receipt_id"):
+        invalid = deepcopy(complete)
+        del invalid["receipt_ext"][missing]
+        assert not V03_VALIDATOR.is_valid(invalid)
+
+
+def test_first_execution_cannot_claim_a_duplicate_lineage():
+    receipt = dict(_base_receipt())
+    receipt["receipt_ext"] = {
+        "replay_status": "FIRST_EXECUTION",
+        "idempotency_token": "idem-1",
+        "duplicate_of_receipt_id": "receipt-0",
+    }
+    assert not V03_VALIDATOR.is_valid(receipt)
+
+
+def test_duplicate_reference_cannot_exist_without_replay_classification():
+    receipt = dict(_base_receipt())
+    receipt["receipt_ext"] = {
+        "idempotency_token": "idem-1",
+        "duplicate_of_receipt_id": "receipt-0",
+    }
+    assert not V03_VALIDATOR.is_valid(receipt)
 
 
 def test_bounded_pre_and_post_state_evidence_are_supported():
@@ -215,13 +257,13 @@ def test_bounded_pre_and_post_state_evidence_are_supported():
         "pre_state": {"evidence_ref": D, "scope": "target_digest_bounded"},
         "post_state": {"evidence_ref": D, "scope": "target_digest_bounded"},
     }
-    assert VALIDATOR.is_valid(receipt)
+    assert V03_VALIDATOR.is_valid(receipt)
 
     for missing_field in ("evidence_ref", "scope"):
-        invalid = dict(receipt)
+        invalid = deepcopy(receipt)
         invalid["receipt_ext"]["pre_state"] = {"evidence_ref": D, "scope": "target_digest_bounded"}
         del invalid["receipt_ext"]["pre_state"][missing_field]
-        assert not VALIDATOR.is_valid(invalid)
+        assert not V03_VALIDATOR.is_valid(invalid)
 
 
 EXAMPLES_PATH = REPO_ROOT / "examples" / "portable-execution-receipts.json"
@@ -241,21 +283,23 @@ def test_portable_examples_load():
 
 def test_portable_examples_cover_four_action_domains():
     for receipt in _example_receipts():
-        assert VALIDATOR.is_valid(receipt)
+        assert V03_VALIDATOR.is_valid(receipt)
         assert receipt["clearance_id"]
         assert receipt["commit_token_id"]
 
 
 def test_portable_examples_preserve_governance_and_commit_bindings():
     for receipt in _example_receipts():
-        assert receipt["clearance_id"] == "clearance-1"
-        assert receipt["clearance_digest"] == D
-        assert receipt["commit_token_id"] == "commit-1"
-        assert receipt["commit_token_digest"] == D
+        assert receipt["clearance_id"].startswith("clearance-")
+        assert receipt["clearance_digest"].startswith("sha256:")
+        assert receipt["commit_token_id"].startswith("commit-")
+        assert receipt["commit_token_digest"].startswith("sha256:")
+    assert len({receipt["clearance_digest"] for receipt in _example_receipts()}) == 4
+    assert len({receipt["commit_token_digest"] for receipt in _example_receipts()}) == 4
 
 
 def test_portable_examples_do_not_treat_external_proof_as_governance_authority():
     for receipt in _example_receipts():
-        assert VALIDATOR.is_valid(receipt)
-        assert receipt["clearance_id"] == "clearance-1"
-        assert receipt["commit_token_id"] == "commit-1"
+        assert V03_VALIDATOR.is_valid(receipt)
+        assert receipt["clearance_id"]
+        assert receipt["commit_token_id"]
