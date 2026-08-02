@@ -188,5 +188,30 @@
     "status": "implemented",
     "tests": "portable receipt extension 25 passed; compliance 118 passed with PYTHONPATH=.; Python binding 95 passed; cross-language Stage 3A/3B/3C gate passed",
     "dependencies": "RACS #115, #117 and #119 merged on base; PR #121 closed as evidence-only scaffold"
+  },
+  "hermes/issue-125-agentbound-docs": {
+    "repo": "nsolland/Racs",
+    "issue": 125,
+    "stage": "agentbound-track-i-racs",
+    "base_sha": "3687aa80cb0c6e2c6ce72938e8fe2a31e0819a2a",
+    "branch": "hermes/issue-125-agentbound-docs",
+    "owner": "ChatGPT",
+    "scope": "AgentBound delta specification section, v0.2/v0.3 compatibility, benchmark interpretation and prior-art classification; documentation only",
+    "claimed_paths": [
+      "SPECIFICATION.md",
+      "spec/AGENTBOUND_DELTA_V0_2_V0_3_COMPATIBILITY.md",
+      "docs/architecture/AGENTBOUND_PRIOR_ART_AND_BENCHMARK_INTERPRETATION.md",
+      "claimed.json"
+    ],
+    "must_not_touch": [
+      "normative schema JSON",
+      "reference implementations and validators",
+      "bindings and test vectors",
+      "benchmark logic or committed results",
+      "REHT admissibility, Core enforcement or receipt behavior"
+    ],
+    "status": "active",
+    "verification": "documentation review and remote diff scope verification required; no producer self-attestation",
+    "dependencies": "AgentBound Tracks B-H merged"
   }
 }
