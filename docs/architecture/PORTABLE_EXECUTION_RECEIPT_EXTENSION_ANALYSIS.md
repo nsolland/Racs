@@ -14,8 +14,8 @@ This document is an analytic handoff. It does not alter normative schemas, grant
 The matrix compares issue #1 scope fields against the current RACS v0.2 execution receipt. Status values:
 
 - `core` — already represented as a required or explicit optional field.
-- `optional extension` — can be added in the proposed namespace without changing normative core semantics.
-- `mapped external reference` — portable value may be referenced, but external format is not governance authority.
+- `mapped external reference` — portable value may be referenced, but external format is not governance authority; used when the portable pattern is fundamentally outside RACS ownership but can be referenced by digest or envelope id.
+- `optional extension` — can be added in the proposed namespace without changing normative core semantics; used when the portable pattern fits inside the existing receipt boundary and only needs additional fields.
 - `unsupported` — no mapping yet; gap is explicit.
 
 | Issue #1 field | RACS status | Current field or mechanism | Notes |
@@ -23,8 +23,8 @@ The matrix compares issue #1 scope fields against the current RACS v0.2 executio
 | action identity | core | `action_id`, `action_envelope_digest` | Action envelope digest binds the canonical action bytes. |
 | actor and principal | optional extension | none | Actor/principal is outside the current receipt boundary; can be mapped from authorization context. |
 | authority reference | core | `clearance_id`, `clearance_digest` | Ties execution to a specific clearance instance. |
-| delegation scope | mapped external reference | none | May be carried as a referenced delegation envelope digest. |
-| policy fingerprint | mapped external reference | none | Policy fingerprint may be mapped from the policy context digest or rule-set identifier. |
+| delegation scope | mapped external reference | none | Mapped because delegation authority lives outside the receipt boundary; carried as a referenced delegation envelope digest. |
+| policy fingerprint | mapped external reference | none | Mapped because policy fingerprint is outside receipt ownership; may be mapped from policy context digest or rule-set identifier. |
 | evidence references | optional extension | none | Pointer to an evidence package bundle or location. |
 | pre-action state | optional extension | none | Required for reversible/idempotent actions; modeled as a bounded state snapshot reference. |
 | execution environment | core | `connector_id`, `capability`, `provider_reference` | Environment and runtime adapter are present. |
