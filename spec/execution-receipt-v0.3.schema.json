@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.3/execution-receipt.schema.json",
+  "title": "RACS ExecutionReceipt Payload v0.3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["execution_receipt_id", "execution_id", "tenant_id", "action_id", "action_envelope_digest", "clearance_id", "clearance_digest", "commit_token_id", "commit_token_digest", "connector_id", "capability", "target_digest", "payload_digest", "started_at", "completed_at", "technical_outcome", "provider_reference", "response_digest", "reversal_status", "previous_receipt_hash"],
+  "properties": {
+    "execution_receipt_id": {"type": "string", "minLength": 1},
+    "execution_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "action_id": {"type": "string", "minLength": 1},
+    "action_envelope_digest": {"$ref": "#/$defs/digest"},
+    "clearance_id": {"type": "string", "minLength": 1},
+    "clearance_digest": {"$ref": "#/$defs/digest"},
+    "commit_token_id": {"type": "string", "minLength": 1},
+    "commit_token_digest": {"$ref": "#/$defs/digest"},
+    "governance_evaluation_digest": {"$ref": "#/$defs/digest"},
+    "reasoning_trace_binding_digest": {"$ref": "#/$defs/digest"},
+    "connector_id": {"type": "string", "minLength": 1},
+    "capability": {"type": "string", "minLength": 1},
+    "target_digest": {"$ref": "#/$defs/digest"},
+    "payload_digest": {"$ref": "#/$defs/digest"},
+    "started_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "technical_outcome": {"type": "string", "enum": ["BLOCKED", "SIMULATED", "SUCCEEDED", "FAILED", "INDETERMINATE", "REVERSED"]},
+    "provider_reference": {"type": "string", "minLength": 1},
+    "response_digest": {"$ref": "#/$defs/digest"},
+    "error_class": {"type": "string"},
+    "reversal_status": {"type": "string", "enum": ["NOT_APPLICABLE", "NOT_REVERSED", "PENDING", "REVERSED", "FAILED"]},
+    "previous_receipt_hash": {"$ref": "#/$defs/digest"},
+    "receipt_ext": {"$ref": "#/$defs/receipt_ext"}
+  },
+  "dependentRequired": {
+    "reasoning_trace_binding_digest": ["governance_evaluation_digest"]
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "receipt_ext": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "actor_principal": {"type": "object", "additionalProperties": false, "required": ["subject"], "properties": {"subject": {"type": "string", "minLength": 1}}},
+        "delegation_scope_ref": {"type": "string", "minLength": 1},
+        "policy_fingerprint_ref": {"type": "string", "minLength": 1},
+        "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "pre_state": {"$ref": "#/$defs/state_evidence"},
+        "post_state": {"$ref": "#/$defs/state_evidence"},
+        "cost": {"$ref": "#/$defs/cost_claim"},
+        "value_claim": {"$ref": "#/$defs/value_claim"},
+        "external_proof_ref": {"type": "string", "minLength": 1},
+        "signature_binding_ref": {"type": "string", "minLength": 1},
+        "replay_status": {"type": "string", "enum": ["FIRST_EXECUTION", "REPLAY", "DUPLICATE", "UNVERIFIED"]},
+        "idempotency_token": {"type": "string", "minLength": 1},
+        "duplicate_of_receipt_id": {"type": "string", "minLength": 1},
+        "duplicate_of_receipt_hash": {"$ref": "#/$defs/digest"}
+      },
+      "allOf": [
+        {
+          "if": {"anyOf": [{"required": ["duplicate_of_receipt_id"]}, {"required": ["duplicate_of_receipt_hash"]}]},
+          "then": {"required": ["replay_status", "idempotency_token", "duplicate_of_receipt_id", "duplicate_of_receipt_hash"], "properties": {"replay_status": {"enum": ["REPLAY", "DUPLICATE"]}}}
+        },
+        {
+          "if": {"properties": {"replay_status": {"enum": ["REPLAY", "DUPLICATE"]}}, "required": ["replay_status"]},
+          "then": {"required": ["idempotency_token", "duplicate_of_receipt_id", "duplicate_of_receipt_hash"]}
+        },
+        {
+          "if": {"properties": {"replay_status": {"const": "FIRST_EXECUTION"}}, "required": ["replay_status"]},
+          "then": {"required": ["idempotency_token"], "not": {"anyOf": [{"required": ["duplicate_of_receipt_id"]}, {"required": ["duplicate_of_receipt_hash"]}]}}
+        },
+        {
+          "if": {"properties": {"replay_status": {"const": "UNVERIFIED"}}, "required": ["replay_status"]},
+          "then": {"not": {"anyOf": [{"required": ["duplicate_of_receipt_id"]}, {"required": ["duplicate_of_receipt_hash"]}]}}
+        }
+      ]
+    },
+    "state_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_ref", "scope"],
+      "properties": {"evidence_ref": {"$ref": "#/$defs/digest"}, "scope": {"type": "string", "pattern": "^bounded:[a-z0-9][a-z0-9._-]{0,63}$"}}
+    },
+    "cost_claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "evidence_ref", "confidence"],
+      "properties": {
+        "method": {"type": "string", "minLength": 1},
+        "evidence_ref": {"$ref": "#/$defs/digest"},
+        "confidence": {"type": "string", "enum": ["low", "medium", "high"]},
+        "unit": {"type": "string", "minLength": 1},
+        "amount": {"type": "number"}
+      }
+    },
+    "value_claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "evidence_ref", "confidence"],
+      "properties": {
+        "method": {"type": "string", "minLength": 1},
+        "evidence_ref": {"$ref": "#/$defs/digest"},
+        "confidence": {"type": "string", "enum": ["low", "medium", "high"]},
+        "direction": {"type": "string", "enum": ["protected", "created", "avoided"]},
+        "amount": {"type": "number"},
+        "currency": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

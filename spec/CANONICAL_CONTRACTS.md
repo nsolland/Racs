@@ -39,7 +39,7 @@ Ruling #991:
 | 16 | Continuity Decision | `continuity-decision-v0.2.schema.json` | CONTINUE/MODIFY_RUNTIME_BOUNDS/PAUSE/STOP/REAUTHORIZE/ROLLBACK/HANDOVER/HALT |
 | 17 | Intervention Receipt | `intervention-receipt-v0.2.schema.json` | applied or failed runtime intervention |
 | 18 | Recovery Plan / Receipt | `recovery-plan-v0.2.schema.json` + `recovery-receipt-v0.2.schema.json` | recovery is evidence-only until separately governed |
-| 19 | Execution and Outcome Receipts | `execution-receipt-v0.2.schema.json` + `outcome-receipt-v0.2.schema.json` | technical execution and observed consequence remain separate |
+| 19 | Execution and Outcome Receipts | `execution-receipt-v0.2.schema.json`, `execution-receipt-v0.3.schema.json` + `outcome-receipt-v0.2.schema.json` | v0.3 adds the optional portable extension; technical execution and observed consequence remain separate |
 
 Normative runtime-continuity semantics are defined in `RUNTIME_CONTINUITY_V0_2.md`.
 
