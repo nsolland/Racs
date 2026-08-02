@@ -1,0 +1,72 @@
+name: AAEC Trajectory Conformance
+
+on:
+  pull_request:
+    paths:
+      - "spec/aaec-trajectory-context-v0.3.schema.json"
+      - "spec/AAEC_TRAJECTORY_PROFILE_V0_3.md"
+      - "reference/governance_os/aaec_trajectory.py"
+      - "reference/governance_os/test_aaec_trajectory.py"
+      - "test-vectors/0.3/aaec/**"
+      - ".github/workflows/aaec-trajectory-conformance.yml"
+  push:
+    branches: [main]
+    paths:
+      - "spec/aaec-trajectory-context-v0.3.schema.json"
+      - "reference/governance_os/aaec_trajectory.py"
+      - "reference/governance_os/test_aaec_trajectory.py"
+      - "test-vectors/0.3/aaec/**"
+
+permissions:
+  contents: read
+
+jobs:
+  aaec-conformance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install schema validator
+        run: python -m pip install "jsonschema>=4.21"
+      - name: Compile reference implementation
+        run: python -m compileall -q reference/governance_os/aaec_trajectory.py reference/governance_os/test_aaec_trajectory.py
+      - name: Validate AAEC schema
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import jsonschema
+
+          path = Path("spec/aaec-trajectory-context-v0.3.schema.json")
+          schema = json.loads(path.read_text())
+          jsonschema.Draft202012Validator.check_schema(schema)
+          print("valid schema:", path)
+          PY
+      - name: Run deterministic AAEC tests
+        working-directory: reference/governance_os
+        run: python -m unittest -v test_aaec_trajectory.py
+      - name: Validate conformance vector reason codes
+        run: |
+          python - <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          sys.path.insert(0, "reference/governance_os")
+          from aaec_trajectory import ReasonCode
+
+          vectors = json.loads(
+              Path("test-vectors/0.3/aaec/trajectory-conformance.json").read_text()
+          )
+          assert vectors["profile"] == "aaec-trajectory-context-0.3"
+          assert vectors["execution_authority"] == "NONE"
+          allowed = {item.value for item in ReasonCode}
+          for scenario in vectors["scenarios"]:
+              required = set(scenario["required_reason_codes"])
+              unknown = required - allowed
+              assert not unknown, f"unknown reason codes in {scenario['id']}: {sorted(unknown)}"
+          print("validated scenarios:", len(vectors["scenarios"]))
+          PY
