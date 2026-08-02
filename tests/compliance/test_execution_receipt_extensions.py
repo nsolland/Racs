@@ -222,3 +222,40 @@ def test_bounded_pre_and_post_state_evidence_are_supported():
         invalid["receipt_ext"]["pre_state"] = {"evidence_ref": D, "scope": "target_digest_bounded"}
         del invalid["receipt_ext"]["pre_state"][missing_field]
         assert not VALIDATOR.is_valid(invalid)
+
+
+EXAMPLES_PATH = REPO_ROOT / "examples" / "portable-execution-receipts.json"
+REQUIRED_DOMAINS = ("financial", "browser", "messaging", "infrastructure")
+
+
+def _example_receipts():
+    data = json.loads(EXAMPLES_PATH.read_text(encoding="utf-8"))
+    assert isinstance(data, dict)
+    return [data[domain] for domain in REQUIRED_DOMAINS]
+
+
+def test_portable_examples_load():
+    data = json.loads(EXAMPLES_PATH.read_text(encoding="utf-8"))
+    assert set(data.keys()) == set(REQUIRED_DOMAINS)
+
+
+def test_portable_examples_cover_four_action_domains():
+    for receipt in _example_receipts():
+        assert VALIDATOR.is_valid(receipt)
+        assert receipt["clearance_id"]
+        assert receipt["commit_token_id"]
+
+
+def test_portable_examples_preserve_governance_and_commit_bindings():
+    for receipt in _example_receipts():
+        assert receipt["clearance_id"] == "clearance-1"
+        assert receipt["clearance_digest"] == D
+        assert receipt["commit_token_id"] == "commit-1"
+        assert receipt["commit_token_digest"] == D
+
+
+def test_portable_examples_do_not_treat_external_proof_as_governance_authority():
+    for receipt in _example_receipts():
+        assert VALIDATOR.is_valid(receipt)
+        assert receipt["clearance_id"] == "clearance-1"
+        assert receipt["commit_token_id"] == "commit-1"
