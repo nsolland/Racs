@@ -40,6 +40,9 @@ Ruling #991:
 | 17 | Intervention Receipt | `intervention-receipt-v0.2.schema.json` | applied or failed runtime intervention |
 | 18 | Recovery Plan / Receipt | `recovery-plan-v0.2.schema.json` + `recovery-receipt-v0.2.schema.json` | recovery is evidence-only until separately governed |
 | 19 | Execution and Outcome Receipts | `execution-receipt-v0.2.schema.json`, `execution-receipt-v0.3.schema.json` + `outcome-receipt-v0.2.schema.json` | v0.3 adds the optional portable extension; technical execution and observed consequence remain separate |
+| 20 | Role Boundary Contract | `role-contract-v1.schema.json` | wire format of module role boundary contracts |
+| 21 | Role Integrity Evaluation | `role-integrity-evaluation-v1.schema.json` | evaluation result for role fidelity and role-drift detection |
+
 
 Normative runtime-continuity semantics are defined in `RUNTIME_CONTINUITY_V0_2.md`.
 

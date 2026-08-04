@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.valo.dev/spec/role-contract-v1.schema.json",
+  "title": "Role Contract V1",
+  "description": "Canonical wire schema for module role boundary contracts (VALO Role Boundary Integrity).",
+  "type": "object",
+  "required": [
+    "module_role_id",
+    "role_contract_version",
+    "allowed_operations",
+    "forbidden_operations",
+    "required_input_types",
+    "required_evidence_types",
+    "allowed_output_types",
+    "forbidden_output_fields",
+    "next_owner_roles",
+    "authority_ceiling",
+    "may_transform",
+    "may_repair",
+    "may_authorize",
+    "may_execute"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "module_role_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "role_contract_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "allowed_operations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "forbidden_operations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "required_input_types": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "required_evidence_types": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "allowed_output_types": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "forbidden_output_fields": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "next_owner_roles": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "authority_ceiling": {
+      "type": "string",
+      "minLength": 1
+    },
+    "may_transform": {
+      "type": "boolean"
+    },
+    "may_repair": {
+      "type": "boolean"
+    },
+    "may_authorize": {
+      "type": "boolean"
+    },
+    "may_execute": {
+      "type": "boolean"
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.valo.dev/spec/role-integrity-evaluation-v1.schema.json",
+  "title": "Role Integrity Evaluation V1",
+  "description": "Canonical wire schema for role integrity evaluation results (VALO Role Boundary Integrity).",
+  "type": "object",
+  "required": [
+    "module_role_id",
+    "role_contract_version",
+    "role_contract_digest",
+    "role_fidelity_probe",
+    "evidence_dependency",
+    "cross_role_computation_detected",
+    "role_drift_detected",
+    "drift_type",
+    "violated_constraints",
+    "evidence_refs",
+    "evaluation_timestamp_ns",
+    "decision"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "module_role_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "role_contract_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "role_contract_digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "role_fidelity_probe": {
+      "type": "string"
+    },
+    "evidence_dependency": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "cross_role_computation_detected": {
+      "type": "boolean"
+    },
+    "role_drift_detected": {
+      "type": "boolean"
+    },
+    "drift_type": {
+      "type": "string",
+      "enum": [
+        "none",
+        "answer_leakage",
+        "evidence_bypass",
+        "analysis_by_collector",
+        "authorization_by_evaluator",
+        "repair_by_verifier",
+        "execution_by_planner",
+        "policy_invention",
+        "authority_expansion",
+        "downstream_role_absorption"
+      ]
+    },
+    "violated_constraints": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "evaluation_timestamp_ns": {
+      "type": "string",
+      "pattern": "^[0-9]+$"
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "ALLOW",
+        "STEP_UP",
+        "DENY",
+        "HALT"
+      ]
+    }
+  }
+}

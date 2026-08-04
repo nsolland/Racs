@@ -448,7 +448,7 @@ class TestCliIntegration:
         path = tmp_path / "valid.json"
         with open(path, "w") as fh:
             json.dump(env, fh)
-        ret = os.system(f"{sys.executable} validators/envelope_validator.py {path}")
+        ret = os.system(f"PYTHONPATH=. {sys.executable} validators/envelope_validator.py {path}")
         assert ret == 0, "CLI should exit 0 for valid envelope"
 
     def test_envelope_cli_invalid(self, tmp_path: Path):
@@ -458,10 +458,10 @@ class TestCliIntegration:
         path = tmp_path / "invalid.json"
         with open(path, "w") as fh:
             json.dump(env, fh)
-        ret = os.system(f"{sys.executable} validators/envelope_validator.py {path}")
+        ret = os.system(f"PYTHONPATH=. {sys.executable} validators/envelope_validator.py {path}")
         assert ret != 0, "CLI should exit non-zero for invalid envelope"
 
     def test_envelope_cli_missing_file(self):
         """CLI exits 2 for missing file."""
-        ret = os.system(f"{sys.executable} validators/envelope_validator.py /nonexistent/path.yaml")
+        ret = os.system(f"PYTHONPATH=. {sys.executable} validators/envelope_validator.py /nonexistent/path.yaml")
         assert ret != 0, "CLI should exit non-zero for missing file"
