@@ -1,141 +1,37 @@
-# CLAUDE.md — RACS (REHT Action Control Standard)
+# Claude adapter — RACS
 
-## What this project is
+Read `AGENTS.md` first. It is the repository working contract.
 
-**RACS** is a neutral, model-agnostic protocol specification for representing, evaluating, authorizing, executing, and evidencing AI-mediated actions. RACS is a **standard, not a runtime implementation.**
+Then read:
 
-Core question answered: **"Is this action admissible to execute under the current authority, policy, evidence and system state?"**
+1. `repo-manifest.yaml`
+2. `README.md`
+3. the normative files under `spec/`
+4. relevant validators and test vectors
 
-RACS defines the contract between evidence layers (BARO, Speider) and action governance layers (VAIG, REHT, Core).
+This file is a Claude-specific adapter. It does not define protocol semantics, authority, repository state, branch state or merge permission.
 
----
+RACS owns the deterministic, interoperable decision contract and receipt/evidence schemas between VALO components.
 
-## Tech stack
+RACS does not:
 
-- **Language:** YAML/JSON (protocol specification)
-- **References:** Python (example implementations in `reference/`)
-- **Testing:** Compliance validators (check if implementations conform to spec)
-- **CI/CD:** GitHub Actions (spec validation, example tests)
+- evaluate evidence or risk
+- determine admissibility
+- grant authority or clearance
+- enforce a decision
+- perform side effects
+- learn or fetch context
+- redefine REHT policy
 
----
+Canonical chain:
 
-## Directory structure
-
-```
-RACS/
-├── CLAUDE.md                   # This file
-├── README.md                   # Protocol overview
-├── spec/
-│   ├── action-envelope.yaml    # Core action message format
-│   ├── authority-context.yaml  # Authority representation
-│   ├── evidence-package.yaml   # Evidence data format
-│   ├── policy-context.yaml     # Policy constraints
-│   ├── execution-semantics.yaml # Action execution model
-│   └── evidence-semantics.yaml # Evidence validation model
-├── examples/
-│   ├── energy-grid.yaml        # Energy grid action example
-│   ├── financial.yaml          # Financial transaction example
-│   └── medical.yaml            # Medical AI example
-├── validators/
-│   ├── envelope_validator.py   # RACS envelope validator
-│   ├── policy_validator.py     # Policy compliance checker
-│   └── evidence_validator.py   # Evidence package checker
-├── reference/
-│   ├── python-implementation/  # Reference Python implementation
-│   └── typescript-implementation/ # Reference TypeScript implementation
-└── tests/
-    └── compliance/             # RACS compliance test suites
+```text
+VAIG evaluation
+→ REHT clearance or rejection
+→ RACS deterministic decision contract
+→ gateway or execution-boundary enforcement
+→ execution
+→ Veritas receipt and observed outcome
 ```
 
----
-
-## Core concepts
-
-| Term | Meaning |
-|------|---------|
-| **Action Envelope** | Structured message representing a single AI-mediated action (who, what, when, why, how) |
-| **Authority Context** | Who is authorized to make this decision; delegation chains and policy scope |
-| **Evidence Package** | Facts, conditions, and reasoning supporting the action decision |
-| **Policy Context** | Constraints, rules, and acceptable risk bounds for this action class |
-| **Execution Semantics** | How the action is executed, logged, and reversed if needed |
-| **Evidence Semantics** | Rules for what evidence is sufficient, how it's validated, how it expires |
-
----
-
-## Development commands
-
-```bash
-# Validate spec files
-python validators/envelope_validator.py spec/action-envelope.yaml
-
-# Run compliance tests
-pytest tests/compliance/ -v
-
-# Validate examples against spec
-python validators/envelope_validator.py examples/energy-grid.yaml
-python validators/envelope_validator.py examples/financial.yaml
-
-# Build reference implementations
-cd reference/python-implementation && python -m build
-cd ../typescript-implementation && npm install && npm test
-```
-
----
-
-## Key files
-
-| File | Purpose |
-|------|---------|
-| `spec/action-envelope.yaml` | **Start here.** Action message format (who, what, when, why, context) |
-| `spec/authority-context.yaml` | Authority chains and delegation semantics |
-| `spec/evidence-package.yaml` | Evidence structure and validation rules |
-| `spec/policy-context.yaml` | Policy language for action constraints |
-| `spec/execution-semantics.yaml` | Action execution, reversal, and auditability |
-| `README.md` | Protocol overview and use cases |
-| `examples/*.yaml` | Concrete action examples across domains |
-
----
-
-## Architecture integration
-
-RACS sits at the center of VALO architecture as the **bridge protocol**:
-
-```
-Data Layers          → RACS Protocol        → Action Layers
-─────────────────────────────────────────────────────────────
-BARO (observ.)       ↓                      → VAIG (evidence eval)
-Speider (discov.)    Action Envelope       → REHT (admissibility)
-External Facts       Evidence Package      → Core (execution)
-                     Policy Context
-                     Authority Context
-```
-
-- **Producers** (data layers): BARO, Speider, VAIG, external systems
-- **Consumers** (action layers): VAIG, REHT, Core authorization engines
-- **Validators:** All layers validate incoming RACS messages
-
----
-
-## Important constraints for AI assistants
-
-- **RACS is neutral.** No domain-specific assumptions; applies to energy, finance, medical, general AI equally
-- **RACS is specification-first.** Implementations must conform to spec; do not invent protocol variants
-- **No hardcoding policy.** Policy is data in `policy-context`; never bake policy into code
-- **Evidence is immutable in transmission.** Evidence packages are signed; never modify during transmission
-- **Authority chains are explicit.** Delegation must be traceable; no implicit authority
-- **Specification is the source of truth.** Spec files are the contract; implementations follow them
-
----
-
-## Governance
-
-- **Development branch:** `claude/code-audit-all-repos-kvj2go`
-- **PR policy:** All spec changes require review; reference implementations must pass compliance tests
-- **Backwards compatibility:** Major spec changes require version bump and migration guide
-- **External usage:** RACS is public; clarify which parts are stable (spec/) vs. reference (reference/)
-
----
-
-## Session notes
-
-Created in SESSION#9 (2026-07-11) as part of deep ecosystem audit. This repo was missing CLAUDE.md governance documentation. Identified as critical to VALO architecture as protocol bridge between evidence (BARO/Speider) and action layers (VAIG/REHT/Core).
+Changes to normative schemas require versioning, conformance vectors and review. Repository source, current schemas, tests, remote Git state and CI evidence remain authoritative.
