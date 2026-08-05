@@ -24,6 +24,10 @@ import re
 import sys
 from typing import Any
 
+# Allow `python validators/envelope_validator.py` to import sibling validators
+# via the package namespace (`validators.authority_validator`, ...).
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 try:
     import yaml
 except ImportError:

@@ -29,14 +29,15 @@
         "idempotency_key": "idem-0001",
         "boundary_requirements": {
           "required_types": [
-            "EXECUTION"
+            "EXECUTION",
+            "DISCLOSURE"
           ],
           "policy_ref": "pol-1",
-          "policy_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "policy_digest": "sha256:2346bf89746cfd262cfc6abe4d6c9075ec110928617b7d1bfc9e97948376d1c4",
           "fail_closed": true
         }
       },
-      "payload_digest": "sha256:22673bc5aa341850069d1ca12c347b2272db71ff3fe12f640e95129ae53d11b1",
+      "payload_digest": "sha256:682e7701af1d68c8e696346f7a61f7a7fa990a8045303d03b318804ed9e39774",
       "schema": "action-envelope-v0.2.schema.json"
     },
     "governance_evaluation_v0.2": {
@@ -55,13 +56,13 @@
         "state_status": "PRESENT_AND_VALID",
         "risk_status": "PRESENT_AND_VALID",
         "boundary_assessment_binding": {
-          "assessment_ref": "ba-1",
-          "assessment_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+          "assessment_ref": "assessment:boundary-crossing-v1",
+          "assessment_digest": "sha256:f986be8e1ebea6312d40fe60092b82476dd9a1f64f7e39b975618d66b6442ff9"
         },
         "evaluated_at": "2026-07-25T11:59:00Z",
         "valid_until": "2026-07-25T12:04:00Z"
       },
-      "payload_digest": "sha256:17b19648c6525e586878153127a63cb9a00a180a1212160cc16fb541e6578567",
+      "payload_digest": "sha256:c332d5395a8202d55899f28c47319ca38c2c55a1f8a017c118663beee2e00e31",
       "schema": "governance-evaluation-v0.2.schema.json"
     },
     "admissibility_determination_v0.2": {
@@ -83,15 +84,15 @@
           }
         ],
         "boundary_assessment_binding": {
-          "assessment_ref": "ba-1",
-          "assessment_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+          "assessment_ref": "assessment:boundary-crossing-v1",
+          "assessment_digest": "sha256:aaf8b7c9cd1f7a2326bf0f44d487583a1eea72ee31cf259991553f5659cdff79"
         },
         "state": "ADMISSIBLE",
         "determined_at": "2026-07-25T12:00:00Z",
         "valid_until": "2026-07-25T12:05:00Z",
         "revocation_registry_ref": "rr-1"
       },
-      "payload_digest": "sha256:d1f6b1df9ecd9d431e714f13f8a0375429963bea0c39192b44bd317c1387e065",
+      "payload_digest": "sha256:3674d54c3b58d7e80e3b1616034e068d5a0c18a5f00738f04fb122ca983a2729",
       "schema": "admissibility-determination-v0.2.schema.json"
     },
     "execution_receipt_v0.2": {
