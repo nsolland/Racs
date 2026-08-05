@@ -23,12 +23,12 @@ RUNTIME_VECTORS = sorted(
 STEP2_DIGEST = "sha256:532d2a571f8536890bf9b79994703c63a44c01ba40f71b4733d045674bdb3273"
 
 
-def _run(command: list[str]) -> dict[str, Any]:
+def _run(command: list[str], env: dict[str, Any] | None = None) -> dict[str, Any]:
     result = subprocess.run(
         command,
         capture_output=True,
         text=True,
-        env=dict(os.environ),
+        env=env or dict(os.environ),
     )
     if result.returncode != 0:
         raise RuntimeError(
@@ -40,7 +40,14 @@ def _run(command: list[str]) -> dict[str, Any]:
 
 def _python(arguments: str) -> dict[str, Any]:
     activate = ROOT / "python" / ".venv" / "bin" / "activate"
-    return _run(["bash", "-lc", f"source {activate} && python -m racs_v02.cli {arguments}"])
+    if activate.exists():
+        return _run(["bash", "-lc", f"source {activate} && python -m racs_v02.cli {arguments}"])
+    # Fallback for environments without a venv: run with the repo root and the
+    # python binding source on PYTHONPATH so the gate is locally reproducible.
+    python_src = ROOT / "python" / "src"
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(python_src) + os.pathsep + env.get("PYTHONPATH", "")
+    return _run([sys.executable, "-m", "racs_v02.cli", *arguments.split()], env=env)
 
 
 def _rust(arguments: list[str]) -> dict[str, Any]:

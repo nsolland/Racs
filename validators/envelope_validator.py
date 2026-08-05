@@ -22,6 +22,7 @@ import json
 import os
 import re
 import sys
+from datetime import datetime, timezone
 from typing import Any
 
 # Allow `python validators/envelope_validator.py` to import sibling validators
@@ -54,10 +55,17 @@ OPTIONAL_FIELDS = ["risk_context", "expires_at"]
 
 ALLOWED_TOP_LEVEL = set(REQUIRED_FIELDS + OPTIONAL_FIELDS)
 
+# Envelope versions known to this validator. Unknown versions fail closed in
+# governance-complete mode.
+VALID_RACS_VERSIONS = {"0.1", "0.2"}
+
 # ISO 8601 datetime regex (basic validation)
 DATETIME_RE = re.compile(
     r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$"
 )
+
+# All-zero SHA-256 placeholder digest (e.g. "sha256:0000...0").
+_ZERO_SHA256_RE = re.compile(r"^sha256:0{64}$")
 
 
 # ---- Validation helpers ----
@@ -301,6 +309,29 @@ def validate_envelope(
         else:
             errors.extend(_validate_field(data[field], field))
 
+    # 1a. Governance-complete version vocabulary (deterministic).
+    if governance_complete and data.get("racs_version"):
+        if data["racs_version"] not in VALID_RACS_VERSIONS:
+            errors.append(
+                f"racs_version: must be one of "
+                f"{', '.join(sorted(VALID_RACS_VERSIONS))}, "
+                f"got {data['racs_version']!r}"
+            )
+
+    # 1b. Governance-complete digest re-verify: placeholder (all-zero) digest
+    #     fields are never acceptable — a real digest must bind content.
+    if governance_complete:
+        for key, value in data.items():
+            if (
+                key.endswith("_digest")
+                and isinstance(value, str)
+                and _ZERO_SHA256_RE.match(value)
+            ):
+                errors.append(
+                    f"{key}: placeholder (all-zero) digest is not acceptable "
+                    "in governance-complete mode"
+                )
+
     # 1b. Validate optional fields when present
     for field in OPTIONAL_FIELDS:
         if field in data and data[field] is not None:
@@ -313,6 +344,26 @@ def validate_envelope(
                 errors.append(f"extra field not allowed: {key}")
 
     return errors
+
+
+def check_admissibility_expiry(data: dict[str, Any], now: datetime) -> list[str]:
+    """Expiry check for the admissibility layer (caller passes wall time).
+
+    ``validate_envelope`` stays deterministic and does not consult a wall clock;
+    admissibility code passes ``now`` here. Returns errors; an expired envelope
+    yields an ``expires_at`` error. Structural ``expires_at`` validation is the
+    responsibility of ``validate_envelope``.
+    """
+    expires_at = data.get("expires_at")
+    if not isinstance(expires_at, str):
+        return []
+    try:
+        parsed = datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
+    except ValueError:
+        return []
+    if parsed <= now:
+        return [f"expires_at: envelope expired at {expires_at}"]
+    return []
 
 
 def main() -> None:

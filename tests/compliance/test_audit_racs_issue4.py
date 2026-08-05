@@ -140,3 +140,42 @@ def test_governance_complete_mode_exists_and_defaults_on():
     )
     assert ev.validate_envelope(envelope)
     assert ev.validate_envelope(envelope, governance_complete=False) == []
+
+
+def test_unknown_racs_version_rejected_in_governance_complete():
+    errors = ev.validate_envelope(make_envelope(racs_version="not-a-real-version"))
+    assert_error(errors, "racs_version")
+    # Disabled in structural-only mode: version vocabulary is a governance rule.
+    assert ev.validate_envelope(
+        make_envelope(racs_version="not-a-real-version"), governance_complete=False
+    ) == []
+
+
+def test_admissibility_expiry_rejects_expired_envelope():
+    from datetime import datetime, timezone
+
+    now = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    env = make_envelope(
+        created_at="2020-01-01T00:00:00Z",
+        expires_at="2020-01-02T00:00:00Z",
+    )
+    errors = ev.check_admissibility_expiry(env, now)
+    assert any("expires_at" in e for e in errors)
+
+
+def test_admissibility_expiry_allows_valid_envelope():
+    from datetime import datetime, timezone
+
+    now = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    env = make_envelope(expires_at="2026-12-31T00:00:00Z")
+    assert ev.check_admissibility_expiry(env, now) == []
+
+
+def test_placeholder_digest_rejected_in_governance_complete():
+    zero = "sha256:" + "0" * 64
+    env = make_envelope(payload_digest=zero)
+    errors = ev.validate_envelope(env)
+    assert any("placeholder" in e for e in errors)
+    # Structural-only mode does not enforce digest authenticity.
+    structural = ev.validate_envelope(env, governance_complete=False)
+    assert not any("placeholder" in e for e in structural)

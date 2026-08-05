@@ -39,7 +39,7 @@ def test_missing_accountable_owner_is_rejected() -> None:
     del profile["accountable_owner_ref"]
     policy["regulatory_profiles"] = [profile]
 
-    assert "regulatory_profiles[0].accountable_owner_ref: is required" in validate_policy_context(policy)
+    assert "policy_context.regulatory_profiles[0].accountable_owner_ref: is required" in validate_policy_context(policy)
 
 
 def test_regulatory_profile_must_not_be_executable_code() -> None:
@@ -48,4 +48,4 @@ def test_regulatory_profile_must_not_be_executable_code() -> None:
     profile["active_obligation_ids"] = "article_50_transparency"
     policy["regulatory_profiles"] = [profile]
 
-    assert "regulatory_profiles[0].active_obligation_ids: must be a list of strings" in validate_policy_context(policy)
+    assert "policy_context.regulatory_profiles[0].active_obligation_ids: must be a list of strings" in validate_policy_context(policy)

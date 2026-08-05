@@ -46,6 +46,12 @@ jobs:
             reference/python/test_racs_permit.py \
             reference/python/test_racs_connector.py \
             -v 2>&1 | tee /tmp/racs-canonical-tests.log
+      - name: Golden vectors validate against canonical schemas (hard gate)
+        id: golden_vector_gate
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pytest tests/test_golden_digests.py -v 2>&1 | tee /tmp/racs-golden-vector-gate.log
       - name: Verify golden vector .sha256 sidecars
         id: golden_sidecars
         continue-on-error: true
@@ -64,10 +70,11 @@ jobs:
           path: |
             /tmp/racs-schema-validation.log
             /tmp/racs-canonical-tests.log
+            /tmp/racs-golden-vector-gate.log
             /tmp/racs-golden-sidecars.log
           if-no-files-found: warn
       - name: Fail on canonical conformance error
-        if: steps.schema_validation.outcome == 'failure' || steps.canonical_tests.outcome == 'failure' || steps.golden_sidecars.outcome == 'failure'
+        if: steps.schema_validation.outcome == 'failure' || steps.canonical_tests.outcome == 'failure' || steps.golden_vector_gate.outcome == 'failure' || steps.golden_sidecars.outcome == 'failure'
         run: exit 1
 
   full-compliance:

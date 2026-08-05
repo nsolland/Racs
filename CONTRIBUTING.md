@@ -2,6 +2,13 @@
 
 All contributions must preserve a defensible intellectual-property trail.
 
+## Branch and push discipline
+
+- One issue = one branch = one PR, targeting `main` (see `AGENTS.md`).
+- Avoid pushing directly to `main` from a feature branch. A pre-push guard is
+  provided at `scripts/pre-push-protect-main.sh` (install per-clone with
+  `ln -sf ../../scripts/pre-push-protect-main.sh .git/hooks/pre-push`).
+
 ## Contributor declaration
 
 By submitting a contribution, the contributor confirms that:

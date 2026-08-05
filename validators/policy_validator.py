@@ -89,7 +89,7 @@ def _validate_regulatory_profiles(data: dict[str, Any]) -> list[str]:
         return ["regulatory_profiles: must be a list"]
 
     for index, profile in enumerate(profiles):
-        prefix = f"regulatory_profiles[{index}]"
+        prefix = f"policy_context.regulatory_profiles[{index}]"
         if not isinstance(profile, dict):
             errors.append(f"{prefix}: must be an object")
             continue
@@ -127,30 +127,30 @@ def validate_policy_context(data: dict[str, Any]) -> list[str]:
 
     for field in REQUIRED_FIELDS:
         if field not in data or data[field] is None:
-            errors.append(f"{field}: is required")
+            errors.append(f"policy_context.{field}: is required")
         elif not isinstance(data[field], str):
-            errors.append(f"{field}: must be a string")
+            errors.append(f"policy_context.{field}: must be a string")
 
     if "evaluation_mode" in data:
         mode = data["evaluation_mode"]
         if mode not in VALID_EVALUATION_MODES:
             errors.append(
-                f"evaluation_mode: must be one of {', '.join(sorted(VALID_EVALUATION_MODES))}, got {mode!r}"
+                f"policy_context.evaluation_mode: must be one of {', '.join(sorted(VALID_EVALUATION_MODES))}, got {mode!r}"
             )
 
     if "rules" in data:
         if not isinstance(data["rules"], list):
-            errors.append("rules: must be a list")
+            errors.append("policy_context.rules: must be a list")
         else:
             for i, rule in enumerate(data["rules"]):
                 if not isinstance(rule, dict):
-                    errors.append(f"rules[{i}]: must be an object")
+                    errors.append(f"policy_context.rules[{i}]: must be an object")
                     continue
                 if "rule_id" not in rule:
-                    errors.append(f"rules[{i}]: rule_id is required")
+                    errors.append(f"policy_context.rules[{i}]: rule_id is required")
                 if "effect" in rule and rule["effect"] not in VALID_EFFECTS:
                     errors.append(
-                        f"rules[{i}].effect: must be one of {', '.join(sorted(VALID_EFFECTS))}, got {rule['effect']!r}"
+                        f"policy_context.rules[{i}].effect: must be one of {', '.join(sorted(VALID_EFFECTS))}, got {rule['effect']!r}"
                     )
 
     errors.extend(_validate_regulatory_profiles(data))

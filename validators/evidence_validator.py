@@ -74,12 +74,12 @@ def validate_evidence_package(data: dict[str, Any]) -> list[str]:
     # Required fields
     for field in REQUIRED_FIELDS:
         if field not in data or data[field] is None:
-            errors.append(f"{field}: is required")
+            errors.append(f"evidence_package.{field}: is required")
 
     # Package type
     if "package_type" in data and data["package_type"] not in VALID_PACKAGE_TYPES:
         errors.append(
-            f"package_type: must be one of {', '.join(sorted(VALID_PACKAGE_TYPES))}, got {data['package_type']!r}"
+            f"evidence_package.package_type: must be one of {', '.join(sorted(VALID_PACKAGE_TYPES))}, got {data['package_type']!r}"
         )
 
     # Producer object
@@ -87,27 +87,27 @@ def validate_evidence_package(data: dict[str, Any]) -> list[str]:
         producer = data["producer"]
         for req in ("id", "system"):
             if req not in producer:
-                errors.append(f"producer.{req}: is required")
+                errors.append(f"evidence_package.producer.{req}: is required")
 
     # Items list
     if "items" in data:
         if not isinstance(data["items"], list):
-            errors.append("items: must be a list")
+            errors.append("evidence_package.items: must be a list")
         elif len(data["items"]) == 0:
-            errors.append("items: must have at least one item")
+            errors.append("evidence_package.items: must have at least one item")
         else:
             for i, item in enumerate(data["items"]):
                 if not isinstance(item, dict):
-                    errors.append(f"items[{i}]: must be an object")
+                    errors.append(f"evidence_package.items[{i}]: must be an object")
                     continue
                 for req in ("item_id", "fact_type", "value"):
                     if req not in item:
-                        errors.append(f"items[{i}].{req}: is required")
+                        errors.append(f"evidence_package.items[{i}].{req}: is required")
                 if "confidence" in item:
                     c = item["confidence"]
                     if not isinstance(c, (int, float)) or c < 0 or c > 1:
                         errors.append(
-                            f"items[{i}].confidence: must be a number between 0 and 1"
+                            f"evidence_package.items[{i}].confidence: must be a number between 0 and 1"
                         )
 
     # Integrity object
@@ -115,7 +115,7 @@ def validate_evidence_package(data: dict[str, Any]) -> list[str]:
         integrity = data["integrity"]
         for req in ("signed_digest", "algorithm"):
             if req not in integrity:
-                errors.append(f"integrity.{req}: is required")
+                errors.append(f"evidence_package.integrity.{req}: is required")
 
     return errors
 
