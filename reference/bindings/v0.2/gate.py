@@ -67,19 +67,36 @@ def _typescript(arguments: str) -> dict[str, Any]:
 
 def _python_model_digest() -> str:
     activate = ROOT / "python" / ".venv" / "bin" / "activate"
-    result = subprocess.run(
-        [
-            "bash",
-            "-lc",
-            f"source {activate} && python -c \"import json; "
-            f"from racs_v02 import GovernanceEvaluation; "
-            f"payload=json.load(open('{GOLDEN}'))['payload']; "
-            f"print(GovernanceEvaluation(**payload).model_digest())\"",
-        ],
-        capture_output=True,
-        text=True,
-        env=dict(os.environ),
+    command = (
+        f"source {activate} && python -c \"import json; "
+        f"from racs_v02 import GovernanceEvaluation; "
+        f"payload=json.load(open('{GOLDEN}'))['payload']; "
+        f"print(GovernanceEvaluation(**payload).model_digest())\""
     )
+    if not activate.exists():
+        # Fallback without a venv: run with the python binding source on
+        # PYTHONPATH so the gate is locally reproducible (mirrors _python()).
+        env = dict(os.environ)
+        python_src = ROOT / "python" / "src"
+        env["PYTHONPATH"] = str(python_src) + os.pathsep + env.get("PYTHONPATH", "")
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "import json, sys; "
+                f"sys.path.insert(0, {str(python_src)!r}); "
+                "from racs_v02 import GovernanceEvaluation; "
+                f"payload=json.load(open({str(GOLDEN)!r}))['payload']; "
+                "print(GovernanceEvaluation(**payload).model_digest())",
+            ],
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr)
+        return result.stdout.strip()
+    result = subprocess.run(["bash", "-lc", command], capture_output=True, text=True)
     if result.returncode != 0:
         raise RuntimeError(result.stderr)
     return result.stdout.strip()
