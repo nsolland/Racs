@@ -1,121 +1,36 @@
-# RACS Example: Energy Grid Balancing Action
+# RACS v0.2 example action envelope
 #
-# This example demonstrates a valid action envelope for
-# an AI-mediated energy grid balancing decision.
-# Domain-neutral: demonstrates how RACS applies to energy infrastructure.
-
-racs_version: "0.1"
-action_id: "ae-20260713-001"
-action_type: "grid_balancing"
-
-actor:
-  id: "actor:grid-optimizer-v3"
-  role: "grid_optimization_agent"
-  delegation_chain:
-    - delegator_id: "org:utility-operator"
-      delegate_id: "actor:grid-optimizer-v3"
-      scope: "grid.balancing.substation_42"
-
-target:
-  id: "substation-42"
-  type: "electrical_substation"
-
-requested_effect:
-  description: "Adjust substation-42 feeder load by -15% within 30 seconds"
-  parameters:
-    adjustment_pct: -15
-    max_duration_seconds: 30
-    feeder_ids: ["feeder-a", "feeder-b"]
-
-authority_context:
-  authority_id: "auth-20260713-001"
-  authorizing_entity:
-    id: "org:utility-operator"
-    role: "grid_operator"
-    name: "Regional Grid Operator"
-  authority_type: "delegated"
-  delegation_chain:
-    - delegator_id: "regulator:energy-authority"
-      delegate_id: "org:utility-operator"
-      scope: "grid.balancing.region_west"
-      granted_at: "2026-01-01T00:00:00Z"
-      expires_at: "2027-01-01T00:00:00Z"
-  governance_scope:
-    action_types: ["grid_balancing", "load_shedding"]
-    domains: ["energy"]
-    max_risk_level: "high"
-  valid_from: "2026-07-13T10:00:00Z"
-  valid_until: "2026-07-13T11:00:00Z"
-
-policy_context:
-  policy_id: "policy-grid-2026-v2"
-  policy_set_ref: "racs.policy.energy.grid_balancing"
-  policy_set_version: "2.1.0"
-  rules:
-    - rule_id: "max-adjustment"
-      description: "Maximum load adjustment per action"
-      effect: "ALLOW"
-      conditions:
-        max_adjustment_pct: 20
-    - rule_id: "min-interval"
-      description: "Minimum time between adjustments"
-      effect: "DENY"
-      conditions:
-        min_interval_seconds: 60
-  evaluation_mode: "strict"
-  valid_from: "2026-01-01T00:00:00Z"
-  valid_until: "2027-01-01T00:00:00Z"
-
-evidence_package:
-  evidence_id: "ev-20260713-001"
-  package_type: "composite"
-  producer:
-    id: "component:baro-grid-monitor"
-    system: "BARO"
-    version: "1.2.0"
-  items:
-    - item_id: "ev-item-001"
-      fact_type: "measurement"
-      value:
-        sensor_id: "sensor-42a"
-        metric: "feeder_load"
-        value: 87.3
-        unit: "MW"
-      confidence: 0.95
-      source_ref: "baro://grid/substation-42/feeder-load"
-      freshness:
-        max_age_seconds: 30
-        captured_at: "2026-07-13T10:29:45Z"
-    - item_id: "ev-item-002"
-      fact_type: "observation"
-      value:
-        condition: "peak_demand"
-        severity: "approaching_capacity"
-      confidence: 0.88
-      source_ref: "baro://grid/substation-42/status"
-  integrity:
-    signed_digest: "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    algorithm: "sha256"
-    signature: "MEUCIDB..."
-    signing_key_ref: "key:baro-prod-2026"
-  created_at: "2026-07-13T10:29:50Z"
-  expires_at: "2026-07-13T10:30:20Z"
-
-environment_state:
-  snapshot_id: "env-20260713-10:29:45"
-  relevant_facts:
-    - key: "grid_frequency"
-      value: 49.8
-      unit: "Hz"
-    - key: "total_demand"
-      value: 3420
-      unit: "MW"
-
-risk_context:
-  level: "medium"
-  assessment:
-    impact: "localized_load_change"
-    probability: 0.15
-
-created_at: "2026-07-13T10:30:00Z"
-expires_at: "2026-07-13T10:30:30Z"
+# Canonical refs-based envelope. Digests are deterministic sha256 bindings
+# generated for the example; real envelopes must bind the exact payload.
+{
+  "action_id": "ae-20260713-001",
+  "tenant_id": "tenant:utility",
+  "action_type": "grid_balancing",
+  "actor_ref": "actor:grid-optimizer-v3",
+  "target_ref": "substation-42",
+  "target_digest": "sha256:0784394b919d9a60742fb2bbe8e327e7697be20161c82a7732814a506bdd8ecc",
+  "payload_digest": "sha256:9c0aaad85ffa265eae1ddc532ba31b28e9a01e082882ce9d8556d4d494be23b4",
+  "authority_grant_ref": "auth-20260713-001",
+  "delegation_chain_ref": "delegation:utility",
+  "policy_ref": "policy-grid-2026-v2",
+  "evidence_package_ref": "ev-20260713-001",
+  "purpose_ref": "purpose:grid-stability",
+  "environment_state_ref": "env-20260713",
+  "risk_context_ref": "risk-context:grid-balancing",
+  "connector_id": "connector:20260713-001",
+  "capability": "grid.balancing.substation_42",
+  "consequence_class": "HIGH",
+  "reversibility": "IRREVERSIBLE",
+  "created_at": "2026-07-13T10:30:00Z",
+  "expires_at": "2026-07-13T10:30:30Z",
+  "replay_nonce": "nonce-20260713-001-abcdef0123456789",
+  "idempotency_key": "idem-20260713-001-xyz",
+  "boundary_requirements": {
+    "required_types": [
+      "EXECUTION"
+    ],
+    "policy_ref": "policy-grid-2026-v2",
+    "policy_digest": "sha256:c1d3d9eefc1acd56b2c1d3fff45c38efa635860b6a868e3425ffe4beba3fea83",
+    "fail_closed": true
+  }
+}

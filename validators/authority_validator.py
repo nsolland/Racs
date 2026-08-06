@@ -1,23 +1,20 @@
 #!/usr/bin/env python3
 """
-RACS Authority Context Validator
+RACS Authority Grant Validator
 
-Validates the authority_context of a RACS Action Envelope. An authority context
-MUST be explicit: it names who is authorized, the authorizing entity, and — for
-delegated authority — a traceable delegation chain. Empty or missing authority
-is never admissible.
-
-This validator checks structure only; it does NOT perform cryptographic
-signature verification. Callers must not treat a passing structural validation
-as proof of signature validity.
+Validates an authority grant against the canonical RACS v0.2 contract:
+``spec/authority-grant-v0.2.schema.json``. Schema-driven (never hand-maintained
+field lists), so it cannot drift from the normative contract — the same pattern
+as ``execution_receipt_validator``.
 
 Usage:
-    python validators/authority_validator.py path/to/authority-context.yaml
+    python validators/authority_validator.py path/to/grant.yaml
+    python validators/authority_validator.py path/to/grant.json
 
 Exit codes:
-    0   Valid authority context
-    1   Invalid authority context
-    2   File error
+    0   Valid authority grant
+    1   Invalid authority grant (validation error)
+    2   File not found or unreadable
 """
 
 from __future__ import annotations
@@ -25,21 +22,33 @@ from __future__ import annotations
 import json
 import os
 import sys
+from pathlib import Path
 from typing import Any
+
+import jsonschema
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
     import yaml
-except ImportError:
+except ImportError:  # pragma: no cover
     yaml = None  # type: ignore[assignment]
 
+# Canonical source of truth — the normative v0.2 authority-grant contract.
+SCHEMA_PATH = Path(__file__).resolve().parent.parent / "spec" / "authority-grant-v0.2.schema.json"
 
-REQUIRED_FIELDS = [
-    "authority_id",
-    "authorizing_entity",
-    "authority_type",
-]
+_VALIDATOR: jsonschema.Draft202012Validator | None = None
 
-VALID_AUTHORITY_TYPES = {"direct", "delegated", "self", "system"}
+
+def _validator() -> jsonschema.Draft202012Validator:
+    global _VALIDATOR
+    if _VALIDATOR is None:
+        schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+        _VALIDATOR = jsonschema.Draft202012Validator(
+            schema,
+            format_checker=jsonschema.FormatChecker(),
+        )
+    return _VALIDATOR
 
 
 def _load_document(path: str) -> dict[str, Any]:
@@ -51,30 +60,26 @@ def _load_document(path: str) -> dict[str, Any]:
         content = fh.read()
 
     try:
-        return json.loads(content)
+        loaded = json.loads(content)
     except json.JSONDecodeError:
-        pass
-
-    if yaml is not None:
-        try:
-            loaded = yaml.safe_load(content)
-            if not isinstance(loaded, dict):
-                print(
-                    "ERROR: authority context must be a mapping",
-                    file=sys.stderr,
-                )
+        if yaml is not None:
+            try:
+                loaded = yaml.safe_load(content)
+            except yaml.YAMLError as exc:
+                print(f"ERROR: invalid YAML: {exc}", file=sys.stderr)
                 sys.exit(1)
-            return loaded
-        except yaml.YAMLError as exc:
-            print(f"ERROR: invalid YAML: {exc}", file=sys.stderr)
+        else:
+            print("ERROR: PyYAML not installed", file=sys.stderr)
             sys.exit(1)
 
-    print("ERROR: PyYAML not installed", file=sys.stderr)
-    sys.exit(1)
+    if not isinstance(loaded, dict):
+        print("ERROR: authority grant must be a mapping", file=sys.stderr)
+        sys.exit(1)
+    return loaded
 
 
 def validate_authority_context(data: Any) -> list[str]:
-    """Validate an authority context dict.
+    """Validate an authority grant against the canonical v0.2 schema.
 
     Returns a list of error messages (empty = valid). A non-dict or empty
     object is rejected: authority must always be explicit.
@@ -83,74 +88,25 @@ def validate_authority_context(data: Any) -> list[str]:
     the responsibility of the downstream verification layer and is NOT performed
     here.
     """
-    errors: list[str] = []
-
     if data is None:
-        errors.append("authority_context: is required")
-        return errors
+        return ["authority_grant: is required"]
     if not isinstance(data, dict):
-        errors.append(
-            f"authority_context: must be an object, got {type(data).__name__}"
-        )
-        return errors
+        return [
+            f"authority_grant: must be an object, got {type(data).__name__}"
+        ]
     if len(data) == 0:
-        errors.append(
-            "authority_context: must not be empty; explicit authority is required"
+        return [
+            "authority_grant: must not be empty; explicit authority is required"
+        ]
+    return [
+        ".".join(str(p) for p in error.path)
+        or error.validator
+        or "root" + f": {error.message}"
+        for error in sorted(
+            _validator().iter_errors(data),
+            key=lambda e: (str(e.path), str(e.schema_path)),
         )
-        return errors
-
-    # Required fields (string-valued). `authorizing_entity` is a structured
-    # object and is validated separately below, so it is excluded here.
-    for field in REQUIRED_FIELDS:
-        if field == "authorizing_entity":
-            continue
-        if field not in data or data[field] is None:
-            errors.append(f"authority_context.{field}: is required")
-        elif not isinstance(data[field], str) or len(data[field]) == 0:
-            errors.append(f"authority_context.{field}: must be a non-empty string")
-
-    # authority_type must be a known value
-    if "authority_type" in data and data["authority_type"] not in VALID_AUTHORITY_TYPES:
-        errors.append(
-            f"authority_context.authority_type: must be one of "
-            f"{', '.join(sorted(VALID_AUTHORITY_TYPES))}, "
-            f"got {data['authority_type']!r}"
-        )
-
-    # authorizing_entity must be a structured object with id + role
-    if "authorizing_entity" in data:
-        ent = data["authorizing_entity"]
-        if not isinstance(ent, dict):
-            errors.append("authority_context.authorizing_entity: must be an object")
-        else:
-            for req in ("id", "role"):
-                if req not in ent or not isinstance(ent[req], str) or len(ent[req]) == 0:
-                    errors.append(
-                        f"authority_context.authorizing_entity.{req}: "
-                        "must be a non-empty string"
-                    )
-
-    # Delegated authority requires a traceable delegation chain
-    if data.get("authority_type") == "delegated":
-        chain = data.get("delegation_chain")
-        if not isinstance(chain, list) or len(chain) == 0:
-            errors.append(
-                "authority_context.delegation_chain: is required for delegated "
-                "authority and must be a non-empty list"
-            )
-        else:
-            for i, link in enumerate(chain):
-                if not isinstance(link, dict):
-                    errors.append(f"authority_context.delegation_chain[{i}]: must be an object")
-                    continue
-                for req in ("delegator_id", "delegate_id", "scope"):
-                    if req not in link or not isinstance(link[req], str) or len(link[req]) == 0:
-                        errors.append(
-                            f"authority_context.delegation_chain[{i}].{req}: "
-                            "must be a non-empty string"
-                        )
-
-    return errors
+    ]
 
 
 def main() -> None:
@@ -167,7 +123,7 @@ def main() -> None:
             print(f"  - {err}", file=sys.stderr)
         sys.exit(1)
 
-    print("VALID: Authority context conforms to the RACS specification.")
+    print("VALID: Authority grant conforms to the RACS v0.2 specification.")
     sys.exit(0)
 
 

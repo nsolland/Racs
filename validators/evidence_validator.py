@@ -56,7 +56,7 @@ def _load_document(path: str) -> dict[str, Any]:
         try:
             loaded = yaml.safe_load(content)
             if not isinstance(loaded, dict):
-                print(f"ERROR: evidence package must be a mapping", file=sys.stderr)
+                print("ERROR: evidence package must be a mapping", file=sys.stderr)
                 sys.exit(1)
             return loaded
         except yaml.YAMLError as exc:

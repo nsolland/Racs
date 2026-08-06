@@ -1,125 +1,36 @@
-# RACS Example: Medical AI Diagnosis Support Action
+# RACS v0.2 example action envelope
 #
-# This example demonstrates a valid action envelope for
-# an AI-mediated medical diagnosis support recommendation.
-# Domain-neutral: demonstrates how RACS applies to healthcare.
-
-racs_version: "0.1"
-action_id: "ae-20260713-003"
-action_type: "diagnosis_support"
-
-actor:
-  id: "actor:diagnosis-assistant-v2"
-  role: "clinical_decision_support_agent"
-  delegation_chain:
-    - delegator_id: "org:medical-center"
-      delegate_id: "actor:diagnosis-assistant-v2"
-      scope: "diagnosis_support.radiology"
-
-target:
-  id: "patient-8873"
-  type: "patient_record"
-
-requested_effect:
-  description: "Provide radiology finding suggestion for chest X-ray CXR-8873"
-  parameters:
-    finding_category: "pulmonary_nodule"
-    confidence_threshold: 0.85
-    review_required: true
-
-authority_context:
-  authority_id: "auth-20260713-003"
-  authorizing_entity:
-    id: "org:medical-center"
-    role: "healthcare_provider"
-    name: "Regional Medical Center"
-  authority_type: "delegated"
-  delegation_chain:
-    - delegator_id: "regulator:health-authority"
-      delegate_id: "org:medical-center"
-      scope: "diagnosis_support.radiology"
-      granted_at: "2026-01-01T00:00:00Z"
-      expires_at: "2026-12-31T23:59:59Z"
-  governance_scope:
-    action_types: ["diagnosis_support", "finding_suggestion"]
-    domains: ["healthcare"]
-    max_risk_level: "critical"
-  valid_from: "2026-07-13T08:00:00Z"
-  valid_until: "2026-07-13T20:00:00Z"
-
-policy_context:
-  policy_id: "policy-medical-2026-v1"
-  policy_set_ref: "racs.policy.healthcare.diagnosis_support"
-  policy_set_version: "1.5.0"
-  rules:
-    - rule_id: "require-human-review"
-      description: "All findings must have human-in-the-loop review"
-      effect: "REQUIRE_REVIEW"
-      conditions:
-        review_type: "board_certified_radiologist"
-    - rule_id: "min-confidence"
-      description: "Minimum confidence threshold for suggestions"
-      effect: "DENY"
-      conditions:
-        min_confidence: 0.70
-  evaluation_mode: "strict"
-  valid_from: "2026-01-01T00:00:00Z"
-  valid_until: "2027-01-01T00:00:00Z"
-
-evidence_package:
-  evidence_id: "ev-20260713-003"
-  package_type: "inference"
-  producer:
-    id: "component:vaig-imaging-analyzer"
-    system: "VAIG"
-    version: "3.1.0"
-  items:
-    - item_id: "ev-item-001"
-      fact_type: "inference"
-      value:
-        modality: "chest_xray"
-        finding: "pulmonary_nodule"
-        location: "right_upper_lobe"
-        size_mm: 8
-        characteristics: ["spiculated", "irregular_margins"]
-      confidence: 0.91
-      source_ref: "vaig://imaging/CXR-8873/analysis"
-      freshness:
-        max_age_seconds: 300
-        captured_at: "2026-07-13T08:15:00Z"
-    - item_id: "ev-item-002"
-      fact_type: "observation"
-      value:
-        observation: "patient_history"
-        relevant_conditions: ["smoker", "age_60+"]
-        prior_findings: []
-      confidence: 0.85
-      source_ref: "baro://records/patient-8873/history"
-  integrity:
-    signed_digest: "sha256:789ghi012jkl..."
-    algorithm: "sha256"
-    signing_key_ref: "key:vaig-medical-prod-2026"
-  created_at: "2026-07-13T08:15:10Z"
-  expires_at: "2026-07-13T08:20:10Z"
-
-environment_state:
-  snapshot_id: "env-20260713-08:15:00"
-  relevant_facts:
-    - key: "department_capacity"
-      value: "normal"
-    - key: "radiologist_on_duty"
-      value: true
-    - key: "imaging_system_status"
-      value: "operational"
-
-risk_context:
-  level: "critical"
-  assessment:
-    impact: "patient_health_outcome"
-    probability: 0.02
-    mitigations:
-      - "mandatory_human_review"
-      - "second_opinion_algorithm"
-
-created_at: "2026-07-13T08:15:15Z"
-expires_at: "2026-07-13T08:20:15Z"
+# Canonical refs-based envelope. Digests are deterministic sha256 bindings
+# generated for the example; real envelopes must bind the exact payload.
+{
+  "action_id": "ae-20260713-201",
+  "tenant_id": "tenant:health",
+  "action_type": "record_access",
+  "actor_ref": "actor:clinician-v1",
+  "target_ref": "patient-5541",
+  "target_digest": "sha256:0a12ade8c23e095fb90ad85df9f0618669c886daa085e7984be974109207ed0e",
+  "payload_digest": "sha256:5dc2dbc3577873bf9d26e3c7afd66c2f4203a3e8c9a1940566772c8e947c75d6",
+  "authority_grant_ref": "auth-20260713-201",
+  "delegation_chain_ref": "delegation:health",
+  "policy_ref": "policy-health-2026-v1",
+  "evidence_package_ref": "ev-20260713-201",
+  "purpose_ref": "purpose:care",
+  "environment_state_ref": "env-20260713",
+  "risk_context_ref": "risk-context:record-access",
+  "connector_id": "connector:20260713-201",
+  "capability": "health.record.read",
+  "consequence_class": "MEDIUM",
+  "reversibility": "COMPENSATABLE",
+  "created_at": "2026-07-13T10:30:00Z",
+  "expires_at": "2026-07-13T10:30:30Z",
+  "replay_nonce": "nonce-20260713-201-abcdef0123456789",
+  "idempotency_key": "idem-20260713-201-xyz",
+  "boundary_requirements": {
+    "required_types": [
+      "EXECUTION"
+    ],
+    "policy_ref": "policy-health-2026-v1",
+    "policy_digest": "sha256:63de49f98d92031d861519667f8d5f8afa6b60fa393aa77de984fce036bb6d06",
+    "fail_closed": true
+  }
+}

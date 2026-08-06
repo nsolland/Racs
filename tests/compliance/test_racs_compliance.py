@@ -1,10 +1,10 @@
-"""
-RACS Compliance Test Suite
+"""RACS compliance tests — envelope, policy, evidence and CLI.
 
-Tests that:
-1. Valid example envelopes PASS validation
-2. Invalid envelopes FAIL with appropriate errors
-3. Validators handle edge cases (missing fields, wrong types, etc.)
+The envelope validator is schema-driven against the canonical v0.2 contract,
+so these tests build **v0.2 envelopes** (refs-based, with boundary_requirements)
+and preserve the audit #4 regression intent: governance contexts must be
+explicit, required fields must be present and well-typed, and placeholder
+digests are rejected in governance-complete mode.
 """
 
 from __future__ import annotations
@@ -12,181 +12,154 @@ from __future__ import annotations
 import json
 import os
 import sys
-import tempfile
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
 
 # Ensure validators/ is on path
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from validators import envelope_validator as ev
 from validators import policy_validator as pv
 from validators import evidence_validator as eidv
 
-
-# ---- Fixtures ----
-
+try:
+    import yaml
+except ImportError:  # pragma: no cover
+    yaml = None
 
 EXAMPLES_DIR = Path(__file__).resolve().parents[2] / "examples"
 
 
-@pytest.fixture
-def valid_energy_grid() -> dict:
-    """Load the energy-grid example as a dict."""
-    import yaml
-    with open(EXAMPLES_DIR / "energy-grid.yaml") as fh:
-        return yaml.safe_load(fh)
+def _digest(seed: str) -> str:
+    import hashlib
 
-
-@pytest.fixture
-def valid_financial() -> dict:
-    """Load the financial example as a dict."""
-    import yaml
-    with open(EXAMPLES_DIR / "financial.yaml") as fh:
-        return yaml.safe_load(fh)
-
-
-@pytest.fixture
-def valid_medical() -> dict:
-    """Load the medical example as a dict."""
-    import yaml
-    with open(EXAMPLES_DIR / "medical.yaml") as fh:
-        return yaml.safe_load(fh)
+    return "sha256:" + hashlib.sha256(seed.encode()).hexdigest()
 
 
 def make_envelope(**overrides) -> dict:
-    """Create a minimal valid envelope dict, with optional overrides.
+    """Create a minimal valid v0.2 envelope dict, with optional overrides.
 
-    The base envelope is governance-complete: authority, policy and evidence
-    contexts are present, non-empty and well-formed. Override any context with
-    ``{}`` (or other shapes) to test rejection.
+    The base envelope is governance-complete: every required ref and the
+    boundary requirements are present and well-formed. Override with ``None``,
+    empty strings or missing fields to test rejection.
     """
+    now = datetime.now(timezone.utc)
+    digest = _digest("envelope:test")
     base = {
-        "racs_version": "0.1",
         "action_id": "test-ae-001",
+        "tenant_id": "tenant:test",
         "action_type": "test_action",
-        "actor": {"id": "actor:test", "role": "test_agent"},
-        "target": {"id": "target:test", "type": "test_resource"},
-        "requested_effect": {"description": "Test effect"},
-        "authority_context": {
-            "authority_id": "auth:test-001",
-            "authorizing_entity": {"id": "org:test", "role": "operator"},
-            "authority_type": "direct",
+        "actor_ref": "authority:actor/test",
+        "target_ref": "target:test",
+        "target_digest": digest,
+        "payload_digest": digest,
+        "authority_grant_ref": "authority-grant:test",
+        "delegation_chain_ref": "delegation:test",
+        "policy_ref": "policy:test",
+        "evidence_package_ref": "evidence-package:test",
+        "purpose_ref": "purpose:test",
+        "environment_state_ref": "environment-state:test",
+        "risk_context_ref": "risk-context:test",
+        "connector_id": "connector:test",
+        "capability": "secrets.write",
+        "consequence_class": "HIGH",
+        "reversibility": "COMPENSATABLE",
+        "created_at": now.isoformat().replace("+00:00", "Z"),
+        "expires_at": (now + timedelta(hours=1)).isoformat().replace("+00:00", "Z"),
+        "replay_nonce": "nonce-test-abcdef0123456789",
+        "idempotency_key": "idem-test-xyz",
+        "boundary_requirements": {
+            "required_types": ["EXECUTION"],
+            "policy_ref": "policy:test",
+            "policy_digest": digest,
+            "fail_closed": True,
         },
-        "policy_context": {
-            "policy_id": "pol-001",
-            "policy_set_ref": "racs.policy.test",
-            "policy_set_version": "1.0.0",
-            "evaluation_mode": "strict",
-            "valid_from": "2026-01-01T00:00:00Z",
-        },
-        "evidence_package": {
-            "evidence_id": "ev-001",
-            "package_type": "observation",
-            "producer": {"id": "comp:test", "system": "BARO"},
-            "items": [
-                {"item_id": "item-001", "fact_type": "observation", "value": {"result": "ok"}}
-            ],
-            "integrity": {"signed_digest": "abc123", "algorithm": "sha256"},
-            "created_at": "2026-07-13T12:00:00Z",
-        },
-        "environment_state": {"snapshot_id": "test-snap-001"},
-        "created_at": "2026-07-13T12:00:00Z",
     }
     base.update(overrides)
     return base
 
 
-# ---- Envelope Validator Tests ----
+# ---- Envelope Validator Tests (canonical v0.2 contract) ----
 
 
 class TestEnvelopeValidator:
     """Tests for envelope_validator.validate_envelope()."""
 
     def test_valid_minimal(self):
-        """Minimal valid envelope passes."""
+        """Minimal valid v0.2 envelope passes."""
         env = make_envelope()
         errors = ev.validate_envelope(env)
         assert errors == [], f"Expected no errors, got: {errors}"
 
-    # ---- Audit #4 regression: empty governance contexts must be rejected ----
+    # ---- Audit #4 regression: governance context must be explicit ----
 
-    def test_empty_authority_context_rejected(self):
-        """Empty authority_context must fail (audit #4, regression #1)."""
-        env = make_envelope(authority_context={})
+    def test_missing_authority_grant_ref_rejected(self):
+        """Missing authority_grant_ref must fail (audit #4 regression)."""
+        env = make_envelope()
+        del env["authority_grant_ref"]
         errors = ev.validate_envelope(env)
-        assert any("authority_context" in e for e in errors), (
-            f"Expected authority_context error, got: {errors}"
+        assert any("authority_grant_ref" in e for e in errors), (
+            f"Expected authority_grant_ref error, got: {errors}"
         )
 
-    def test_empty_policy_context_rejected(self):
-        """Empty policy_context must fail (audit #4, regression #2)."""
-        env = make_envelope(policy_context={})
+    def test_missing_policy_ref_rejected(self):
+        """Missing policy_ref must fail (audit #4 regression)."""
+        env = make_envelope()
+        del env["policy_ref"]
         errors = ev.validate_envelope(env)
-        assert any("policy_context" in e for e in errors), (
-            f"Expected policy_context error, got: {errors}"
+        assert any("policy_ref" in e for e in errors), (
+            f"Expected policy_ref error, got: {errors}"
         )
 
-    def test_empty_evidence_package_rejected(self):
-        """Empty evidence_package must fail (audit #4, regression #3)."""
-        env = make_envelope(evidence_package={})
+    def test_missing_evidence_package_ref_rejected(self):
+        """Missing evidence_package_ref must fail (audit #4 regression)."""
+        env = make_envelope()
+        del env["evidence_package_ref"]
         errors = ev.validate_envelope(env)
-        assert any("evidence_package" in e for e in errors), (
-            f"Expected evidence_package error, got: {errors}"
+        assert any("evidence_package_ref" in e for e in errors), (
+            f"Expected evidence_package_ref error, got: {errors}"
         )
 
-    def test_missing_policy_id_rejected(self):
-        """Policy context missing policy_id must fail (audit #4, regression #5)."""
-        env = make_envelope(policy_context={"evaluation_mode": "strict"})
+    def test_empty_boundary_policy_ref_rejected(self):
+        """boundary_requirements.policy_ref must be present (audit #4)."""
+        env = make_envelope()
+        env["boundary_requirements"] = {
+            "required_types": ["EXECUTION"],
+            "policy_digest": _digest("policy"),
+            "fail_closed": True,
+        }
         errors = ev.validate_envelope(env)
-        assert any("policy_id" in e for e in errors), (
-            f"Expected policy_id error, got: {errors}"
-        )
+        assert any("policy_ref" in e for e in errors)
 
-    def test_missing_evidence_items_rejected(self):
-        """Evidence package with empty items must fail (audit #4, regression #6)."""
-        env = make_envelope(
-            evidence_package={
-                "evidence_id": "ev-001",
-                "package_type": "observation",
-                "producer": {"id": "comp:test", "system": "BARO"},
-                "items": [],
-                "integrity": {"signed_digest": "abc", "algorithm": "sha256"},
-                "created_at": "2026-07-13T12:00:00Z",
-            }
-        )
+    def test_fail_closed_required_in_boundary(self):
+        """boundary_requirements must demand fail_closed=true (audit #4)."""
+        env = make_envelope()
+        env["boundary_requirements"] = {
+            "required_types": ["EXECUTION"],
+            "policy_ref": "policy:test",
+            "policy_digest": _digest("policy"),
+            "fail_closed": False,
+        }
         errors = ev.validate_envelope(env)
-        assert any("items" in e for e in errors), (
-            f"Expected items error, got: {errors}"
-        )
+        assert any("fail_closed" in e for e in errors)
 
-    def test_unknown_racs_version_rejected(self):
-        """Non-string/empty racs_version must fail (audit #4, regression #7)."""
-        env = make_envelope(racs_version="")
+    def test_legacy_envelope_rejected(self):
+        """A pre-v0.2 envelope (racs_version/actor) must fail (drift gate)."""
+        env = make_envelope()
+        env["racs_version"] = "0.1"
+        env["actor"] = {"id": "actor:test", "role": "test_agent"}
         errors = ev.validate_envelope(env)
-        assert any("racs_version" in e for e in errors), (
-            f"Expected racs_version error, got: {errors}"
-        )
+        assert errors, "legacy envelope must be rejected"
+        assert any("racs_version" in e or "actor" in e for e in errors)
 
-    def test_structural_only_accepts_empty_contexts(self):
-        """governance_complete=False parses structure without requiring contexts.
-
-        Distinct from governance-complete validation: callers must not treat
-        this as admissibility readiness (audit #4).
-        """
-        env = make_envelope(authority_context={}, policy_context={}, evidence_package={})
+    def test_structural_mode_still_enforces_schema(self):
+        """governance_complete=False is still schema-driven (audit #4)."""
+        env = make_envelope()
+        del env["action_id"]
         errors = ev.validate_envelope(env, governance_complete=False)
-        assert errors == [], f"Expected no structural errors, got: {errors}"
-
-    def test_valid_with_optional_fields(self):
-        """Envelope with all optional fields passes."""
-        env = make_envelope(
-            risk_context={"level": "low", "assessment": {}},
-            expires_at="2026-07-13T13:00:00Z",
-        )
-        errors = ev.validate_envelope(env)
-        assert errors == [], f"Expected no errors, got: {errors}"
+        assert errors, "missing required field must fail even in structural mode"
 
     def test_missing_required_field(self):
         """Missing required field produces error."""
@@ -208,10 +181,10 @@ class TestEnvelopeValidator:
         assert any("action_id" in e for e in errors), f"Expected action_id error, got: {errors}"
 
     def test_wrong_type_field(self):
-        """Non-string racs_version produces error."""
-        env = make_envelope(racs_version=123)
+        """Non-string action_id produces error."""
+        env = make_envelope(action_id=123)  # type: ignore[arg-type]
         errors = ev.validate_envelope(env)
-        assert any("racs_version" in e for e in errors), f"Expected racs_version error, got: {errors}"
+        assert any("action_id" in e for e in errors), f"Expected action_id error, got: {errors}"
 
     def test_invalid_datetime_created_at(self):
         """Invalid datetime for created_at produces error."""
@@ -225,49 +198,46 @@ class TestEnvelopeValidator:
         errors = ev.validate_envelope(env)
         assert any("expires_at" in e for e in errors), f"Expected expires_at error, got: {errors}"
 
-    def test_null_expires_at_valid(self):
-        """Null expires_at is valid (optional field)."""
-        env = make_envelope(expires_at=None)
+    def test_null_expires_at_fails(self):
+        """expires_at is required in v0.2; null must fail."""
+        env = make_envelope(expires_at=None)  # type: ignore[arg-type]
         errors = ev.validate_envelope(env)
-        assert errors == [], f"Expected no errors, got: {errors}"
+        assert any("expires_at" in e for e in errors), (
+            f"Expected expires_at error, got: {errors}"
+        )
 
-    def test_missing_actor_fields(self):
-        """Actor missing required fields produces error."""
-        env = make_envelope(actor={"id": "test"})  # missing role
+    def test_empty_actor_ref_rejected(self):
+        """actor_ref must be a non-empty string."""
+        env = make_envelope(actor_ref="")
         errors = ev.validate_envelope(env)
-        assert any("actor.role" in e for e in errors), f"Expected actor.role error, got: {errors}"
+        assert any("actor_ref" in e for e in errors), f"Expected actor_ref error, got: {errors}"
 
-    def test_missing_target_fields(self):
-        """Target missing required fields produces error."""
-        env = make_envelope(target={"id": "test"})  # missing type
+    def test_empty_target_ref_rejected(self):
+        """target_ref must be a non-empty string."""
+        env = make_envelope(target_ref="")
         errors = ev.validate_envelope(env)
-        assert any("target.type" in e for e in errors), f"Expected target.type error, got: {errors}"
+        assert any("target_ref" in e for e in errors), f"Expected target_ref error, got: {errors}"
 
-    def test_missing_requested_effect_description(self):
-        """Requested effect missing description produces error."""
-        env = make_envelope(requested_effect={"parameters": {}})
+    def test_invalid_target_digest_rejected(self):
+        """target_digest must be a real sha256 binding."""
+        env = make_envelope(target_digest="abc123")
         errors = ev.validate_envelope(env)
-        assert any("requested_effect.description" in e for e in errors)
+        assert any("target_digest" in e for e in errors)
 
     def test_extra_fields_detected(self):
-        """Unexpected top-level fields produce errors in strict mode."""
+        """Unexpected top-level fields produce errors (additionalProperties=false)."""
         env = make_envelope(extra_field="should not be here")
         errors = ev.validate_envelope(env, strict=True)
-        assert any("extra field" in e for e in errors)
-
-    def test_invalid_actor_type(self):
-        """Non-dict actor produces error."""
-        env = make_envelope(actor="not-a-dict")
-        errors = ev.validate_envelope(env)
-        assert any("actor" in e for e in errors)
+        assert any("extra_field" in e for e in errors)
 
     @pytest.mark.parametrize(
         "example_name",
         ["energy-grid.yaml", "financial.yaml", "medical.yaml"],
     )
     def test_example_files_pass(self, example_name):
-        """All three example files must pass validation."""
-        import yaml
+        """All three example files must pass validation as v0.2 envelopes."""
+        if yaml is None:
+            pytest.skip("PyYAML not installed")
         path = EXAMPLES_DIR / example_name
         with open(path) as fh:
             data = yaml.safe_load(fh)

@@ -63,7 +63,7 @@ No source code, schemas, wording, diagrams or structure have been copied from th
 - `IP_PROVENANCE.md`
 - `THIRD_PARTY_NOTICES.md`
 - `docs/architecture/BOUNDARIES.md`
-- `schemas/`
+- `spec/` — normative v0.2 JSON schemas (source of truth)
 
 ## Ownership
 
