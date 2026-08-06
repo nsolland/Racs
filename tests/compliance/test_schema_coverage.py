@@ -13,9 +13,7 @@ Three layers, so 144 schemas are at least structurally proven rather than 10:
 
 from __future__ import annotations
 
-import glob
 import json
-import os
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
