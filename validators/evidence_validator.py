@@ -2,9 +2,12 @@
 """
 RACS Evidence Validator
 
-Checks that an evidence package conforms to the RACS specification.
-Evidence packages are immutable in transmission — this validator
-checks integrity metadata structure (but does not verify signatures).
+Schema-driven against the canonical contract in
+``spec/evidence-package.yaml`` — never hand-maintained field lists, so the
+validator cannot drift from the normative evidence contract (same pattern as
+``execution_receipt_validator``).
+
+Checks integrity metadata structure but does NOT verify signatures.
 
 Usage:
     python validators/evidence_validator.py path/to/evidence-package.yaml
@@ -20,23 +23,38 @@ from __future__ import annotations
 import json
 import os
 import sys
+from pathlib import Path
 from typing import Any
+
+import jsonschema
 
 try:
     import yaml
-except ImportError:
+except ImportError:  # pragma: no cover
     yaml = None  # type: ignore[assignment]
 
-REQUIRED_FIELDS = [
-    "evidence_id",
-    "package_type",
-    "producer",
-    "items",
-    "integrity",
-    "created_at",
-]
+# Canonical contract — the evidence_package subtree of the normative YAML.
+CONTRACT_PATH = Path(__file__).resolve().parent.parent / "spec" / "evidence-package.yaml"
 
-VALID_PACKAGE_TYPES = {"observation", "inference", "measurement", "report", "composite"}
+_VALIDATOR: jsonschema.Draft202012Validator | None = None
+
+
+def _contract_schema() -> dict[str, Any]:
+    if yaml is None:
+        raise RuntimeError("PyYAML is required to load the evidence contract")
+    with open(CONTRACT_PATH, encoding="utf-8") as fh:
+        contract = yaml.safe_load(fh)
+    return contract["evidence_package"]
+
+
+def _validator() -> jsonschema.Draft202012Validator:
+    global _VALIDATOR
+    if _VALIDATOR is None:
+        _VALIDATOR = jsonschema.Draft202012Validator(
+            _contract_schema(),
+            format_checker=jsonschema.FormatChecker(),
+        )
+    return _VALIDATOR
 
 
 def _load_document(path: str) -> dict[str, Any]:
@@ -48,76 +66,40 @@ def _load_document(path: str) -> dict[str, Any]:
         content = fh.read()
 
     try:
-        return json.loads(content)
+        loaded = json.loads(content)
     except json.JSONDecodeError:
-        pass
-
-    if yaml is not None:
-        try:
-            loaded = yaml.safe_load(content)
-            if not isinstance(loaded, dict):
-                print("ERROR: evidence package must be a mapping", file=sys.stderr)
+        if yaml is not None:
+            try:
+                loaded = yaml.safe_load(content)
+            except yaml.YAMLError as exc:
+                print(f"ERROR: invalid YAML: {exc}", file=sys.stderr)
                 sys.exit(1)
-            return loaded
-        except yaml.YAMLError as exc:
-            print(f"ERROR: invalid YAML: {exc}", file=sys.stderr)
+        else:
+            print("ERROR: PyYAML not installed", file=sys.stderr)
             sys.exit(1)
 
-    print("ERROR: PyYAML not installed", file=sys.stderr)
-    sys.exit(1)
+    if not isinstance(loaded, dict):
+        print("ERROR: evidence package must be a mapping", file=sys.stderr)
+        sys.exit(1)
+    return loaded
 
 
 def validate_evidence_package(data: dict[str, Any]) -> list[str]:
-    """Validate an evidence package dict. Returns list of errors (empty = valid)."""
-    errors: list[str] = []
+    """Validate an evidence package against the canonical YAML contract.
 
-    # Required fields
-    for field in REQUIRED_FIELDS:
-        if field not in data or data[field] is None:
-            errors.append(f"evidence_package.{field}: is required")
-
-    # Package type
-    if "package_type" in data and data["package_type"] not in VALID_PACKAGE_TYPES:
-        errors.append(
-            f"evidence_package.package_type: must be one of {', '.join(sorted(VALID_PACKAGE_TYPES))}, got {data['package_type']!r}"
+    Returns list of errors (empty = valid). Structural rules (required fields,
+    package types, producer/items/integrity shapes, confidence range) are all
+    enforced by the schema.
+    """
+    return [
+        (
+            ".".join(str(p) for p in error.path) or "root"
+        ) + f": {error.message}"
+        for error in sorted(
+            _validator().iter_errors(data),
+            key=lambda e: (str(e.path), str(e.schema_path)),
         )
-
-    # Producer object
-    if "producer" in data and isinstance(data["producer"], dict):
-        producer = data["producer"]
-        for req in ("id", "system"):
-            if req not in producer:
-                errors.append(f"evidence_package.producer.{req}: is required")
-
-    # Items list
-    if "items" in data:
-        if not isinstance(data["items"], list):
-            errors.append("evidence_package.items: must be a list")
-        elif len(data["items"]) == 0:
-            errors.append("evidence_package.items: must have at least one item")
-        else:
-            for i, item in enumerate(data["items"]):
-                if not isinstance(item, dict):
-                    errors.append(f"evidence_package.items[{i}]: must be an object")
-                    continue
-                for req in ("item_id", "fact_type", "value"):
-                    if req not in item:
-                        errors.append(f"evidence_package.items[{i}].{req}: is required")
-                if "confidence" in item:
-                    c = item["confidence"]
-                    if not isinstance(c, (int, float)) or c < 0 or c > 1:
-                        errors.append(
-                            f"evidence_package.items[{i}].confidence: must be a number between 0 and 1"
-                        )
-
-    # Integrity object
-    if "integrity" in data and isinstance(data["integrity"], dict):
-        integrity = data["integrity"]
-        for req in ("signed_digest", "algorithm"):
-            if req not in integrity:
-                errors.append(f"evidence_package.integrity.{req}: is required")
-
-    return errors
+    ]
 
 
 def main() -> None:

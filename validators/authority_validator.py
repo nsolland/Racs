@@ -99,9 +99,9 @@ def validate_authority_context(data: Any) -> list[str]:
             "authority_grant: must not be empty; explicit authority is required"
         ]
     return [
-        ".".join(str(p) for p in error.path)
-        or error.validator
-        or "root" + f": {error.message}"
+        (
+            ".".join(str(p) for p in error.path) or "root"
+        ) + f": {error.message}"
         for error in sorted(
             _validator().iter_errors(data),
             key=lambda e: (str(e.path), str(e.schema_path)),

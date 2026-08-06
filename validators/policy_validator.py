@@ -2,9 +2,12 @@
 """
 RACS Policy Validator
 
-Checks that a policy context conforms to the RACS specification.
-Policy is data, not code — this validator checks structure only,
-never evaluates policy content or grants execution authority.
+Schema-driven against the canonical contract in ``spec/policy-context.yaml`` —
+never hand-maintained field lists, so the validator cannot drift from the
+normative policy contract (same pattern as ``execution_receipt_validator``).
+
+Policy is data, not code — this validator checks structure only, never
+evaluates policy content or grants execution authority.
 
 Usage:
     python validators/policy_validator.py path/to/policy-context.yaml
@@ -20,35 +23,38 @@ from __future__ import annotations
 import json
 import os
 import sys
+from pathlib import Path
 from typing import Any
+
+import jsonschema
 
 try:
     import yaml
-except ImportError:
+except ImportError:  # pragma: no cover
     yaml = None  # type: ignore[assignment]
 
-REQUIRED_FIELDS = [
-    "policy_id",
-    "policy_set_ref",
-    "policy_set_version",
-    "evaluation_mode",
-    "valid_from",
-]
+# Canonical contract — the policy_context subtree of the normative YAML.
+CONTRACT_PATH = Path(__file__).resolve().parent.parent / "spec" / "policy-context.yaml"
 
-REGULATORY_PROFILE_REQUIRED_FIELDS = [
-    "profile_id",
-    "legal_act_ref",
-    "version",
-    "jurisdiction",
-    "effective_at",
-    "active_obligation_ids",
-    "evidence_refs",
-    "accountable_owner_ref",
-    "profile_digest",
-]
+_VALIDATOR: jsonschema.Draft202012Validator | None = None
 
-VALID_EVALUATION_MODES = {"strict", "advisory", "audit_only"}
-VALID_EFFECTS = {"ALLOW", "DENY", "REQUIRE_ELEVATION", "REQUIRE_REVIEW", "LOG"}
+
+def _contract_schema() -> dict[str, Any]:
+    if yaml is None:
+        raise RuntimeError("PyYAML is required to load the policy contract")
+    with open(CONTRACT_PATH, encoding="utf-8") as fh:
+        contract = yaml.safe_load(fh)
+    return contract["policy_context"]
+
+
+def _validator() -> jsonschema.Draft202012Validator:
+    global _VALIDATOR
+    if _VALIDATOR is None:
+        _VALIDATOR = jsonschema.Draft202012Validator(
+            _contract_schema(),
+            format_checker=jsonschema.FormatChecker(),
+        )
+    return _VALIDATOR
 
 
 def _load_document(path: str) -> dict[str, Any]:
@@ -60,101 +66,40 @@ def _load_document(path: str) -> dict[str, Any]:
         content = fh.read()
 
     try:
-        return json.loads(content)
+        loaded = json.loads(content)
     except json.JSONDecodeError:
-        pass
-
-    if yaml is not None:
-        try:
-            loaded = yaml.safe_load(content)
-            if not isinstance(loaded, dict):
-                print("ERROR: policy context must be a mapping", file=sys.stderr)
+        if yaml is not None:
+            try:
+                loaded = yaml.safe_load(content)
+            except yaml.YAMLError as exc:
+                print(f"ERROR: invalid YAML: {exc}", file=sys.stderr)
                 sys.exit(1)
-            return loaded
-        except yaml.YAMLError as exc:
-            print(f"ERROR: invalid YAML: {exc}", file=sys.stderr)
+        else:
+            print("ERROR: PyYAML not installed", file=sys.stderr)
             sys.exit(1)
 
-    print("ERROR: PyYAML not installed", file=sys.stderr)
-    sys.exit(1)
-
-
-def _validate_regulatory_profiles(data: dict[str, Any]) -> list[str]:
-    errors: list[str] = []
-    if "regulatory_profiles" not in data:
-        return errors
-
-    profiles = data["regulatory_profiles"]
-    if not isinstance(profiles, list):
-        return ["regulatory_profiles: must be a list"]
-
-    for index, profile in enumerate(profiles):
-        prefix = f"policy_context.regulatory_profiles[{index}]"
-        if not isinstance(profile, dict):
-            errors.append(f"{prefix}: must be an object")
-            continue
-
-        for field in REGULATORY_PROFILE_REQUIRED_FIELDS:
-            if field not in profile or profile[field] is None:
-                errors.append(f"{prefix}.{field}: is required")
-
-        for field in (
-            "profile_id",
-            "legal_act_ref",
-            "version",
-            "jurisdiction",
-            "effective_at",
-            "accountable_owner_ref",
-            "profile_digest",
-        ):
-            if field in profile and not isinstance(profile[field], str):
-                errors.append(f"{prefix}.{field}: must be a string")
-
-        for field in ("active_obligation_ids", "evidence_refs"):
-            if field in profile:
-                value = profile[field]
-                if not isinstance(value, list) or not all(
-                    isinstance(item, str) and item for item in value
-                ):
-                    errors.append(f"{prefix}.{field}: must be a list of strings")
-
-    return errors
+    if not isinstance(loaded, dict):
+        print("ERROR: policy context must be a mapping", file=sys.stderr)
+        sys.exit(1)
+    return loaded
 
 
 def validate_policy_context(data: dict[str, Any]) -> list[str]:
-    """Validate a policy context dict. Returns list of errors (empty = valid)."""
-    errors: list[str] = []
+    """Validate a policy context against the canonical YAML contract.
 
-    for field in REQUIRED_FIELDS:
-        if field not in data or data[field] is None:
-            errors.append(f"policy_context.{field}: is required")
-        elif not isinstance(data[field], str):
-            errors.append(f"policy_context.{field}: must be a string")
-
-    if "evaluation_mode" in data:
-        mode = data["evaluation_mode"]
-        if mode not in VALID_EVALUATION_MODES:
-            errors.append(
-                f"policy_context.evaluation_mode: must be one of {', '.join(sorted(VALID_EVALUATION_MODES))}, got {mode!r}"
-            )
-
-    if "rules" in data:
-        if not isinstance(data["rules"], list):
-            errors.append("policy_context.rules: must be a list")
-        else:
-            for i, rule in enumerate(data["rules"]):
-                if not isinstance(rule, dict):
-                    errors.append(f"policy_context.rules[{i}]: must be an object")
-                    continue
-                if "rule_id" not in rule:
-                    errors.append(f"policy_context.rules[{i}]: rule_id is required")
-                if "effect" in rule and rule["effect"] not in VALID_EFFECTS:
-                    errors.append(
-                        f"policy_context.rules[{i}].effect: must be one of {', '.join(sorted(VALID_EFFECTS))}, got {rule['effect']!r}"
-                    )
-
-    errors.extend(_validate_regulatory_profiles(data))
-    return errors
+    Returns list of errors (empty = valid). Required fields, evaluation modes,
+    rule shapes/effects and regulatory-profile structure are all enforced by
+    the schema.
+    """
+    return [
+        (
+            ".".join(str(p) for p in error.path) or "root"
+        ) + f": {error.message}"
+        for error in sorted(
+            _validator().iter_errors(data),
+            key=lambda e: (str(e.path), str(e.schema_path)),
+        )
+    ]
 
 
 def main() -> None:

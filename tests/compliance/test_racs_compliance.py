@@ -373,7 +373,7 @@ class TestEvidenceValidator:
             "created_at": "2026-07-13T12:00:00Z",
         }
         errors = eidv.validate_evidence_package(data)
-        assert any("signed_digest" in e for e in errors)
+        assert any("integrity" in e and "signed_digest" in e for e in errors)
 
     def test_missing_producer_fields(self):
         """Producer missing required fields."""
@@ -386,7 +386,7 @@ class TestEvidenceValidator:
             "created_at": "2026-07-13T12:00:00Z",
         }
         errors = eidv.validate_evidence_package(data)
-        assert any("producer.id" in e for e in errors)
+        assert any("producer" in e and "id" in e for e in errors)
 
     def test_invalid_confidence(self):
         """Confidence outside 0-1 range produces error."""
