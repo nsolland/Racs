@@ -1,0 +1,17 @@
+{
+  "base_version": "0.2",
+  "additive_delta_version": "0.3",
+  "note": "v0.3 is an additive AgentBound-inspired delta that composes with the v0.2 execution-governance chain. It never supersedes a v0.2 contract in place; it narrows or extends specific artifacts. See AGENTBOUND_DELTA_V0_2_V0_3_COMPATIBILITY.md.",
+  "base_contract_count": 138,
+  "delta_contracts": [
+    "aaec-trajectory-context",
+    "authority-evaluation-fragment",
+    "execution-receipt",
+    "governance-replay-bundle",
+    "target-action-contract",
+    "task-authority-materialization"
+  ],
+  "dual_version_families": [
+    "execution-receipt"
+  ]
+}
