@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.example/extensions/sustainability-reporting-action-binding-v1.schema.json",
+  "title": "SustainabilityReportingActionBindingV1",
+  "description": "Additive RACS extension binding immutable refs for a sustainability reporting action. It binds references only — it never copies datapoint values, ESRS text or materiality logic.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "binding_id",
+    "action_envelope_ref",
+    "reporting_entity_ref",
+    "reporting_period_ref",
+    "standard_profile_ref",
+    "target_artifact_ref",
+    "expected_receipt_type"
+  ],
+  "properties": {
+    "schema": { "const": "sustainability-reporting-action-binding.v1" },
+    "binding_id": { "type": "string", "minLength": 1 },
+    "action_envelope_ref": { "type": "string", "minLength": 1 },
+    "action_envelope_digest": { "type": "string", "minLength": 1 },
+    "reporting_entity_ref": { "type": "string", "minLength": 1 },
+    "reporting_entity_digest": { "type": "string", "minLength": 1 },
+    "reporting_period_ref": { "type": "string", "minLength": 1 },
+    "standard_profile_ref": { "type": "string", "minLength": 1 },
+    "standard_profile_digest": { "type": "string", "minLength": 1 },
+    "target_artifact_ref": { "type": "string", "minLength": 1 },
+    "target_artifact_digest": { "type": "string", "minLength": 1 },
+    "source_evidence_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "materiality_decision_ref": { "type": "string" },
+    "reht_clearance_ref": { "type": "string" },
+    "expected_receipt_type": { "type": "string", "minLength": 1 }
+  }
+}

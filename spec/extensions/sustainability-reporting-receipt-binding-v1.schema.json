@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.example/extensions/sustainability-reporting-receipt-binding-v1.schema.json",
+  "title": "SustainabilityReportingReceiptBindingV1",
+  "description": "Additive RACS extension binding a sustainability reporting action to its expected/issued receipt types. It carries refs and digests only.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "receipt_binding_id",
+    "action_binding_ref",
+    "expected_receipt_type",
+    "receipt_chain_ref"
+  ],
+  "properties": {
+    "schema": { "const": "sustainability-reporting-receipt-binding.v1" },
+    "receipt_binding_id": { "type": "string", "minLength": 1 },
+    "action_binding_ref": { "type": "string", "minLength": 1 },
+    "expected_receipt_type": { "type": "string", "minLength": 1 },
+    "issued_receipt_ref": { "type": "string" },
+    "issued_receipt_digest": { "type": "string", "minLength": 1 },
+    "receipt_chain_ref": { "type": "string", "minLength": 1 },
+    "veritas_binding_ref": { "type": "string" }
+  }
+}
