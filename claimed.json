@@ -217,5 +217,29 @@
     "verification": "docs-only producer review plus remote four-file diff scope; referenced schemas and benchmark digest verified; no hosted or independent attestation claimed",
     "dependencies": "AgentBound Tracks B-H merged",
     "merged": true
+  },
+  "fix/racs-role-wording-2026-08-07": {
+    "repo": "nsolland/Racs",
+    "stage": "repo-profile",
+    "base_sha": "41d79d4494f15ea11f3fcabd0300058f80dc8202",
+    "branch": "fix/racs-role-wording-2026-08-07",
+    "pr": "https://github.com/nsolland/Racs/pull/133",
+    "owner": "opencode",
+    "scope": "correct contaminated RACS canonical_role wording in repo-manifest.yaml: decision_binding_and_enforcement -> decision_binding_and_receipt_contract per #647 A1 contaminated-semantics list",
+    "claimed_paths": [
+      "repo-manifest.yaml"
+    ],
+    "must_not_touch": [
+      "normative schema JSON",
+      "reference implementations and validators",
+      "bindings and test vectors",
+      "REHT admissibility, Core enforcement or receipt behavior"
+    ],
+    "status": "merged",
+    "last_verified_head": "19d636e3d0691bc14aad001d1ddfca557a933648",
+    "merge_commit": "357e5631d71a50965532e7fdd08505b8322eab4d",
+    "verification": "docs/metadata-only; repo-profile CI fails pre-existing on main (manifest format newer than validator) and is not regressed by this change",
+    "dependencies": "nsolland/Index#647 (post-audit remediation build order)",
+    "merged": true
   }
 }
