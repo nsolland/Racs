@@ -3,7 +3,7 @@ repository:
   id: "valo.racs"
   name: "Racs"
   org: "nsolland"
-  canonical_role: "decision_binding_and_enforcement"
+  canonical_role: "decision_binding_and_receipt_contract"
   normative_status: "normative_specification"
   owner: "ANTIGRAVITY"
 
