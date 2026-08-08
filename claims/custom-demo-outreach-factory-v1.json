@@ -1,0 +1,32 @@
+{
+  "claim_id": "custom-demo-outreach-factory-v1",
+  "status": "CLAIMED",
+  "owner": "chatgpt-orchestrator",
+  "canonical_base": "ef5803e2fa2869b7eb4efc91e743d2404c31ca59",
+  "branch": "feat/custom-demo-outreach-factory-v1",
+  "active_delivery": "Automated signal-to-custom-demo outreach factory",
+  "owned_paths": [
+    "factory/outreach/**",
+    "tests/factory/outreach/**",
+    "docs/gtm/CUSTOM_DEMO_OUTREACH_FACTORY.md",
+    "claims/custom-demo-outreach-factory-v1.json"
+  ],
+  "must_not_touch": [
+    "RACS normative decision semantics",
+    "REHT authorization semantics",
+    "existing runtime/conformance contracts"
+  ],
+  "dependencies": [
+    "prospect source adapter",
+    "evidence source adapter",
+    "demo builder adapter",
+    "independent judgment gate",
+    "delivery adapter"
+  ],
+  "delivery_policy": {
+    "external_send_default": "DISABLED",
+    "organic_linkedin_api_send_assumed": false,
+    "research_authority": "ADVISORY_ONLY",
+    "demo_generation_authority": "NON_AUTHORIZING"
+  }
+}
