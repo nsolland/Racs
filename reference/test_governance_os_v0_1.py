@@ -1,3 +1,4 @@
+import sys
 import importlib.util
 from pathlib import Path
 import unittest
@@ -5,7 +6,9 @@ import unittest
 MODULE = Path(__file__).with_name("governance_os_v0_1.py")
 spec = importlib.util.spec_from_file_location("gos", MODULE)
 gos = importlib.util.module_from_spec(spec)
+sys.modules["gos"] = gos
 spec.loader.exec_module(gos)
+
 
 
 def fixtures():
