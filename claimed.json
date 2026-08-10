@@ -185,9 +185,11 @@
       "RACS decision-to-Core permit binding",
       "misallocated PR #121 or its branch contents"
     ],
-    "status": "implemented",
-    "tests": "portable receipt extension 25 passed; compliance 118 passed with PYTHONPATH=.; Python binding 95 passed; cross-language Stage 3A/3B/3C gate passed",
-    "dependencies": "RACS #115, #117 and #119 merged on base; PR #121 closed as evidence-only scaffold"
+    "status": "merged",
+    "pr": "https://github.com/nsolland/Racs/pull/124",
+    "merge_commit": "3687aa80cb0c6e2c6ce72938e8fe2a31e0819a2a",
+    "merged": true,
+    "dependencies": "RACS #115, #117 and #119 merged on base; delivered via PR #124 (head branch hermes/codex-racs-1-reconciliation)"
   },
   "hermes/issue-125-agentbound-docs": {
     "repo": "nsolland/Racs",
