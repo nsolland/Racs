@@ -1,6 +1,8 @@
 # RACS - Runtime Agent Control Standard
 
+> Stable ID: valo.racs
 > Canonical Role: Deterministic decision binding, permit/commit token issuance, and receipt schema layer.
+> Receipt obligation: RACS receipt fields map to REHT-104 evidence obligations.
 
 ## Architectural Boundaries
 

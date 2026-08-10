@@ -218,6 +218,27 @@
     "dependencies": "AgentBound Tracks B-H merged",
     "merged": true
   },
+  "hermes/repo-profile-manifest-canonical": {
+    "repo": "nsolland/Racs",
+    "issue": 136,
+    "stage": "repo-profile",
+    "base_sha": "ef5803e1f8d0c2bd857e75b39e6a4dc0e6821142",
+    "branch": "hermes/repo-profile-manifest-canonical",
+    "owner": "opencode",
+    "scope": "restore canonical repo-manifest.yaml per nsolland/Index#338 schema with preserved legacy_profile subtree, and add required valo.racs/REHT-104 references to llms.txt so repo-profile CI passes",
+    "claimed_paths": [
+      "repo-manifest.yaml",
+      "llms.txt",
+      "claimed.json"
+    ],
+    "must_not_touch": [
+      "normative schema JSON",
+      "reference implementations and validators",
+      "bindings and test vectors",
+      "REHT admissibility, Core enforcement or receipt behavior"
+    ],
+    "status": "in_progress"
+  },
   "fix/racs-role-wording-2026-08-07": {
     "repo": "nsolland/Racs",
     "stage": "repo-profile",
