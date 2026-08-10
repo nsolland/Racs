@@ -237,7 +237,8 @@
       "bindings and test vectors",
       "REHT admissibility, Core enforcement or receipt behavior"
     ],
-    "status": "in_progress"
+    "status": "in_review",
+    "pr": "https://github.com/nsolland/Racs/pull/137"
   },
   "fix/racs-role-wording-2026-08-07": {
     "repo": "nsolland/Racs",
