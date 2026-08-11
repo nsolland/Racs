@@ -1,23 +1,150 @@
-schema_version: "1.0.0"
+# repo-manifest.yaml — canonical machine-readable repository profile
+# Stable ID: valo.racs
+# Defined by nsolland/Index#338 (canonical AI-first public repository architecture)
+#
+# This file is the authoritative machine-readable contract for this repository.
+# It MUST stay in sync with publiccode.yml, llms.txt, AGENTS.md and claimed.json
+# (single source of truth for catalogue generation — do not maintain a second,
+# independent inventory).
+
+schema_version: "1.0"
+
 repository:
   id: "valo.racs"
-  name: "Racs"
-  org: "nsolland"
-  canonical_role: "decision_binding_and_receipt_contract"
-  normative_status: "normative_specification"
-  owner: "ANTIGRAVITY"
+  canonical_name: "RACS"
+  url: "https://github.com/nsolland/Racs"
+  owner: "nsolland"
+  classification: "protocol-specification"
+  visibility: "public"
+  maturity: "active-development"
+  support: "maintained"
+  normative_status: "normative"
+  license: "MIT"
+  maintainers:
+    - "nsolland"
 
-capabilities:
-  - "decision_contract_binding"
-  - "permit_and_commit_token_issuance"
-  - "verdict_verification"
-  - "receipt_schema_definition"
+purpose:
+  summary: >-
+    Neutral, model-agnostic protocol specification for representing, evaluating,
+    authorizing, executing, and evidencing AI-mediated actions. Answers the core
+    question: "Is this action admissible to execute under the current authority,
+    policy, evidence and system state?"
+  owns:
+    - "canonical receipt and evidence contract"
+    - "action envelope schema"
+    - "authority / policy / evidence context schemas"
+    - "governance evaluation, determination, and clearance schemas"
+    - "decision binding and permit/commit token issuance semantics"
+  does_not_own:
+    - "execution authority grant (REHT owns admissibility clearance)"
+    - "action execution (Core owns execution)"
+    - "evidence evaluation (VAIG owns evaluation)"
+    - "runtime implementation"
 
-prohibitions:
-  - "does_not_originate_broader_authority"
-  - "does_not_override_reht_clearance"
-  - "does_not_execute_consequence_bearing_side_effects"
+boundaries:
+  public:
+    - "spec definitions (schemas and normative text)"
+    - "examples and test-vectors"
+    - "reference bindings (python, rust, typescript)"
+    - "compliance validators"
+  private_by_default:
+    - "organization-specific authority structures"
+    - "customer-specific policy"
+    - "deployment-specific configurations"
+
+claims:
+  - id: "CLAIM-RACS-001"
+    statement: >-
+      RACS is a neutral, model-agnostic protocol specification — not a runtime
+      implementation.
+    evidence_level: "normative-architecture-invariant"
+    evidence:
+      - "README.md"
+      - "SPECIFICATION.md"
+      - "spec/action-envelope-v0.2.schema.json"
+  - id: "CLAIM-RACS-002"
+    statement: >-
+      RACS defines the deterministic decision-binding contract between evidence
+      layers (BARO, Speider) and action governance layers (VAIG, REHT, Core).
+    evidence_level: "implemented"
+    evidence:
+      - "spec/racs-decision-v0.2.schema.json"
+      - "spec/core-execution-permit.schema.json"
+      - "reference/bindings/v0.2"
+
+non_claims:
+  - "RACS is not a runtime implementation."
+  - "RACS does not grant clearance, execute actions, or evaluate evidence or risk."
+  - "RACS does not redefine REHT admissibility rules."
+  - "RACS is not a competing receipt standard."
 
 interfaces:
-  decision_schema: "spec/racs-decision-v0.2.schema.json"
-  permit_schema: "spec/core-execution-permit.schema.json"
+  - id: "decision-schema"
+    type: "json-schema"
+    path: "spec/racs-decision-v0.2.schema.json"
+  - id: "permit-schema"
+    type: "json-schema"
+    path: "spec/core-execution-permit.schema.json"
+  - id: "binding-python"
+    type: "python"
+    path: "reference/bindings/v0.2/python"
+  - id: "binding-rust"
+    type: "rust"
+    path: "reference/bindings/v0.2/rust"
+  - id: "binding-typescript"
+    type: "typescript"
+    path: "reference/bindings/v0.2/typescript"
+
+related_repositories:
+  - id: "valo.reht"
+    relationship: "clears admissibility; RACS maps receipts to REHT-104"
+  - id: "valo.vaig"
+    relationship: "evaluates evidence; RACS records determinations"
+  - id: "valo.core"
+    relationship: "executes actions; RACS issues permits and commit tokens"
+
+security:
+  contact: "https://github.com/nsolland/Racs/issues"
+  disclosure: "Report security issues via GitHub issues; never commit credentials."
+
+machine_reading:
+  canonical_terms: "SPECIFICATION.md"
+  agent_instructions: "AGENTS.md"
+  llm_summary: "llms.txt"
+
+legacy_profile:
+  identity:
+    stable_id: "valo.racs"
+    canonical_name: "RACS"
+    full_name: "Runtime Agent Control Standard"
+    purpose: >-
+      Neutral, model-agnostic protocol specification for representing, evaluating,
+      authorizing, executing, and evidencing AI-mediated actions.
+    public_url: "https://github.com/nsolland/Racs"
+  ownership:
+    owner: "VALO Research Group"
+    maintainers:
+      - "nsolland"
+    contact_path: "https://github.com/nsolland/Racs/issues"
+  maturity:
+    status: "implemented"
+    support: "maintained"
+    normative_status: "normative"
+    version: "0.2"
+  contract:
+    owns:
+      - "canonical receipt and evidence contract"
+      - "action envelope schema"
+      - "authority / policy / evidence context schemas"
+      - "governance evaluation, determination, and clearance schemas"
+    does_not_own:
+      - "execution authority grant (REHT owns admissibility clearance)"
+      - "action execution (Core owns execution)"
+      - "evidence evaluation (VAIG owns evaluation)"
+    mappings:
+      - standard: "REHT-104"
+        note: >-
+          Every clearance decision MUST issue a receipt. RACS records decisions
+          and effects; it does not grant clearance or execute actions.
+  license:
+    spdx_id: "MIT"
