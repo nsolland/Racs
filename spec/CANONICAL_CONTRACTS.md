@@ -1,7 +1,7 @@
 # RACS Canonical Contract Index (P0.2, issue #991)
 
 Status: NORMATIVE. Source of truth for runtime execution-governance contracts in the
-VALO execution chain: `VAIG evaluates → REHT clears → RACS decides → Core enforces → Receipts prove`.
+VALO execution chain: `VAIG evaluates → REHT clears → RACS expresses the deterministic decision contract → Core enforces → Receipts prove`.
 
 Ruling #991:
 
@@ -42,6 +42,7 @@ Ruling #991:
 | 19 | Execution and Outcome Receipts | `execution-receipt-v0.2.schema.json`, `execution-receipt-v0.3.schema.json` + `outcome-receipt-v0.2.schema.json` | v0.3 adds the optional portable extension; technical execution and observed consequence remain separate |
 | 20 | Role Boundary Contract | `role-contract-v1.schema.json` | wire format of module role boundary contracts |
 | 21 | Role Integrity Evaluation | `role-integrity-evaluation-v1.schema.json` | evaluation result for role fidelity and role-drift detection |
+| 22 | Governed Workspace Lineage | `governed-workspace-lineage-v0.2.schema.json` | optional, exact, non-authoritative transport binding from a Kernel-governed workspace through determination, clearance, permit and receipts; legacy payloads remain valid |
 
 
 Normative runtime-continuity semantics are defined in `RUNTIME_CONTINUITY_V0_2.md`.
@@ -69,6 +70,7 @@ Python, Rust and TypeScript bindings MUST reproduce the same canonical bytes and
 - VAIG evaluates; it does not clear or execute.
 - REHT determines admissibility and issues exact-action clearance.
 - RACS owns wire contracts, decision vocabulary, canonicalization and conformance.
+- RACS transports workspace and verified Kernel-context bindings. Kernel owns authoritative state and conformance; REHT owns fresh exact-action authorization.
 - Core enforces permits, revocation, HALT and continuity decisions.
 - Watchers produce evidence. They do not authorize intervention or recovery.
 - Bounded adapters apply decisions and return receipts. They cannot widen bindings.

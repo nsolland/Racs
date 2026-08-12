@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racs.dev/schema/0.2/governed-workspace-lineage.schema.json",
+  "title": "RACS GovernedWorkspaceLineage",
+  "description": "Non-authoritative transport binding for one Kernel-governed workspace action. RACS expresses this lineage but does not evaluate conformance, verify reality, grant authority, authorize, enforce or execute.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tenant_id",
+    "work_unit_id",
+    "workspace_id",
+    "workspace_digest",
+    "workspace_expires_at",
+    "program_ref",
+    "program_digest",
+    "invocation_id",
+    "candidate_id",
+    "candidate_digest",
+    "proposed_action_digest",
+    "conformance_report_id",
+    "conformance_digest",
+    "source_state_digest",
+    "conformed_state_digest",
+    "source_event_position",
+    "conformed_at",
+    "dependency_digest",
+    "workspace_binding_digest",
+    "kernel_context_digest"
+  ],
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "work_unit_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workspace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workspace_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "workspace_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "program_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "program_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "invocation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "proposed_action_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "conformance_report_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "conformance_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "source_state_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "conformed_state_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "source_event_position": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "conformed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "dependency_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "workspace_binding_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "kernel_context_digest": {
+      "$ref": "#/$defs/digest"
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

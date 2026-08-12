@@ -300,9 +300,10 @@
       "Veritas evidence classification",
       "archived ACS material"
     ],
-    "status": "claimed",
+    "status": "in_review",
     "dependencies": "Kernel merge 773660a07e7899a881c9fcb153c6b26859e78437; reht producer PR #21; G0/G1 issue #147",
     "risk": "HIGH",
+    "producer_verification": "LOCAL: 38 governed-workspace compliance tests pass; Python binding focus checks pass; four shared runtime vectors produce 2 ACCEPT and 2 fail-closed REJECT results; JSON and Python compile checks pass. Hosted cross-language evidence is UNVERIFIED until PR CI completes.",
     "independent_review": "PENDING",
     "owner_approval": "PENDING"
   }
