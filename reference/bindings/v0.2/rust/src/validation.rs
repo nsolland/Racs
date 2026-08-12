@@ -193,6 +193,17 @@ pub fn validate(
         return Err(SchemaValidationError { message, path });
     }
 
+    // jsonschema 0.18 does not consistently enforce the draft-2020-12
+    // `dependentRequired` keyword used by these schemas. Mirror the atomic
+    // pair rule at the binding boundary so Rust cannot accept a payload that
+    // Python/Ajv reject.
+    if matches!(
+        artifact_type,
+        "AdmissibilityDetermination" | "GovernanceClearance"
+    ) {
+        validate_workspace_binding_pair(raw)?;
+    }
+
     if artifact_type == "BoundaryCrossingAssessment" {
         let assessment: BoundaryCrossingAssessment =
             serde_json::from_value(raw.clone()).map_err(|error| SchemaValidationError {
@@ -211,6 +222,24 @@ pub fn validate(
         artifact_type: artifact_type.to_string(),
         model: raw.clone(),
         payload: raw.clone(),
+    })
+}
+
+fn validate_workspace_binding_pair(raw: &Value) -> Result<(), SchemaValidationError> {
+    let workspace_present = raw.get("workspace_binding_digest").is_some();
+    let kernel_present = raw.get("kernel_context_digest").is_some();
+    if workspace_present == kernel_present {
+        return Ok(());
+    }
+    let missing = if workspace_present {
+        "kernel_context_digest"
+    } else {
+        "workspace_binding_digest"
+    };
+    Err(SchemaValidationError {
+        message: "workspace_binding_digest and kernel_context_digest must be bound together"
+            .into(),
+        path: format!("/{missing}"),
     })
 }
 
