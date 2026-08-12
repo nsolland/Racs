@@ -142,6 +142,8 @@ class AdmissibilityDetermination(BaseModel):
     evidence_digest: str
     purpose_digest: str
     state_digest: str
+    workspace_binding_digest: Optional[str] = None
+    kernel_context_digest: Optional[str] = None
     evaluation_bindings: List[EvaluationBinding]
     boundary_assessment_binding: BoundaryAssessmentBinding
     state: AdmissibilityState
@@ -150,6 +152,16 @@ class AdmissibilityDetermination(BaseModel):
     determined_at: str
     valid_until: str
     revocation_registry_ref: str
+
+    @model_validator(mode="after")
+    def workspace_digests_are_atomic(self) -> "AdmissibilityDetermination":
+        if (self.workspace_binding_digest is None) != (
+            self.kernel_context_digest is None
+        ):
+            raise ValueError(
+                "workspace_binding_digest and kernel_context_digest must be bound together"
+            )
+        return self
 
     def model_canonical(self) -> bytes:
         return canonical_bytes(self.model_dump(mode="json", exclude_none=True))
@@ -173,6 +185,8 @@ class GovernanceClearance(BaseModel):
     evidence_digest: str
     purpose_digest: str
     state_digest: str
+    workspace_binding_digest: Optional[str] = None
+    kernel_context_digest: Optional[str] = None
     target_digest: str
     payload_digest: str
     connector_id: str
@@ -188,6 +202,16 @@ class GovernanceClearance(BaseModel):
     evaluator_refs: List[str]
     admissibility_determination_ref: str
     admissibility_determination_digest: str
+
+    @model_validator(mode="after")
+    def workspace_digests_are_atomic(self) -> "GovernanceClearance":
+        if (self.workspace_binding_digest is None) != (
+            self.kernel_context_digest is None
+        ):
+            raise ValueError(
+                "workspace_binding_digest and kernel_context_digest must be bound together"
+            )
+        return self
 
     def model_canonical(self) -> bytes:
         return canonical_bytes(self.model_dump(mode="json", exclude_none=True))

@@ -265,5 +265,46 @@
     "verification": "docs/metadata-only; repo-profile CI fails pre-existing on main (manifest format newer than validator) and is not regressed by this change",
     "dependencies": "nsolland/Index#647 (post-audit remediation build order)",
     "merged": true
+  },
+  "hermes/issue-147-governed-workspace-lineage": {
+    "repo": "nsolland/Racs",
+    "issue": 147,
+    "stage": "governed-workspace-lineage-v0.2.1",
+    "base_sha": "ca90e8eb5fe839c15ed76f06c84d2087c840c1ec",
+    "branch": "hermes/issue-147-governed-workspace-lineage",
+    "owner": "Codex",
+    "scope": "backwards-compatible normative transport of Governed Workspace and verified Kernel-context lineage through ActionEnvelope, determination, clearance, permit and receipts; no evaluation, authorization, enforcement or execution",
+    "claimed_paths": [
+      "claimed.json",
+      "spec/governed-workspace-lineage-v0.2.schema.json",
+      "spec/action-envelope-v0.2.schema.json",
+      "spec/admissibility-determination-v0.2.schema.json",
+      "spec/governance-clearance.schema.json",
+      "spec/core-execution-permit.schema.json",
+      "spec/execution-receipt-v0.2.schema.json",
+      "spec/outcome-receipt-v0.2.schema.json",
+      "spec/version-manifest.json",
+      "spec/CANONICAL_CONTRACTS.md",
+      "reference/bindings/v0.2/python/src/racs_v02/models.py",
+      "reference/bindings/v0.2/python/tests/test_models.py",
+      "reference/bindings/v0.2/rust/src/lib.rs",
+      "reference/bindings/v0.2/typescript/src/index.ts",
+      "tests/compliance/test_governed_workspace_lineage.py",
+      "test-vectors/0.2/runtime-validation/admissibility-determination/det_workspace_*.json",
+      "test-vectors/0.2/runtime-validation/governance-clearance/clr_workspace_*.json"
+    ],
+    "must_not_touch": [
+      "REHT admissibility or Kernel conformance semantics",
+      "RACS decision vocabulary or enforcement behavior",
+      "Gateway execution implementation",
+      "Veritas evidence classification",
+      "archived ACS material"
+    ],
+    "status": "in_review",
+    "dependencies": "Kernel merge 773660a07e7899a881c9fcb153c6b26859e78437; reht producer PR #21; G0/G1 issue #147",
+    "risk": "HIGH",
+    "producer_verification": "LOCAL: 38 governed-workspace compliance tests pass; Python binding focus checks pass; four shared runtime vectors produce 2 ACCEPT and 2 fail-closed REJECT results; JSON and Python compile checks pass. Hosted cross-language evidence is UNVERIFIED until PR CI completes.",
+    "independent_review": "PENDING",
+    "owner_approval": "PENDING"
   }
 }

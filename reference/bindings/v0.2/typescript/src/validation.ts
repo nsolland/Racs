@@ -154,6 +154,16 @@ export function validate(
     );
   }
 
+  // Keep the atomic pair explicit at every language boundary. This mirrors
+  // the draft-2020-12 dependentRequired rule even when a validator is swapped
+  // for one with weaker keyword support.
+  if (
+    artifactType === "AdmissibilityDetermination" ||
+    artifactType === "GovernanceClearance"
+  ) {
+    validateWorkspaceBindingPair(raw);
+  }
+
   if (artifactType === "BoundaryCrossingAssessment") {
     try {
       const semanticError = boundaryAssessmentSemanticError(
@@ -169,6 +179,27 @@ export function validate(
   }
 
   return { artifactType, model: raw, payload: raw };
+}
+
+function validateWorkspaceBindingPair(raw: unknown): void {
+  if (typeof raw !== "object" || raw === null) return;
+  const value = raw as Record<string, unknown>;
+  const workspacePresent = Object.prototype.hasOwnProperty.call(
+    value,
+    "workspace_binding_digest",
+  );
+  const kernelPresent = Object.prototype.hasOwnProperty.call(
+    value,
+    "kernel_context_digest",
+  );
+  if (workspacePresent === kernelPresent) return;
+  const missing = workspacePresent
+    ? "kernel_context_digest"
+    : "workspace_binding_digest";
+  throw new SchemaValidationError(
+    "workspace_binding_digest and kernel_context_digest must be bound together",
+    `/${missing}`,
+  );
 }
 
 function typedDigest(

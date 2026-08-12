@@ -107,6 +107,8 @@ def test_admissibility_determination_model():
         evidence_digest="sha256:" + "4" * 64,
         purpose_digest="sha256:" + "5" * 64,
         state_digest="sha256:" + "6" * 64,
+        workspace_binding_digest="sha256:" + "8" * 64,
+        kernel_context_digest="sha256:" + "9" * 64,
         evaluation_bindings=[
             {"evaluation_ref": "ev-1", "evaluation_digest": "sha256:" + "7" * 64}
         ],
@@ -117,6 +119,7 @@ def test_admissibility_determination_model():
         revocation_registry_ref="rr://x",
     )
     assert determination.model_digest().startswith("sha256:")
+    assert determination.workspace_binding_digest
 
 
 def test_determination_requires_boundary_binding():
@@ -156,6 +159,8 @@ def test_governance_clearance_model():
         evidence_digest="sha256:" + "4" * 64,
         purpose_digest="sha256:" + "5" * 64,
         state_digest="sha256:" + "6" * 64,
+        workspace_binding_digest="sha256:" + "b" * 64,
+        kernel_context_digest="sha256:" + "c" * 64,
         target_digest="sha256:" + "8" * 64,
         payload_digest="sha256:" + "9" * 64,
         connector_id="conn-1",
@@ -173,6 +178,70 @@ def test_governance_clearance_model():
     )
     assert clearance.decision is Decision.ALLOW
     assert clearance.model_digest().startswith("sha256:")
+    assert clearance.kernel_context_digest
+
+
+@pytest.mark.parametrize(
+    "model",
+    [AdmissibilityDetermination, GovernanceClearance],
+)
+def test_workspace_and_kernel_context_digests_are_atomic(model):
+    values = {
+        "workspace_binding_digest": "sha256:" + "d" * 64,
+        "kernel_context_digest": None,
+    }
+    if model is AdmissibilityDetermination:
+        values.update(
+            determination_id="d1",
+            action_id="a1",
+            action_envelope_digest="sha256:" + "0" * 64,
+            tenant_id="t1",
+            authority_digest="sha256:" + "1" * 64,
+            delegation_chain_digest="sha256:" + "2" * 64,
+            policy_digest="sha256:" + "3" * 64,
+            evidence_digest="sha256:" + "4" * 64,
+            purpose_digest="sha256:" + "5" * 64,
+            state_digest="sha256:" + "6" * 64,
+            evaluation_bindings=[
+                {"evaluation_ref": "ev-1", "evaluation_digest": "sha256:" + "7" * 64}
+            ],
+            boundary_assessment_binding=BINDING,
+            state=AdmissibilityState.ADMISSIBLE,
+            determined_at="2026-07-23T00:00:00Z",
+            valid_until="2026-08-23T00:00:00Z",
+            revocation_registry_ref="rr://x",
+        )
+    else:
+        values.update(
+            clearance_id="c1",
+            action_id="a1",
+            action_envelope_digest="sha256:" + "0" * 64,
+            tenant_id="t1",
+            decision=Decision.ALLOW,
+            admissibility_state=AdmissibilityState.ADMISSIBLE,
+            authority_digest="sha256:" + "1" * 64,
+            delegation_chain_digest="sha256:" + "2" * 64,
+            policy_digest="sha256:" + "3" * 64,
+            evidence_digest="sha256:" + "4" * 64,
+            purpose_digest="sha256:" + "5" * 64,
+            state_digest="sha256:" + "6" * 64,
+            target_digest="sha256:" + "8" * 64,
+            payload_digest="sha256:" + "9" * 64,
+            connector_id="conn-1",
+            capability="read",
+            consequence_class="LOW",
+            reversibility="REVERSIBLE",
+            valid_from="2026-07-23T00:00:00Z",
+            valid_until="2026-08-23T00:00:00Z",
+            replay_nonce="0123456789abcdef",
+            idempotency_key="idem-001",
+            revocation_registry_ref="rr://x",
+            evaluator_refs=["e1"],
+            admissibility_determination_ref="d1",
+            admissibility_determination_digest="sha256:" + "a" * 64,
+        )
+    with pytest.raises(Exception, match="must be bound together"):
+        model(**values)
 
 
 def test_boundary_binding_is_frozen_and_typed():

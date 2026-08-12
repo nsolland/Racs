@@ -136,6 +136,10 @@ pub struct AdmissibilityDetermination {
     pub evidence_digest: String,
     pub purpose_digest: String,
     pub state_digest: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub workspace_binding_digest: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kernel_context_digest: Option<String>,
     pub evaluation_bindings: Vec<EvaluationBinding>,
     pub boundary_assessment_binding: BoundaryAssessmentBinding,
     pub state: AdmissibilityState,
@@ -163,6 +167,10 @@ pub struct GovernanceClearance {
     pub evidence_digest: String,
     pub purpose_digest: String,
     pub state_digest: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub workspace_binding_digest: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kernel_context_digest: Option<String>,
     pub target_digest: String,
     pub payload_digest: String,
     pub connector_id: String,

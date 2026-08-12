@@ -66,6 +66,8 @@ export class AdmissibilityDetermination implements Canonicalizable {
   evidence_digest!: string;
   purpose_digest!: string;
   state_digest!: string;
+  workspace_binding_digest?: string;
+  kernel_context_digest?: string;
   evaluation_bindings!: EvaluationBinding[];
   boundary_assessment_binding!: BoundaryAssessmentBinding;
   state!: AdmissibilityState;
@@ -91,6 +93,8 @@ export class GovernanceClearance implements Canonicalizable {
   evidence_digest!: string;
   purpose_digest!: string;
   state_digest!: string;
+  workspace_binding_digest?: string;
+  kernel_context_digest?: string;
   target_digest!: string;
   payload_digest!: string;
   connector_id!: string;
