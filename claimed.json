@@ -289,7 +289,9 @@
       "reference/bindings/v0.2/python/tests/test_models.py",
       "reference/bindings/v0.2/rust/src/lib.rs",
       "reference/bindings/v0.2/typescript/src/index.ts",
-      "tests/compliance/test_governed_workspace_lineage.py"
+      "tests/compliance/test_governed_workspace_lineage.py",
+      "test-vectors/0.2/runtime-validation/admissibility-determination/det_workspace_*.json",
+      "test-vectors/0.2/runtime-validation/governance-clearance/clr_workspace_*.json"
     ],
     "must_not_touch": [
       "REHT admissibility or Kernel conformance semantics",
