@@ -287,6 +287,8 @@
       "spec/CANONICAL_CONTRACTS.md",
       "reference/bindings/v0.2/python/src/racs_v02/models.py",
       "reference/bindings/v0.2/python/tests/test_models.py",
+      "reference/bindings/v0.2/rust/src/lib.rs",
+      "reference/bindings/v0.2/typescript/src/index.ts",
       "tests/compliance/test_governed_workspace_lineage.py"
     ],
     "must_not_touch": [
