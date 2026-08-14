@@ -2,58 +2,67 @@
 
 RACS — REHT Action Control Standard.
 
-RACS defines a neutral, model-agnostic protocol for representing, evaluating, authorizing, executing and evidencing AI-mediated actions.
+RACS defines the neutral, model-agnostic contract used to represent and bind AI-mediated action-control decisions through execution and evidence.
 
-RACS is a standard, not a runtime implementation.
+RACS is deterministic protocol/schema infrastructure. It is not an evaluator, authorization engine, policy engine, enforcement point, or executor.
 
 ## Core question
 
-Is this action admissible to execute under the current authority, policy, evidence and system state?
+How is an already-made governance decision represented and bound deterministically to the exact action, execution boundary, and resulting receipt?
 
 ## Scope
 
 RACS defines:
 
 - Action Envelope
-- Authority Context
-- Evidence Package
-- Policy Context
-- Admissibility State
-- Delegation Chain
-- Governance Decision
+- Authority Context representation
+- Evidence Package representation
+- Policy Context representation
+- Admissibility State representation
+- Delegation Chain representation
+- Governance Decision contract
+- deterministic decision/action bindings
+- permit and commit-token schemas
 - Continuous Integrity events
-- Execution Receipt
+- Execution Receipt contracts
 
-RACS does not define:
+RACS does not:
 
-- model architecture
-- agent reasoning methods
-- moral truth
-- organizational legitimacy
-- domain policy content
-- runtime implementation details
+- evaluate evidence or risk
+- decide admissibility
+- grant or infer authority
+- authorize execution
+- enforce policy
+- execute actions
+- define model architecture or agent reasoning
+- determine moral truth or organizational legitimacy
 
 ## Architecture position
 
 ```text
-BARO -> Reality Package
-          |
-          v
-REHT / VAIG -> Admissibility evaluation
-          |
-          v
-RACS -> Standardized action-control messages
-          |
-          v
-Execution boundary -> Action or refusal
-          |
-          v
-Receipt
+Speider / BARO -> represented evidence
+                    |
+                    v
+VAIG -> evaluation
+                    |
+                    v
+REHT -> fresh execution authorization
+                    |
+                    v
+RACS -> deterministic decision/action contract
+                    |
+                    v
+external PEP / Gateway -> execution or refusal
+                    |
+                    v
+Veritas -> receipt / evidence
 ```
+
+REHT is the authorization boundary. RACS deterministically carries and binds the resulting decision; it cannot widen, reinterpret, or replace that decision.
 
 ## Repository status
 
-Initial clean-room specification seed.
+Active v0.2 protocol specification with normative schemas, reference bindings, compliance validators, and test vectors.
 
 No source code, schemas, wording, diagrams or structure have been copied from the archived `nsolland/ACS` repository or the external Agent Control Standard project.
 
