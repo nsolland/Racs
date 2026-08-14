@@ -1,6 +1,6 @@
 # repo-manifest.yaml — canonical machine-readable repository profile
 # Stable ID: valo.racs
-# Defined by nsolland/Index#338 (canonical AI-first public repository architecture)
+# Defined by nsolland/Index#338 (canonical AI-first repository architecture)
 #
 # This file is the authoritative machine-readable contract for this repository.
 # It MUST stay in sync with publiccode.yml, llms.txt, AGENTS.md and claimed.json
@@ -15,7 +15,8 @@ repository:
   url: "https://github.com/nsolland/Racs"
   owner: "nsolland"
   classification: "protocol-specification"
-  visibility: "public"
+  visibility: "private"
+  publication_status: "private-internal"
   maturity: "active-development"
   support: "maintained"
   normative_status: "normative"
@@ -43,12 +44,13 @@ purpose:
     - "runtime implementation"
 
 boundaries:
-  public:
+  candidate_public_surface:
     - "spec definitions (schemas and normative text)"
     - "examples and test-vectors"
     - "reference bindings (python, rust, typescript)"
     - "compliance validators"
   private_by_default:
+    - "the repository and its full history until explicitly published"
     - "organization-specific authority structures"
     - "customer-specific policy"
     - "deployment-specific configurations"
@@ -126,7 +128,8 @@ legacy_profile:
     purpose: >-
       Neutral, model-agnostic deterministic protocol for representing and binding
       already-made governance decisions through execution and evidence.
-    public_url: "https://github.com/nsolland/Racs"
+    repository_url: "https://github.com/nsolland/Racs"
+    visibility: "private"
   ownership:
     owner: "VALO Research Group"
     maintainers:
