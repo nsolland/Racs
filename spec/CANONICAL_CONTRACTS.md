@@ -16,6 +16,9 @@ Ruling #991:
 5. Runtime continuity extends the same chain. Capability manifests, environment
    profiles, watchers, execution substrates and recovery planners are not authority
    sources and cannot issue a parallel ALLOW.
+6. Consequence-bearing execution MUST have one governed effect path, and every observed
+   effect MUST be attributable to the required governance and receipt chain. A chainless
+   effect is a control failure and suspected execution bypass, not governed success.
 
 ## Canonical contracts
 
@@ -46,6 +49,7 @@ Ruling #991:
 
 
 Normative runtime-continuity semantics are defined in `RUNTIME_CONTINUITY_V0_2.md`.
+Normative effect-path and effect-chain integrity semantics are defined in `EFFECT_CHAIN_INTEGRITY_V0_2.md`.
 
 ## Canonicalization and digest (RACS-JCS-1)
 
@@ -70,6 +74,7 @@ Python, Rust and TypeScript bindings MUST reproduce the same canonical bytes and
 - VAIG evaluates; it does not clear or execute.
 - REHT determines admissibility and issues exact-action clearance.
 - RACS owns wire contracts, decision vocabulary, canonicalization and conformance.
+- RACS owns effect-path and effect-chain integrity semantics; observed effects without the required governed chain are treated as suspected bypass/control failure.
 - RACS transports workspace and verified Kernel-context bindings. Kernel owns authoritative state and conformance; REHT owns fresh exact-action authorization.
 - Core enforces permits, revocation, HALT and continuity decisions.
 - Watchers produce evidence. They do not authorize intervention or recovery.
