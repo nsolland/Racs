@@ -327,9 +327,10 @@
       "Veritas outcome verification",
       "external GATE, Microsoft AGT or z-gateway dependencies"
     ],
-    "status": "implemented",
+    "status": "in_review",
     "pr": "https://github.com/nsolland/Racs/pull/153",
-    "verification": "LOCAL: 6 focused conformance tests pass; Python compileall and Ruff pass. Hosted CI pending branch publication.",
+    "last_verified_head": "675e77e863e65700107eb6e78ba1ae91be16d95e",
+    "verification": "LOCAL: 6 focused conformance tests pass; Python compileall and Ruff pass. HOSTED at implementation commit 675e77e863e65700107eb6e78ba1ae91be16d95e: RACS Conformance run 31880884808 and repo-profile run 31880884803 passed.",
     "dependencies": "RACS #152 effect-chain integrity merged at e5ad82a629425ee2725297b32eef9173f2542d64"
   }
 }
