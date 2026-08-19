@@ -19,6 +19,9 @@ Ruling #991:
 6. Consequence-bearing execution MUST have one governed effect path, and every observed
    effect MUST be attributable to the required governance and receipt chain. A chainless
    effect is a control failure and suspected execution bypass, not governed success.
+7. `NO_DIRECT_EFFECT_PATH`, `NULL_EFFECT_ON_DENY`, the Structural Coupling Test,
+   effector-exclusive execution capability and deterministic pinned boundary replay are
+   canonical conformance requirements. Boundary replay does not include token-level LLM replay.
 
 ## Canonical contracts
 
@@ -75,6 +78,7 @@ Python, Rust and TypeScript bindings MUST reproduce the same canonical bytes and
 - REHT determines admissibility and issues exact-action clearance.
 - RACS owns wire contracts, decision vocabulary, canonicalization and conformance.
 - RACS owns effect-path and effect-chain integrity semantics; observed effects without the required governed chain are treated as suspected bypass/control failure.
+- Decision-relevant state and memory writes are consequence-bearing effects and require an appropriate governed write boundary.
 - RACS transports workspace and verified Kernel-context bindings. Kernel owns authoritative state and conformance; REHT owns fresh exact-action authorization.
 - Core enforces permits, revocation, HALT and continuity decisions.
 - Watchers produce evidence. They do not authorize intervention or recovery.

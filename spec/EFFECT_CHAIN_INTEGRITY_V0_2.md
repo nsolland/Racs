@@ -29,6 +29,63 @@ Where the architecture exposes more than one technical route to the same externa
 
 An implementation that permits an effect to occur outside the governed enforcement path is non-conforming even if it emits logs or receipts afterward.
 
+### 2.1 `NO_DIRECT_EFFECT_PATH`
+
+`NO_DIRECT_EFFECT_PATH` is the canonical name for this invariant.
+
+Every consequence-bearing tool or effector MUST be reachable only through the
+governed enforcement boundary. A callable wrapper, connector, authenticated
+session, runtime adapter or tool registry is non-conforming if it retains an
+independent route to the same consequence.
+
+A state, memory, configuration, instruction or artifact write MUST be treated
+as consequence-bearing when it can alter a future consequence-bearing
+decision. Such a write MUST cross an appropriate governed write boundary and
+MUST NOT enter authoritative or decision-relevant state through an agent-local
+or tool-local side channel.
+
+### 2.2 `NULL_EFFECT_ON_DENY`
+
+`DENY`, `DEFER`, `STEP_UP` and `HALT` MUST have a null effect. They MUST NOT
+invoke an effector, consume an execution capability, commit a resource or
+produce the proposed consequence. `MODIFY` may execute only after the modified
+exact action has been materialized and bound by the existing authorization and
+permit chain.
+
+A receipt describing a blocked decision is evidence of the block; it is not an
+execution effect.
+
+### 2.3 Structural Coupling Test
+
+An implementation MUST prove that the proposed effect cannot occur when any
+required governance basis is invalid, stale, revoked, suspended or unresolved.
+The proof MUST exercise the actual enforcement route and verify that the
+effector was not invoked and the proposed consequence did not occur.
+
+If the same effect remains technically possible after removal or invalidation
+of its required governance basis, governance is observational rather than
+structurally coupled and the implementation is non-conforming.
+
+### 2.4 Effector-exclusive authority
+
+Credentials, bearer material, signing capability, network entitlement and any
+other executable capability that can realize the consequence MUST be exclusive
+to the governed effector path. Models, agents, orchestrators, workspaces,
+general tool registries and protocol adapters MAY receive opaque references but
+MUST NOT retain an independently usable execution capability.
+
+### 2.5 Deterministic boundary replay
+
+Boundary replay MUST pin the exact contract, state, authority, evidence and
+deterministic decision inputs used at the enforcement boundary. Given the same
+pinned inputs, replay MUST produce the same boundary result without invoking
+the effector.
+
+Boundary replay is not token-level LLM replay. Reproducing prompts, model
+sampling, hidden reasoning, tokens or natural-language generation is neither
+required nor attempted. Determinism is scoped to the governed decision/effect
+boundary.
+
 ## 3. Effect-chain integrity
 
 For an atomic consequence-bearing action, the minimum attributable chain is conceptually:
@@ -83,14 +140,19 @@ A workflow-level `completed` state is not proof of real-world consequence.
 
 A conforming implementation MUST demonstrate:
 
-1. no consequence-bearing route bypasses the governed enforcement boundary;
-2. every observed effect can be attributed to the required current action/authority/decision/enforcement/receipt chain;
-3. broken or missing required chain continuity is non-executable for continued governed execution;
-4. an observed effect without a valid chain is treated as suspected bypass/control failure, not governed success;
-5. post-hoc logging or receipt creation cannot retroactively authorize a prior effect;
-6. human approval and other gates cannot manufacture authority;
-7. unknown, malformed or inconsistent external results remain explicit unknown/failure states; and
-8. independent verification can distinguish intended action, authorized action, attempted enforcement, actual effect and verified outcome.
+1. `NO_DIRECT_EFFECT_PATH`: no consequence-bearing route bypasses the governed enforcement boundary;
+2. decision-relevant state and memory writes are governed effects, not side channels;
+3. `NULL_EFFECT_ON_DENY`: `DENY`, `DEFER`, `STEP_UP` and `HALT` invoke no effector and create no proposed consequence;
+4. the Structural Coupling Test blocks effects for invalid, stale, revoked, suspended and unresolved governance basis;
+5. executable credentials and capabilities are exclusive to the governed effector path;
+6. deterministic replay over pinned contract, state, authority, evidence and decision inputs returns the same boundary result without re-execution;
+7. every observed effect can be attributed to the required current action/authority/decision/enforcement/receipt chain;
+8. broken or missing required chain continuity is non-executable for continued governed execution;
+9. an observed effect without a valid chain is treated as suspected bypass/control failure, not governed success;
+10. post-hoc logging or receipt creation cannot retroactively authorize a prior effect;
+11. human approval and other gates cannot manufacture authority;
+12. unknown, malformed or inconsistent external results remain explicit unknown/failure states; and
+13. independent verification can distinguish intended action, authorized action, attempted enforcement, actual effect and verified outcome.
 
 ## 8. Ownership
 

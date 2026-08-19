@@ -306,5 +306,31 @@
     "producer_verification": "LOCAL: 38 governed-workspace compliance tests pass; Python binding focus checks pass; four shared runtime vectors produce 2 ACCEPT and 2 fail-closed REJECT results; JSON and Python compile checks pass. Hosted cross-language evidence is UNVERIFIED until PR CI completes.",
     "independent_review": "PENDING",
     "owner_approval": "PENDING"
+  },
+  "hermes/effect-boundary-conformance": {
+    "repo": "nsolland/Racs",
+    "stage": "effect-boundary-conformance",
+    "base_sha": "e5ad82a629425ee2725297b32eef9173f2542d64",
+    "branch": "hermes/effect-boundary-conformance",
+    "owner": "Codex /root on behalf of Njål",
+    "scope": "Normative NO_DIRECT_EFFECT_PATH, NULL_EFFECT_ON_DENY, structural-coupling and pinned deterministic boundary-replay requirements; no authorization or execution ownership.",
+    "claimed_paths": [
+      "claimed.json",
+      "spec/EFFECT_CHAIN_INTEGRITY_V0_2.md",
+      "spec/CANONICAL_CONTRACTS.md",
+      "tests/compliance/test_effect_boundary_invariants.py",
+      "docs/work-anchors/2026-08-15-effect-boundary-conformance.md"
+    ],
+    "must_not_touch": [
+      "REHT admissibility or exact-action authorization",
+      "Gateway execution implementation",
+      "Veritas outcome verification",
+      "external GATE, Microsoft AGT or z-gateway dependencies"
+    ],
+    "status": "in_review",
+    "pr": "https://github.com/nsolland/Racs/pull/153",
+    "last_verified_head": "675e77e863e65700107eb6e78ba1ae91be16d95e",
+    "verification": "LOCAL: 6 focused conformance tests pass; Python compileall and Ruff pass. HOSTED at implementation commit 675e77e863e65700107eb6e78ba1ae91be16d95e: RACS Conformance run 31880884808 and repo-profile run 31880884803 passed.",
+    "dependencies": "RACS #152 effect-chain integrity merged at e5ad82a629425ee2725297b32eef9173f2542d64"
   }
 }
