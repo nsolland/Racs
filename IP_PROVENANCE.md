@@ -2,11 +2,15 @@
 
 ## Status
 
-- IP status: VALO-owned active architecture
+- IP status: author-owned active architecture
 - Origin date: 2026-07-11
 - Initial author: Njål Gaute Solland
-- Organization: VALO Research Group AS
+- Current rights holder: Njål Gaute Solland
+- Project: VALO Research
+- Legal-entity assignment: none recorded
 - Active authority: true
+
+`VALO` / `VALO Research` is used here as a project and research name. It is not identified by this repository as a separate legal rights holder. Any later transfer of the IP to a company or other legal entity requires a documented assignment.
 
 ## Clean-room declaration
 
@@ -18,7 +22,7 @@ No material from the archived ACS repository is normative for RACS.
 
 ## Independent architectural basis
 
-RACS is derived from VALO's independently developed architecture around:
+RACS is derived from the independently developed VALO research architecture around:
 
 - action admissibility
 - explicit authority

@@ -37,11 +37,13 @@ Each substantive pull request must state:
 
 Use one of:
 
-- `valo_owned`
+- `author_owned`
 - `contributor_original`
 - `third_party_adapted`
 - `joint_historical`
 - `unresolved`
+
+`author_owned` means material owned by the repository's documented current rights holder. It does not use `VALO` as the name of a separate legal owner.
 
 `unresolved` material cannot enter the normative specification.
 

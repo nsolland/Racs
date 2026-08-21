@@ -10,11 +10,17 @@ Project name: REHT Action Control Standard (RACS)
 
 Initial clean-room repository established: 2026-07-11
 
+Current rights holder: Njål Gaute Solland
+
+`VALO` / `VALO Research` is a project and research name in this repository, not a separate legal rights holder. No assignment to a company or other legal entity is recorded here. Any future transfer requires a documented assignment.
+
 ## Ownership statement
 
-Unless a file states otherwise, original RACS specifications, schemas, diagrams, terminology combinations, examples and implementation guidance authored in this repository are owned by VALO Research Group AS or its documented successor entity.
+Unless a file states otherwise, original RACS specifications, schemas, diagrams, terminology combinations, examples and implementation guidance authored in this repository are owned by Njål Gaute Solland, subject to the repository's applicable open-source license and any documented contributor or third-party rights.
 
-Individual contributors retain attribution rights as required by applicable law and contribution agreements.
+Individual contributors retain attribution and any rights required by applicable law, license terms and contribution agreements.
+
+Open-source licensing grants the permissions stated by the applicable license; it does not by itself transfer copyright ownership.
 
 ## Scope of owned material
 
@@ -35,7 +41,7 @@ Generic concepts such as authority, evidence, policy, delegation, audit records 
 
 ## Architectural origin
 
-RACS originates from the VALO architecture:
+RACS originates from the VALO research architecture:
 
 Reality -> BARO -> REHT -> VAIG -> Core -> Execution -> Receipt
 
@@ -57,7 +63,7 @@ RACS does not claim ownership of:
 Sensitive or externally influenced files should include:
 
 ```yaml
-ip_status: valo_owned | joint_historical | third_party | superseded | unresolved
+ip_status: author_owned | contributor_original | joint_historical | third_party | superseded | unresolved
 origin_date: YYYY-MM-DD
 authors:
 contributors:
@@ -70,4 +76,4 @@ notes:
 
 ## Legal review
 
-This document records technical provenance and intended ownership. It is not a substitute for legal advice, executed assignments or contributor agreements.
+This document records technical provenance and the repository's current ownership record. It is not a substitute for legal advice, executed assignments or contributor agreements.
