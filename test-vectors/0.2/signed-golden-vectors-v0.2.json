@@ -1,0 +1,56 @@
+[
+  {
+    "vector_id": "v0.2/action-envelope/001",
+    "artifact_type": "action-envelope-v0.2",
+    "input": {
+      "racs_version": "1.0",
+      "action_id": "act_0001",
+      "action_type": "READ",
+      "actor": {"id": "alice"},
+      "target": {"resource": "vault:user-profile"},
+      "requested_effect": {"effect": "read", "scope": "profile"}
+    },
+    "expected_decision": "PROPOSING",
+    "note": "Positive envelope vector."
+  },
+  {
+    "vector_id": "v0.2/action-envelope/002",
+    "artifact_type": "action-envelope-v0.2",
+    "input": {
+      "racs_version": "1.0",
+      "action_id": "act_0002",
+      "action_type": "EXECUTE_AUTHORIZED_PRESCRIPTION_ACTION",
+      "actor": {"id": "agent"},
+      "target": {"resource": "prescription"},
+      "requested_effect": {"effect": "execute"}
+    },
+    "expected_decision": "DENIED",
+    "note": "Reserved function id; must never be executed by a proposal path."
+  },
+  {
+    "vector_id": "v0.2/revocation/001",
+    "artifact_type": "revocation-registry-snapshot-v0.2",
+    "input": {
+      "snapshot_id": "snap_0001",
+      "previous_snapshot_sha256": null,
+      "created_at": "2026-08-21T00:00:00Z",
+      "schema_version": "0.2",
+      "issuer_id": "registry-1",
+      "registry_end_sha256": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "revocations": []
+    },
+    "expected_decision": "VALID_SNAPSHOT",
+    "note": "Empty initial snapshot vector."
+  },
+  {
+    "vector_id": "v0.2/verdict/001",
+    "artifact_type": "governance-evaluation-v0.2",
+    "input": {
+      "result": "DENY",
+      "confidence": 0.0,
+      "reason": "no_vaig_configured"
+    },
+    "expected_decision": "DENY",
+    "note": "Fail-closed VAIG default (PersonalAI-OS #3 class)."
+  }
+]
