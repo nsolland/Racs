@@ -8,9 +8,10 @@ version = "0.2.1"
 description = "REHT Action Control Standard — specification and reference implementation"
 requires-python = ">=3.11"
 authors = [
-    {name = "VALO Research Group AS"},
+    {name = "RACS contributors"},
 ]
-license = {text = "Proprietary — VALO Research Group AS"}
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
