@@ -480,12 +480,12 @@ reference benchmark:
 
 ## 12. Remaining normative work
 
-- revocation registry snapshot schema
-- transport bindings
-- complete schema bundle and compatibility matrix beyond the AgentBound delta
-- signed golden vectors for all legacy artifact types
-- active-session cross-artifact verification rules
-- narrowing proof for `MODIFY_RUNTIME_BOUNDS`
-- reauthorization and handover integration profile
-- Core state-transition conformance profile
-- public integration profiles for REHT, valo-platform and valo-v5-core
+- [x] revocation registry snapshot schema → `REVOCATION_REGISTRY_SNAPSHOT_V0_2.md` + `revocation-registry-snapshot-v0.2.schema.json`
+- [x] transport bindings → `TRANSPORT_BINDINGS_V0_2.md`
+- [x] complete schema bundle and compatibility matrix beyond the AgentBound delta → `SCHEMA_BUNDLE_COMPATIBILITY_V0_2.md`
+- [x] signed golden vectors for all legacy artifact types → `SIGNED_GOLDEN_VECTORS_V0_2.md` + `test-vectors/0.2/signed-golden-vectors-v0.2.json`
+- [x] active-session cross-artifact verification rules → `ACTIVE_SESSION_CROSS_ARTIFACT_VERIFICATION_V0_2.md`
+- [x] narrowing proof for `MODIFY_RUNTIME_BOUNDS` → `MODIFY_RUNTIME_BOUNDS_NARROWING_PROOF_V0_2.md`
+- [x] reauthorization and handover integration profile → `REAUTHORIZATION_HANDOVER_INTEGRATION_V0_2.md`
+- [x] Core state-transition conformance profile → `CORE_STATE_TRANSITION_CONFORMANCE_V0_2.md`
+- [x] public integration profiles for REHT, valo-platform and valo-v5-core → `PUBLIC_INTEGRATION_PROFILES_V0_2.md`
