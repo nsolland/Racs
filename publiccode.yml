@@ -15,4 +15,4 @@ description:
     shortDescription: "Runtime Agent Control Standard (RACS) decision binding and permit contract specification."
     longDescription: "RACS defines deterministic decision binding, permit/commit token contracts, and receipt schemas for governed agent execution. It cannot expand authority beyond REHT clearance."
 legal:
-  license: "MIT"
+  license: "Apache-2.0"
