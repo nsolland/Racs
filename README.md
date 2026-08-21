@@ -2,13 +2,13 @@
 
 RACS — REHT Action Control Standard.
 
-RACS defines the neutral, model-agnostic contract used to represent and bind AI-mediated action-control decisions through execution and evidence.
+RACS is vendor-neutral, model-agnostic protocol/schema infrastructure for representing and binding an already-made governance decision to the exact action, enforcement boundary and resulting evidence.
 
-RACS is deterministic protocol/schema infrastructure. It is not an evaluator, authorization engine, policy engine, enforcement point, or executor.
+RACS is not an evaluator, authorization engine, policy engine, enforcement point or executor.
 
 ## Core question
 
-How is an already-made governance decision represented and bound deterministically to the exact action, execution boundary, and resulting receipt?
+How is an already-made governance decision represented and bound deterministically to the exact action, execution boundary and resulting receipt?
 
 ## Scope
 
@@ -25,6 +25,7 @@ RACS defines:
 - permit and commit-token schemas
 - Continuous Integrity events
 - Execution Receipt contracts
+- effect-boundary conformance semantics
 
 RACS does not:
 
@@ -35,34 +36,39 @@ RACS does not:
 - enforce policy
 - execute actions
 - define model architecture or agent reasoning
+- require a specific model, agent framework, identity provider, policy engine or execution vendor
 - determine moral truth or organizational legitimacy
 
 ## Architecture position
 
 ```text
-Speider / BARO -> represented evidence
-                    |
-                    v
-VAIG -> evaluation
-                    |
-                    v
-REHT -> fresh execution authorization
-                    |
-                    v
-RACS -> deterministic decision/action contract
-                    |
-                    v
-external PEP / Gateway -> execution or refusal
-                    |
-                    v
-Veritas -> receipt / evidence
+Evidence / state / policy sources
+            |
+            v
+evaluator / authorization provider
+            |
+            v
+RACS deterministic decision/action binding
+            |
+            v
+external PEP / Gateway
+            |
+            v
+external consequence
+            |
+            v
+receipt / evidence verifier
 ```
 
-REHT is the authorization boundary. RACS deterministically carries and binds the resulting decision; it cannot widen, reinterpret, or replace that decision.
+REHT is one compatible authorization provider. VALO Gateway and Veritas are compatible enforcement and evidence implementations. None is required by the RACS protocol.
+
+RACS cannot widen, reinterpret or replace the authority represented by an upstream authorization decision.
 
 ## Repository status
 
-Active v0.2 protocol specification with normative schemas, reference bindings, compliance validators, and test vectors.
+Active v0.2 protocol specification with normative schemas, reference bindings, compliance validators and test vectors.
+
+The repository is being prepared as a public protocol/conformance surface. See `PUBLICATION_STATUS.md` for the exact boundary and release rule.
 
 No source code, schemas, wording, diagrams or structure have been copied from the archived `nsolland/ACS` repository or the external Agent Control Standard project.
 
@@ -71,11 +77,10 @@ No source code, schemas, wording, diagrams or structure have been copied from th
 - `SPECIFICATION.md`
 - `IP_PROVENANCE.md`
 - `THIRD_PARTY_NOTICES.md`
+- `PUBLICATION_STATUS.md`
 - `docs/architecture/BOUNDARIES.md`
 - `spec/` — normative v0.2 JSON schemas (source of truth)
 
-## Ownership
+## License
 
-Copyright © 2026 VALO Research Group AS.
-
-License to be finalized before public release.
+Apache License 2.0. See `LICENSE`.
