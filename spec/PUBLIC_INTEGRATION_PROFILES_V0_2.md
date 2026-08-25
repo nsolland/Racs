@@ -1,45 +1,36 @@
-# Public Integration Profiles (P0.2, issue #146)
+# Public Integration Profiles (P0.2)
 
 Status: NORMATIVE.
 
-Public integration profiles for the canonical runtime partners in the VALO
-execution chain. These profiles are the machine-readable contract each partner
-implements to interoperate with RACS.
+These profiles define role boundaries for implementations interoperating with RACS without requiring knowledge of any private product or repository topology.
 
-## Profile: REHT
+## Authorization provider
 
-Role: sole final execution-admissibility authority.
+Role: establishes the current authorization or admissibility basis for the exact proposed action under the governing system.
 
-- Produces `admissibility-determination-v0.2.schema.json` and signed clearance.
-- Accepts exact-action envelopes; binds `workspace_binding_digest` +
-  `kernel_context_digest` as a pair.
-- Revocation via `revocation-registry-snapshot-v0.2.schema.json`.
-- Transport: HTTPS (T3), idempotent (T4), authenticated (T5).
+- Produces the required signed determination/clearance artifacts.
+- Binds the exact action and any material governed-state references required by the declared profile.
+- Supports current revocation and freshness semantics.
+- Must not rely on RACS schema validity as a substitute for authority.
 
-## Profile: valo-platform
+## Proposing client
 
-Role: governed platform surface (workspace, agents, dashboards) — proposes,
-never authorizes.
+Role: forms exact action envelopes and submits them for governed determination.
 
-- Forms exact action envelopes and submits for determination/clearance.
-- Consumes permits; routes effects through the single governed effect path.
-- Observes and publishes receipts; never emits a parallel ALLOW.
-- Integrates the active-session cross-artifact rules (S1–S5).
+- May consume public RACS contracts and resulting permits.
+- Must not issue a parallel authorization for its own proposed consequence.
+- Must preserve required receipt and correlation references.
 
-## Profile: valo-v5-core
+## Enforcement implementation
 
-Role: deterministic enforcement kernel after RACS.
+Role: mechanically enforces the bound decision at the effect boundary.
 
-- Enforces the Core state-transition conformance profile (issue #145).
-- Rejects illegal transitions before external effect (P3).
-- Implements `MODIFY_RUNTIME_BOUNDS` with the narrowing proof (issue #142).
-- Emits execution and outcome receipts; verifies golden vectors (issue #141).
+- Rejects invalid, stale, replayed or mismatched bindings before external effect.
+- Applies only narrowing transformations explicitly allowed by the governing contract.
+- Emits the public execution/evidence artifacts required by the selected profile.
 
-## Shared rules (X1–X3)
+## Shared rules
 
-1. **X1 — no re-authorization.** No partner may issue a parallel ALLOW or
-   supersede an upstream decision.
-2. **X2 — exact contracts.** Partners use the canonical schemas from this
-   bundle; references, not copies.
-3. **X3 — fail closed.** Any partner that cannot verify returns DENY/denied
-   with zero external effect.
+1. **No re-authorization.** A downstream implementation cannot widen or replace the admitted upstream authority basis.
+2. **Exact contracts.** Implementations use the canonical public RACS schemas or declared interoperable mappings.
+3. **Fail closed.** Failure to verify a required binding produces no external effect.
