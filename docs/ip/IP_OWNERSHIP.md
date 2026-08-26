@@ -2,7 +2,7 @@
 
 ## Status
 
-RACS is an independently developed VALO standard project.
+RACS is an independently developed public standard project.
 
 Repository: `nsolland/Racs`
 
@@ -26,26 +26,23 @@ Open-source licensing grants the permissions stated by the applicable license; i
 
 RACS-owned material includes the original expression and organization of:
 
-- Action Envelope
-- Authority representation
-- Evidence references
-- Policy references
-- Admissibility state
-- Delegation records
-- Governance decisions
-- Continuous Integrity state
-- Execution receipts
-- Protocol lifecycle and conformance rules
+- action-envelope representation
+- authority representation
+- evidence and policy references
+- admissibility state
+- delegation records
+- governance decisions
+- continuous-integrity state
+- execution receipts
+- protocol lifecycle and conformance rules
 
 Generic concepts such as authority, evidence, policy, delegation, audit records and state machines are not claimed as exclusive ideas. RACS ownership applies to original specification text, schemas, protocol composition, field definitions, lifecycle rules, diagrams and implementations created for this project.
 
 ## Architectural origin
 
-RACS originates from the VALO research architecture:
+RACS originates from independently developed execution-governance requirements and standardizes interoperable control objects needed to express them.
 
-Reality -> BARO -> REHT -> VAIG -> Core -> Execution -> Receipt
-
-RACS standardizes the interoperable control objects exchanged across this architecture. It does not own runtime decisions or execution semantics.
+This ownership record intentionally does not map private product components, implementation topology, repository dependencies, build order, internal thresholds or unpublished research. Those details are not required to establish provenance of the public RACS specification.
 
 ## Exclusions
 
@@ -56,23 +53,11 @@ RACS does not claim ownership of:
 - generic computer science concepts
 - material copied from external projects
 - jointly authored historical work unless ownership is separately documented
-- archived Agent Control Standard material
+- archived third-party-derived material
 
 ## Required file metadata
 
-Sensitive or externally influenced files should include:
-
-```yaml
-ip_status: author_owned | contributor_original | joint_historical | third_party | superseded | unresolved
-origin_date: YYYY-MM-DD
-authors:
-contributors:
-source_material:
-license:
-active_authority: true | false
-successor:
-notes:
-```
+Sensitive or externally influenced files should include provenance metadata sufficient to establish origin, authorship, license, source material and normative status without publishing unnecessary private implementation information.
 
 ## Legal review
 
