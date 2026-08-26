@@ -30,33 +30,34 @@ RACS does not own:
 - runtime enforcement implementation
 - audit-storage technology
 
-## Component mapping
+## Public role model
+
+RACS is intentionally implementation-neutral. A deployment may contain roles such as:
 
 ```text
-BARO
-  Produces observations and Reality Packages.
+Evidence producer
+  Produces observations or evidence packages.
 
-REHT
-  Frames whether an action is right or admissible to execute.
+Evaluator / admissibility issuer
+  Produces a bounded decision or determination.
 
-VAIG
-  Evaluates runtime governance conditions.
+RACS protocol layer
+  Standardizes messages, states, bindings and evidence exchanged.
 
-RACS
-  Standardizes the messages, states and evidence exchanged.
+Enforcement runtime
+  Verifies the applicable protocol artifacts at the execution boundary.
 
-REHT V5 Core
-  May enforce bounded execution-state transitions.
-
-Execution adapter
+Effect adapter
   Performs, refuses, pauses or halts an action.
 
-Receipt store
-  Preserves the evidence chain.
+Evidence store
+  Preserves receipts and related evidence.
 ```
+
+This role model is illustrative and does not define, reveal or require any private product topology, component naming, dependency graph or build order.
 
 ## Separation invariant
 
 A RACS message may carry a decision, but RACS itself does not make the decision.
 
-A conforming implementation must identify which component produced the decision and which component enforced it.
+A conforming implementation must identify which authorized role produced the decision and which enforcing role applied it.
